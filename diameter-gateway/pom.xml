@@ -5,7 +5,7 @@
     <parent>
         <artifactId>naikeri-signaling-gateway</artifactId>
         <groupId>com.naikeri</groupId>
-        <version>1.00.001</version>
+        <version>1.1.0</version>
     </parent>
 
     <name>naikeri-signaling-gateway :: http-diameter-gw</name>
@@ -13,18 +13,17 @@
 
     <groupId>com.telzar</groupId>
     <artifactId>naikeri-diameter-gateway</artifactId>
-    <version>1.00.001</version>
+    <version>1.1.0</version>
 
     <properties>
-        <jdiameter.version>1.7.1-157</jdiameter.version>
-        <!--paho.version>1.2.0</paho.version-->
+        <jdiameter.version>2.0.0-241</jdiameter.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.naikeri</groupId>
             <artifactId>naikeri-signaling-gateway-core</artifactId>
-            <version>1.00.001</version>
+            <version>1.1.0</version>
         </dependency>
 
         <dependency>

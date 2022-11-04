@@ -5,20 +5,20 @@
     <parent>
         <artifactId>naikeri-signaling-gateway</artifactId>
         <groupId>com.naikeri</groupId>
-        <version>1.01.002</version>
+        <version>1.1.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.partner</groupId>
     <artifactId>home-re-routing</artifactId> 
-    <version>1.02.002</version>
+    <version>1.1.0</version>
     
     <dependencies>
         <dependency>
             <groupId>com.naikeri</groupId>
             <artifactId>core</artifactId>
-            <version>1.02.002</version>
+            <version>1.1.0</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>

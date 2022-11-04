@@ -7,7 +7,7 @@
     <groupId>com.naikeri</groupId>
     <artifactId>naikeri-signaling-gateway</artifactId>
     <packaging>pom</packaging>
-    <version>1.02.002</version>
+    <version>1.1.0</version>
 
     <name>naikeri-signaling-gateway :: parent</name>
     <modules>
@@ -18,7 +18,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <log4j.version>1.2.17</log4j.version>
-        <sctp.version>2.1.0-16</sctp.version>
+        <sctp.version>2.1.0-17</sctp.version>
         <jss7.version>8.5.0-334</jss7.version>
         <jdiameter.version>2.0.0-241</jdiameter.version>
 	    <guava.version>27.0.1-jre</guava.version>
