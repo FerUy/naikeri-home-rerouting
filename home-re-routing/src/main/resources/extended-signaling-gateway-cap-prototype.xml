@@ -1,0 +1,473 @@
+<?xml version="1.0" ?>
+<SignalingGateway>
+  <Applications>
+    <Application name="MapProxy" enabled="true" workers="3" channel="Map">
+      <Rules filename="map-application-rules.xml" />
+    </Application>
+    <Application name="CapProxy" enabled="true" workers="3" queue="cap">
+      <Rules filename="cap-application-rules.xml" />
+      <Service>
+        <Function name="scf0" serviceType="scf" layer="cap0" />
+        <Function name="ssf0" serviceType="ssf" layer="cap1" />
+      </Service>
+    </Application>
+  </Applications>
+
+  <Channels>
+    <Channel name="Map" enabled="true" handler="MapChannel" queue="map" layer="map">
+      <Primitives>
+        <Primitive name="updateLocation_Request" />
+        <Primitive name="sendAuthenticationInfo_Request" />
+      </Primitives>
+    </Channel>
+    <Channel name="Cap" enabled="true" handler="CapChannel" queue="cap" layer="cap0, cap1">
+      <Primitives>
+        <Primitive name="initialDP_Request" />
+        <Primitive name="requestReportBCSMEvent_Request" />
+        <Primitive name="eventReportBCSM_Request" />
+        <Primitive name="continue_Request" />
+        <Primitive name="establishTemporaryConnection_Request" />
+        <Primitive name="connect_Request" />
+        <Primitive name="cancel_Request" />
+        <Primitive name="furnishChargingInformation_Request" />
+        <Primitive name="releaseCall_Request" />
+      </Primitives>
+    </Channel>
+  </Channels>
+
+  <Layers>
+    <sctp name="sctpserver" singleThread="true" connectDelay="10000" enable="true">
+      <!-- <association name="assoc_0" host="127.0.0.1:8011" peer="127.0.0.2:8012" transport="SCTP" multihome="127.0.0.10,127.0.0.11" /> -->
+      <server name="testsrv" host="127.0.0.1:8022" transport="TCP" acceptAnonymousConnections="false" concurrentConnections="10" multihome="127.0.0.20,127.0.0.21">
+        <serverAssociation name="server_assoc_0" peer="127.0.0.1:8011" transport="TCP" />
+      </server>
+      <!-- <association name="assoc_NSN" host="172.17.0.2:3905" peer="172.21.219.3:3906" transport="SCTP" multihome="127.0.0.10,127.0.0.11" /> -->
+    </sctp>
+    <m3ua name="m3uaserver" heartbeatTime="10000" sctp="sctpserver" productName="NAIKERI_SGW" enable="true">
+      <!-- as === Application Server -->
+      <as name="AS1" functionality="SGW" exchangetype="SE" ipsptype="SERVER" routingcontext="100" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="0">
+        <!-- asp === Application Server Process-->
+        <asp name="ASP1" sctpAssociationName="server_assoc_0" heartbeatenabled="true" />
+        <!-- route === Application server route-->
+        <route destinationPointCode="1001" originatingPointCode="1000" serviceIndicator="-1" />
+      </as>
+    </m3ua>
+    <!-- id is setMtp3UserPart id-->
+    <sccp name="sccpserver" m3ua="m3uaserver" enable="true">
+      <spc name="1001" remoteSpcId="1" remoteSpc="1001" remoteSpcFlag="0" mask="0" />
+      <ssn name="8" remoteSsnid="1" remoteSpc="1001" remoteSsn="8" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+      <!-- 
+      <remoteSpcs>
+        <spc name="stpssf_pc" remoteSpcId="1" remoteSpc="1305" remoteSpcFlag="0" mask="0" />
+        <spc name="stpscf_pc" remoteSpcId="2" remoteSpc="1304" remoteSpcFlag="0" mask="0" />
+        <spc name="hplmnscf_pc" remoteSpcId="3" remoteSpc="1504" remoteSpcFlag="0" mask="0" />
+      </remoteSpcs>
+      <remoteSsns>
+        <ssn name="stpssf_ssn" remoteSsnId="1" remoteSpc="1305" remoteSsn="146" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+        <ssn name="stpssf_vlr_ssn" remoteSsnId="2" remoteSpc="1305" remoteSsn="7" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+        <ssn name="stpscf_ssn" remoteSsnId="3" remoteSpc="1304" remoteSsn="146" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+        <ssn name="stpscf_vlr_ssn" remoteSsnId="4" remoteSpc="1304" remoteSsn="7" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+        <ssn name="hplmnscf_ssn" remoteSsnId="5" remoteSpc="1504" remoteSsn="146" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+      </remoteSsns>
+      -->
+      <!-- Enable the longMessage if it is applicable -->
+      <!-- <longMessageRule name="longMessageRule" id="5" firstSpc="201" lastSpc="202" ruleType="XUDT_ENABLED" /> -->
+      <!-- sap === Service Access Point-->
+      <sap name="SAPServer" id="1" mtp3Id="1" opc="1000" ni="2" networkId="0" localGtDigits="50373700000">
+        <destination name="SAPServer" destid="1" firstDpc="1001" lastDpc="1001" firstSls="0" lastSls="255" slsMask="255" />
+      </sap>
+      <routingAddress name="localRoutingServer" id="1" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="50373700000">
+        <sccpAddress dpc="1000" ssn="6">
+          <!-- encodingScheme = 2 => BCDEvenEncodingScheme-->
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="50373700000" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress name="remoteRoutingServer" id="2" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="50373700001">
+        <sccpAddress dpc="1001" ssn="8">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="50373700001" />
+        </sccpAddress>
+      </routingAddress>
+      <rule name="remoteRuleServer" id="1" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="REMOTE" pattern="*" mask="K" pAddressId="1" sAddressId="-1" networkId="0">
+        <!--  attribute for rule newCallingPartyAddressId if this is not available in the code it should be null-->
+        <patternSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="*" />
+        </patternSccpAddress>
+        <!-- <patternCallingSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+                    <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="4" natureOfAddress="INTERNATIONAL" digits="*" />
+                </patternCallingSccpAddress> -->
+      </rule>
+      <rule name="localRuleServer" id="2" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="LOCAL" pattern="*" mask="K" pAddressId="2" sAddressId="-1" networkId="0">
+        <!--  attribute for rule newCallingPartyAddressId if this is not available in the code it should be null-->
+        <patternSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="*" />
+        </patternSccpAddress>
+        <!-- <patternCallingSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+                    <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="4" natureOfAddress="INTERNATIONAL" digits="*" />
+                </patternCallingSccpAddress> -->
+      </rule>
+    </sccp>
+    <tcap name="tcapserver" sccp="sccpserver" ssn="6" extraSsn="147,8" dialogidletimeout="60000" invoketimeout="30000" maxdialogs="5000" enable="true" />
+    <map name="map" tcap="tcapserver" enable="true" />
+    <sctp name="sctpclient" singleThread="true" connectDelay="10000" enable="false">
+      <association name="assoc_0" host="127.0.0.1:8011" peer="127.0.0.1:8022" transport="TCP" multihome="127.0.0.10,127.0.0.11" />
+    </sctp>
+    <m3ua name="m3uaclient" heartbeatTime="10000" sctp="sctpclient" productName="NAIKERI_SGW" enable="false">
+      <!-- as === Application Server -->
+      <as name="AS2" functionality="AS" exchangetype="SE" ipsptype="CLIENT" routingcontext="100" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="0">
+        <!-- asp === Application Server Process-->
+        <asp name="ASP2" sctpAssociationName="assoc_0" heartbeatenabled="true" />
+        <!-- route === Application server route-->
+        <route destinationPointCode="1000" originatingPointCode="1001" serviceIndicator="-1" />
+      </as>
+    </m3ua>
+    <sccp name="sccpclient" m3ua="m3uaclient" enable="false">
+      <spc name="1000" remoteSpcId="1" remoteSpc="1000" remoteSpcFlag="0" mask="0" />
+      <ssn name="6" remoteSsnid="1" remoteSpc="1000" remoteSsn="6" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+      <!-- Enable the longMessage if it is applicable -->
+      <!-- <longMessageRule name="longMessageRule" id="5" firstSpc="201" lastSpc="202" ruleType="XUDT_ENABLED" /> -->
+      <!-- sap === Service Access Point-->
+      <sap name="SAPClient" id="1" mtp3Id="1" opc="1001" ni="2" networkId="0" localGtDigits="50373700001">
+        <destination name="SAPClient" destid="1" firstDpc="1000" lastDpc="1000" firstSls="0" lastSls="255" slsMask="255" />
+      </sap>
+      <routingAddress name="localRoutingClient" id="1" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="50373700001">
+        <sccpAddress dpc="1001" ssn="8">
+          <!-- encodingScheme = 2 => BCDEvenEncodingScheme-->
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="50373700000" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress name="remoteRoutingClient" id="2" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="50373700000">
+        <sccpAddress dpc="1000" ssn="6">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="50373700001" />
+        </sccpAddress>
+      </routingAddress>
+      <rule name="remoteRulClient" id="1" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="REMOTE" pattern="*" mask="K" pAddressId="1" sAddressId="-1" networkId="0">
+        <!--  attribute for rule newCallingPartyAddressId if this is not available in the code it should be null-->
+        <patternSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="*" />
+        </patternSccpAddress>
+        <!-- <patternCallingSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+                    <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="4" natureOfAddress="INTERNATIONAL" digits="*" />
+                </patternCallingSccpAddress> -->
+      </rule>
+      <rule name="localRuleClient" id="2" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="LOCAL" pattern="*" mask="K" pAddressId="2" sAddressId="-1" networkId="0">
+        <!--  attribute for rule newCallingPartyAddressId if this is not available in the code it should be null-->
+        <patternSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="*" />
+        </patternSccpAddress>
+        <!-- <patternCallingSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+                    <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="4" natureOfAddress="INTERNATIONAL" digits="*" />
+                </patternCallingSccpAddress> -->
+      </rule>
+    </sccp>
+    <tcap name="tcapclient" sccp="sccpclient" ssn="8" extraSsn="147,8" dialogidletimeout="60000" invoketimeout="30000" maxdialogs="5000" enable="false" />
+    <map name="mapclient" tcap="tcapclient" enable="false" />
+    <!-- CAP Prototype -->
+    <!-- SCTP -->
+    <!-- PROXY SCF -->
+    <sctp name="sctp0" singleThread="true" connectDelay="10000" enable="true">
+      <association name="assoc_proxyscf_vplmnssf" host="127.0.0.1:8011" peer="127.0.0.2:8021" transport="SCTP" />
+    </sctp>
+    <sctp name="sctp1" singleThread="true" connectDelay="10000" enable="true">
+      <association name="assoc_proxyssf_vplmnscf" host="127.0.0.1:8012" peer="127.0.0.2:8022" transport="SCTP" />
+    </sctp>
+    <!-- STP SSF -->
+    <sctp name="sctp2" singleThread="true" connectDelay="10000" enable="true">
+      <server name="vplmnSsfServer" host="127.0.0.2:8021" transport="SCTP" acceptAnonymousConnections="true" concurrentConnections="10">
+        <serverAssociation name="assoc_proxyscf_vplmnssf" peer="127.0.0.1:8011" transport="SCTP" />
+      </server>
+    </sctp>
+    <sctp name="sctp3" singleThread="true" connectDelay="10000" enable="true">
+      <server name="vplmnScfServer" host="127.0.0.2:8022" transport="SCTP" acceptAnonymousConnections="true" concurrentConnections="10">
+        <serverAssociation name="assoc_proxyssf_vplmnscf" peer="127.0.0.1:8012" transport="SCTP" />
+      </server>
+    </sctp>
+    <sctp name="sctp4" singleThread="true" connectDelay="10000" enable="true">
+      <server name="vplmnHplmnServer" host="127.0.0.2:8023" transport="SCTP" acceptAnonymousConnections="true" concurrentConnections="10">
+        <serverAssociation name="assoc_vplmn_hplmn" peer="127.0.0.3:8031" transport="SCTP" />
+      </server>
+    </sctp>
+    <!-- HPLMN SCP SCTP -->
+    <sctp name="sctp5" singleThread="true" connectDelay="10000" enable="true">
+      <association name="assoc_vplmn_hplmn" host="127.0.0.3:8031" peer="127.0.0.2:8023" transport="SCTP" />
+    </sctp>
+
+    <!-- CAP PROXY M3UA -->
+    <m3ua name="m3ua0" heartbeatTime="10000" sctp="sctp0" productName="ESG" enable="true">
+      <as name="AS0" functionality="IPSP" exchangetype="SE" ipsptype="CLIENT" routingcontext="101" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="102">
+        <route destinationPointCode="1305" originatingPointCode="6935" serviceIndicator="3" />
+        <asp name="ASP0" sctpAssociationName="assoc_proxyscf_vplmnssf" heartbeatenabled="true" />
+      </as>
+    </m3ua>
+
+    <m3ua name="m3ua1" heartbeatTime="10000" sctp="sctp1" productName="ESG" enable="true">
+      <as name="AS1" functionality="IPSP" exchangetype="SE" ipsptype="CLIENT" routingcontext="101" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="102">
+        <route destinationPointCode="1304" originatingPointCode="6934" serviceIndicator="3" />
+        <asp name="ASP1" sctpAssociationName="assoc_proxyssf_vplmnscf" heartbeatenabled="true" />
+      </as>
+    </m3ua>
+    <!-- STP M3UA -->
+    <!-- VPLMN-PROXY M3UA -->
+    <m3ua name="m3ua2" heartbeatTime="10000" sctp="sctp2" productName="ESG" enable="true">
+      <as name="AS2" functionality="IPSP" exchangetype="SE" ipsptype="SERVER" routingcontext="101" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="102">
+        <route destinationPointCode="6935" originatingPointCode="1305" serviceIndicator="3" />
+        <asp name="ASP2" sctpAssociationName="assoc_proxyscf_vplmnssf" heartbeatenabled="true" />
+      </as>
+    </m3ua>
+    <m3ua name="m3ua3" heartbeatTime="10000" sctp="sctp3" productName="ESG" enable="true">
+      <as name="AS3" functionality="IPSP" exchangetype="SE" ipsptype="SERVER" routingcontext="101" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="102">
+        <route destinationPointCode="6934" originatingPointCode="1304" serviceIndicator="3" />
+        <asp name="ASP3" sctpAssociationName="assoc_proxyssf_vplmnscf" heartbeatenabled="true" />
+      </as>
+    </m3ua>
+    <!-- VPLMN-HPLMN M3UA -->
+    <m3ua name="m3ua4" heartbeatTime="10000" sctp="sctp4" productName="ESG" enable="true">
+      <as name="AS4" functionality="IPSP" exchangetype="SE" ipsptype="SERVER" routingcontext="101" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="102">
+        <route destinationPointCode="1504" originatingPointCode="6915" serviceIndicator="3" />
+        <asp name="ASP4" sctpAssociationName="assoc_vplmn_hplmn" heartbeatenabled="true" />
+      </as>
+    </m3ua>
+    <!-- HPLMN SCP M3UA -->
+    <m3ua name="m3ua5" heartbeatTime="10000" sctp="sctp5" productName="ESG" enable="true">
+      <as name="AS5" functionality="IPSP" exchangetype="SE" ipsptype="CLIENT" routingcontext="101" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="102">
+        <route destinationPointCode="6915" originatingPointCode="1504" serviceIndicator="3" />
+        <asp name="ASP5" sctpAssociationName="assoc_vplmn_hplmn" heartbeatenabled="true" />
+      </as>
+    </m3ua>
+
+    <!-- SCCP -->
+    <!-- PROXY SCF SCCP -->
+    <sccp name="sccp0" m3ua="m3ua0" enable="true">
+      <sap id="1" name="sap_proxyscf" mtp3Id="1" opc="6935" ni="2" networkId="0" localGtDigits="9725412061909">
+        <destination destid="1" name="dest_vplmnssf" firstDpc="1305" lastDpc="1305" firstSls="0" lastSls="255" slsMask="255" />
+      </sap>
+      <rule id="1" name="proxyscf_local_originated" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="LOCAL" mask="K" pAddressId="1" sAddressId="-1" networkId="0">
+        <patternSccpAddress dpc="0" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <ai value="16" />
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254120022" />
+        </patternSccpAddress>
+      </rule>
+      <rule id="2" name="proxyscf_remote_originated" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="REMOTE" mask="K" pAddressId="2" sAddressId="-1" networkId="0">
+        <patternSccpAddress dpc="0" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <ai value="16" />
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="9725412061909" />
+        </patternSccpAddress>
+      </rule>
+      <routingAddress id="1" name="proxyscf_to_stpssf" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="97254120022">
+        <sccpAddress dpc="1305" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254120022" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress id="2" name="stpssf_to_proxyscf" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="9725412061909">
+        <sccpAddress dpc="6935" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="9725412061909" />
+        </sccpAddress>
+      </routingAddress>
+      <remoteSpcs>
+        <spc name="stpssf_pc" remoteSpcId="1" remoteSpc="1305" remoteSpcFlag="0" mask="0" />
+        <spc name="stpscf_pc" remoteSpcId="2" remoteSpc="1304" remoteSpcFlag="0" mask="0" />
+        <spc name="hplmnscf_pc" remoteSpcId="3" remoteSpc="1504" remoteSpcFlag="0" mask="0" />
+      </remoteSpcs>
+      <remoteSsns>
+        <ssn name="stpssf_ssn" remoteSsnid="1" remoteSpc="1305" remoteSsn="146" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+        <ssn name="stpssf_vlr_ssn" remoteSsnid="2" remoteSpc="1305" remoteSsn="7" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+        <ssn name="stpscf_ssn" remoteSsnid="3" remoteSpc="1304" remoteSsn="146" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+        <ssn name="stpscf_vlr_ssn" remoteSsnid="4" remoteSpc="1304" remoteSsn="7" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+        <ssn name="hplmnscf_ssn" remoteSsnid="5" remoteSpc="1504" remoteSsn="146" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+      </remoteSsns>
+    </sccp>
+    <!-- PROXY SSF SCCP -->
+    <sccp name="sccp1" m3ua="m3ua1" enable="true">
+      <sap id="1" name="sap_proxyssf" mtp3Id="1" opc="6934" ni="2" networkId="0" localGtDigits="97254120022">
+        <destination destid="1" name="dest_vplmnscf" firstDpc="1304" lastDpc="1304" firstSls="0" lastSls="255" slsMask="255" />
+      </sap>
+      <rule id="1" name="proxyssf_local_originated" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="LOCAL" mask="K" pAddressId="1" sAddressId="-1" networkId="0">
+        <patternSccpAddress dpc="0" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <ai value="16" />
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="972541203007" />
+        </patternSccpAddress>
+      </rule>
+      <rule id="2" name="proxyssf_remote_originated" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="REMOTE" mask="K" pAddressId="2" sAddressId="-1" networkId="0">
+        <patternSccpAddress dpc="0" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <ai value="18" />
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254120022" />
+        </patternSccpAddress>
+      </rule>
+      <routingAddress id="1" name="proxyssf_to_stpscf" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="972541203007">
+        <sccpAddress dpc="1304" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="972541203007" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress id="2" name="stpscf_to_proxyssf" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="97254120022">
+        <sccpAddress dpc="6934" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254120022" />
+        </sccpAddress>
+      </routingAddress>
+      <remoteSpcs>
+        <spc name="stpscf_pc" remoteSpcId="1" remoteSpc="1304" remoteSpcFlag="0" mask="0" />
+      </remoteSpcs>
+      <remoteSsns>
+        <ssn name="stpscf_ssn" remoteSsnid="1" remoteSpc="1304" remoteSsn="146" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+        <ssn name="stpscf_vlr_ssn" remoteSsnid="2" remoteSpc="1304" remoteSsn="7" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+      </remoteSsns>
+    </sccp>
+
+    <!-- VPLMN-STP SSF SCCP (for Proxy SCF)-->
+    <sccp name="sccp2" m3ua="m3ua2" enable="true">
+      <sap id="1" name="sap_stpssf" mtp3Id="1" opc="1305" ni="2" networkId="0" localGtDigits="97254120022">
+        <destination destid="1" name="dest_proxyscf" firstDpc="6935" lastDpc="6935" firstSls="0" lastSls="255" slsMask="255" />
+      </sap>
+      <rule id="1" name="stpssf_local_originated" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="LOCAL" mask="K" pAddressId="1" sAddressId="-1" networkId="0">
+        <patternSccpAddress dpc="0" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <ai value="16" />
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="9725412061909" />
+        </patternSccpAddress>
+      </rule>
+      <rule id="2" name="stpssf_remote_originated" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="REMOTE" mask="K" pAddressId="2" sAddressId="-1" networkId="0">
+        <patternSccpAddress dpc="0" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <ai value="16" />
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254120022" />
+        </patternSccpAddress>
+      </rule>
+      <routingAddress id="1" name="stpssf_to_proxyscf" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="9725412061909">
+        <sccpAddress dpc="6935" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="9725412061909" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress id="2" name="proxyscf_to_stpssf" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="97254120022">
+        <sccpAddress dpc="1305" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254120022" />
+        </sccpAddress>
+      </routingAddress>
+      <remoteSpcs>
+        <spc name="proxyscf_pc" remoteSpcId="1" remoteSpc="6935" remoteSpcFlag="0" mask="0" />
+      </remoteSpcs>
+      <remoteSsns>
+        <ssn name="proxyscf_ssn" remoteSsnid="1" remoteSpc="6935" remoteSsn="146" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+        <ssn name="proxyscf_vlr_ssn" remoteSsnid="2" remoteSpc="6935" remoteSsn="7" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+      </remoteSsns>
+    </sccp>
+
+    <!-- VPLMN-STP SCF SCCP (for Proxy SSF)-->
+    <sccp name="sccp3" m3ua="m3ua3" enable="true">
+      <sap id="1" name="sap_stpscf" mtp3Id="1" opc="1304" ni="2" networkId="0" localGtDigits="972541203007">
+        <destination destid="1" name="dest_proxyscf" firstDpc="6934" lastDpc="6934" firstSls="0" lastSls="255" slsMask="255" />
+      </sap>
+      <rule id="1" name="stpscf_local_originated" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="LOCAL" mask="K" pAddressId="1" sAddressId="-1" networkId="0">
+        <patternSccpAddress dpc="0" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <ai value="16" />
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254120022" />
+        </patternSccpAddress>
+      </rule>
+      <rule id="2" name="stpscf_remote_originated" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="REMOTE" mask="K" pAddressId="2" sAddressId="-1" networkId="0">
+        <patternSccpAddress dpc="0" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <ai value="16" />
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="972541203007" />
+        </patternSccpAddress>
+      </rule>
+      <routingAddress id="1" name="stpscf_to_proxyssf" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="97254120022">
+        <sccpAddress dpc="6934" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254120022" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress id="2" name="proxyssf_to_stpscf" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="972541203007">
+        <sccpAddress dpc="1304" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="972541203007" />
+        </sccpAddress>
+      </routingAddress>
+      <remoteSpcs>
+        <spc name="proxyssf_pc" remoteSpcId="1" remoteSpc="6934" remoteSpcFlag="0" mask="0" />
+      </remoteSpcs>
+      <remoteSsns>
+        <ssn name="proxyssf_ssn" remoteSsnid="1" remoteSpc="6934" remoteSsn="146" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+        <ssn name="proxyssf_vlr_ssn" remoteSsnid="2" remoteSpc="6934" remoteSsn="7" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+      </remoteSsns>
+    </sccp>
+
+    <!-- VPLMN-STP SSF SCCP (for HPLMN SCF)-->
+    <sccp name="sccp4" m3ua="m3ua4" enable="true">
+      <sap id="1" name="sap_vplmnssf" mtp3Id="1" opc="6915" ni="2" networkId="0" localGtDigits="97254120022">
+        <destination destid="1" name="dest_hplmnscf" firstDpc="1504" lastDpc="1504" firstSls="0" lastSls="255" slsMask="255" />
+      </sap>
+      <rule id="1" name="vplmnssf_local_originated" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="LOCAL" mask="K" pAddressId="1" sAddressId="-1" networkId="0">
+        <patternSccpAddress dpc="0" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <ai value="16" />
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="972541203007" />
+        </patternSccpAddress>
+      </rule>
+      <rule id="2" name="vplmnssf_remote_originated" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="REMOTE" mask="K" pAddressId="2" sAddressId="-1" networkId="0">
+        <patternSccpAddress dpc="0" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <ai value="16" />
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254120022" />
+        </patternSccpAddress>
+      </rule>
+      <routingAddress id="1" name="vplmnssf_to_hplmnscf" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="972541203007">
+        <sccpAddress dpc="1504" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="972541203007" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress id="2" name="hplmnscf_to_vplmnssf" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="97254120022">
+        <sccpAddress dpc="6915" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254120022" />
+        </sccpAddress>
+      </routingAddress>
+      <remoteSpcs>
+        <spc name="hplmnscf_pc" remoteSpcId="1" remoteSpc="1504" remoteSpcFlag="0" mask="0" />
+      </remoteSpcs>
+      <remoteSsns>
+        <ssn name="hplmnscf_ssn" remoteSsnid="1" remoteSpc="1504" remoteSsn="146" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+      </remoteSsns>
+    </sccp>
+
+    <!-- SCP SCCP -->
+    <sccp name="sccp5" m3ua="m3ua5" enable="true">
+      <sap id="1" name="sap_hplmnscf" mtp3Id="1" opc="1504" ni="2" networkId="0" localGtDigits="972541203007">
+        <destination destid="1" name="dest21" firstDpc="6915" lastDpc="6915" firstSls="0" lastSls="255" slsMask="255" />
+      </sap>
+      <rule id="1" name="hplmnscf_local_originated" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="LOCAL" mask="K" pAddressId="1" sAddressId="-1" networkId="0">
+        <patternSccpAddress dpc="0" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <ai value="16" />
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254120022" />
+        </patternSccpAddress>
+      </rule>
+      <rule id="2" name="hplmnscf_remote_originated" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="REMOTE" mask="K" pAddressId="2" sAddressId="-1" networkId="0">
+        <patternSccpAddress dpc="0" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <ai value="16" />
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="972541203007" />
+        </patternSccpAddress>
+      </rule>
+      <routingAddress id="1" name="hplmn_to_vplmnssf" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="97254120022">
+        <sccpAddress dpc="6915" ssn="0" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254120022" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress id="2" name="vplmnssf_to_hplmn" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="972541203007">
+        <sccpAddress dpc="1504" ssn="146" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE">
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="972541203007" />
+        </sccpAddress>
+      </routingAddress>
+      <remoteSpcs>
+        <spc name="hplmn_remote_pc" remoteSpcId="1" remoteSpc="6915" remoteSpcFlag="0" mask="0" />
+      </remoteSpcs>
+      <remoteSsns>
+        <ssn name="hplmn_remote_scf_ssn" remoteSsnid="1" remoteSpc="6915" remoteSsn="146" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+        <ssn name="hplmn_remote_vlr_ssn" remoteSsnid="2" remoteSpc="6915" remoteSsn="7" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+      </remoteSsns>
+    </sccp>
+
+    <tcap name="tcap0" sccp="sccp0" ssn="146" extraSsn="7" dialogidletimeout="30000" invoketimeout="30000" maxdialogs="1000" enable="true" />
+    <tcap name="tcap1" sccp="sccp1" ssn="146" extraSsn="7" dialogidletimeout="30000" invoketimeout="30000" maxdialogs="1000" enable="true" />
+    <tcap name="tcap2" sccp="sccp2" ssn="7" extraSsn="146" dialogidletimeout="30000" invoketimeout="30000" maxdialogs="1000" enable="true" />
+    <tcap name="tcap3" sccp="sccp3" ssn="146" extraSsn="7" dialogidletimeout="30000" invoketimeout="30000" maxdialogs="1000" enable="true" />
+    <tcap name="tcap4" sccp="sccp4" ssn="7" extraSsn="146" dialogidletimeout="30000" invoketimeout="30000" maxdialogs="1000" enable="true" />
+    <tcap name="tcap5" sccp="sccp5" ssn="146" extraSsn="7" dialogidletimeout="30000" invoketimeout="30000" maxdialogs="1000" enable="true" />
+
+
+    <cap name="cap0" tcap="tcap0" enable="true" /> <!-- CAP PROXY SCF -->
+    <cap name="cap1" tcap="tcap1" enable="true" /> <!-- CAP PROXY SSF -->
+    <cap name="cap2" tcap="tcap2" enable="true" /> <!-- CAP VPLMN STP SSF -->
+    <cap name="cap3" tcap="tcap3" enable="true" /> <!-- CAP VPLMN STP SCF -->
+    <cap name="cap4" tcap="tcap4" enable="true" /> <!-- CAP VPLMN STP SSF / HPLMN -->
+    <cap name="cap5" tcap="tcap5" enable="true" /> <!-- HPLMN SCP SCF -->
+  </Layers>
+  <Monitoring enable="true" folderPath="./logs" refreshInterval="5000" />
+</SignalingGateway>

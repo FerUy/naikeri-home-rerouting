@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Rules>
+    <ServiceKeys>
+        <ServiceKey primitive="initialDP_Request" value="485" />
+    </ServiceKeys>
+    <Rule name="IDP Rule for any VPLMN" regex="true">
+        <Match ClgGt="\d+" CldGt="97254160047" primitives="initialDP_Request" />
+        <Replace>
+            <Imsi value="4251004" pattern="^\d{7}" /> <!--Imsi value="4251004" pattern="^4251007" /-->
+            <CldGt value="97254121030" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+            <ClgGt value="38354121022" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+        </Replace>
+    </Rule>
+
+    <Rule name="IDP Rule for leg2" regex="true" leg2="true" >
+        <Match ClgGt="^*\d+" CldGt="97254160047" primitives="initialDP_Request" />
+        <!--Match ClgGt="97254121022" CldGt="97254160047" primitives="initialDP_Request" /-->
+        <Replace>
+            <CldGt value="97254121021" dpc="82" ssn="251" ri="ROUTING_BASED_ON_GLOBAL_TITLE" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+        </Replace>
+    </Rule>
+
+    <Rule name="RRB Rule for HPLMN SCP=97254121030" regex="true">
+        <Match ClgGt="97254121030" CldGt="\d+" primitives="requestReportBCSMEvent_Request" />
+        <Replace>
+            <ClgGt value="97254160047" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+            <CldGt value="97254121022" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+        </Replace>
+    </Rule>
+
+    <Rule name="ETC Rule for HPLMN SCP=97254121030" regex="true">
+        <Match ClgGt="97254121030" CldGt="\d+" primitives="establishTemporaryConnection_Request" />
+        <Replace>
+            <ClgGt value="97254160047" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+            <CldGt value="97254121022" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+        </Replace>
+        <Component>
+            <Remove primitives="establishTemporaryConnection_Request" />
+            <Replace primitives="connect_Request" apply="true">
+                <Arguments primitives="connect_Request" CdPN="972544130000,972544130700" range="20,30" nai="INTERNATIONAL" npi="ISDN" inni="ALLOWED" />
+                <!--Arguments primitives="connect_Request" CdPN="972544130000" range="1000" nai="INTERNATIONAL" npi="ISDN" inni="ALLOWED" /-->
+            </Replace>
+        </Component>
+    </Rule>
+
+    <Rule name="CUE Rule for HPLMN SCP=97254121030" regex="true">
+        <Match ClgGt="97254121030" CldGt="\d+" primitives="continue_Request" />
+        <Component>
+            <Remove primitives="continue_Request" />
+        </Component>
+    </Rule>
+
+    <Rule name="CON Rule for HPLMN SCP=97254121030" regex="true">
+        <Match ClgGt="97254121030" CldGt="\d+" primitives="connect_Request" />
+        <Replace>
+            <ClgGt value="97254160047" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+            <CldGt value="97254121022" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+        </Replace>
+        <Component>
+            <Replace primitives="connect_Request" apply="true">
+                <Arguments primitives="connect_Request" CdPN="972544130000" range="10" nai="INTERNATIONAL" npi="ISDN" inni="ALLOWED" />
+            </Replace>
+        </Component>
+    </Rule>
+
+    <Rule name="ERB Rule for any VPLMN" regex="true">
+        <Match ClgGt="\d+" CldGt="97254160047" primitives="eventReportBCSM_Request" />
+        <Replace>
+            <CldGt value="97254121030" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+            <ClgGt value="38354121022" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+        </Replace>
+    </Rule>
+
+    <Rule name="REL Rule for HPLMN SCP=97254121030" regex="true">
+        <Match ClgGt="97254121030" CldGt="\d+" primitives="releaseCall_Request" />
+        <Replace>
+            <ClgGt value="97254160047" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+            <CldGt value="97254121022" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+        </Replace>
+    </Rule>
+
+</Rules>

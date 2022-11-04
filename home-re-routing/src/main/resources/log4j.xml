@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration debug="true" xmlns:log4j="http://jakarta.apache.org/log4j/">
+    <appender name="console" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n" />
+        </layout>
+    </appender>
+    <appender name="debugfiles" class="org.apache.log4j.RollingFileAppender">
+        <param name="file" value="./logs/debugfile.log" />
+        <param name="MaxFileSize" value="10MB" />
+        <param name="MaxBackupIndex" value="5" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n" />
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="levelMin" value="TRACE" />
+            <param name="levelMax" value="INFO" />
+        </filter>
+    </appender>
+    <appender name="cdrlogger" class="org.apache.log4j.RollingFileAppender">
+        <param name="file" value="./logs/cdrlogger.log" />
+        <param name="MaxFileSize" value="10MB" />
+        <param name="MaxBackupIndex" value="5" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%m%n" />
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="levelMin" value="TRACE" />
+            <param name="levelMax" value="INFO" />
+        </filter>
+    </appender>
+    <appender name="capCdrLogger" class="org.apache.log4j.RollingFileAppender">
+        <param name="file" value="./logs/cap_cdrlogger.log" />
+        <param name="MaxFileSize" value="10MB" />
+        <param name="MaxBackupIndex" value="5" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%m%n" />
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="levelMin" value="TRACE" />
+            <param name="levelMax" value="INFO" />
+        </filter>
+    </appender>
+    <appender name="errorfiles" class="org.apache.log4j.RollingFileAppender">
+        <param name="file" value="./logs/errorfile.log" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n" />
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="levelMin" value="ERROR" />
+            <param name="levelMax" value="FATAL" />
+        </filter>
+    </appender>
+    <logger name="org.mobicents.protocols.sctp.netty">
+        <level value="ERROR" />
+    </logger>
+    <logger name="org.restcomm.protocols.ss7.m3ua">
+        <level value="ERROR" />
+    </logger>
+    <logger name="org.restcomm.protocols.ss7.sccpext.impl.router">
+        <level value="ERROR" />
+    </logger>
+    <logger name="org.restcomm.protocols.ss7.sccpext.impl">
+        <level value="ERROR" />
+    </logger>
+    <logger name="org.restcomm.protocols.ss7.sccp.impl">
+        <level value="ERROR" />
+    </logger>
+    <logger name="org.restcomm.protocols.ss7.cap">
+        <level value="ERROR" />
+    </logger>
+    <logger name="org.restcomm.protocols.ss7.isup">
+        <level value="ERROR" />
+    </logger>
+    <logger name="cdrlogger">
+        <level value="INFO" />
+        <appender-ref ref="cdrlogger" />
+    </logger>
+    <logger name="capCdrLogger">
+        <level value="INFO" />
+        <appender-ref ref="capCdrLogger" />
+    </logger>
+    <root>
+        <level value="ALL" />
+        <appender-ref ref="console" />
+        <appender-ref ref="debugfiles" />
+        <appender-ref ref="errorfiles" />
+    </root>
+
+</log4j:configuration>

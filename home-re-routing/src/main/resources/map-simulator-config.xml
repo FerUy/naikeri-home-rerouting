@@ -1,0 +1,102 @@
+<?xml version="1.0" ?>
+<SignalingGateway>
+  <Applications/>
+  <Channels/>
+  <Layers>
+    <sctp name="sctpclient" singleThread="true" connectDelay="10000" enable="false">
+      <association name="assoc_0" host="127.0.0.1:8011" peer="127.0.0.1:8022" transport="TCP" multihome="127.0.0.10,127.0.0.11" />
+    </sctp>
+    <m3ua name="m3uaclient" heartbeatTime="10000" sctp="sctpclient" productName="Naikeri_SGW" enable="false">
+      <!-- as === Application Server -->
+      <as name="AS2" functionality="AS" exchangetype="SE" ipsptype="CLIENT" routingcontext="100" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="0">
+        <!-- asp === Application Server Process-->
+        <asp name="ASP2" sctpAssociationName="assoc_0" heartbeatenabled="true" />
+        <!-- route === Application server route-->
+        <route destinationPointCode="1000" originatingPointCode="1001" serviceIndicator="-1" />
+      </as>
+    </m3ua>
+    <sccp name="sccpclient" m3ua="m3uaclient" enable="false">
+      <spc name="1000" remoteSpcId="1" remoteSpc="1000" remoteSpcFlag="0" mask="0" />
+      <ssn name="6" remoteSsnid="1" remoteSpc="1000" remoteSsn="6" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+      <!-- Enable the longMessage if it is applicable -->
+      <!-- <longMessageRule name="longMessageRule" id="5" firstSpc="201" lastSpc="202" ruleType="XUDT_ENABLED" /> -->
+      <!-- sap === Service Access Point-->
+      <sap name="SAPClient" id="1" mtp3Id="1" opc="1001" ni="2" networkId="0" localGtDigits="50373700001">
+        <destination name="SAPClient" destid="1" firstDpc="1000" lastDpc="1000" firstSls="0" lastSls="255" slsMask="255" />
+      </sap>
+      <routingAddress name="localRoutingClient" id="1" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="50373700001">
+        <sccpAddress dpc="1001" ssn="8">
+          <!-- encodingScheme = 2 => BCDEvenEncodingScheme-->
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="50373700000" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress name="remoteRoutingClient" id="2" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="50373700000">
+        <sccpAddress dpc="1000" ssn="6">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="50373700001" />
+        </sccpAddress>
+      </routingAddress>
+      <rule name="remoteRulClient" id="1" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="REMOTE" pattern="*" mask="K" pAddressId="1" sAddressId="-1" networkId="0">
+        <!--  attribute for rule newCallingPartyAddressId if this is not available in the code it should be null-->
+        <patternSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="*" />
+        </patternSccpAddress>
+        <!-- <patternCallingSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+                    <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="4" natureOfAddress="INTERNATIONAL" digits="*" />
+                </patternCallingSccpAddress> -->
+      </rule>
+      <rule name="localRuleClient" id="2" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="LOCAL" pattern="*" mask="K" pAddressId="2" sAddressId="-1" networkId="0">
+        <!--  attribute for rule newCallingPartyAddressId if this is not available in the code it should be null-->
+        <patternSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="*" />
+        </patternSccpAddress>
+        <!-- <patternCallingSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+                    <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="4" natureOfAddress="INTERNATIONAL" digits="*" />
+                </patternCallingSccpAddress> -->
+      </rule>
+    </sccp>
+    <tcap name="tcapclient" sccp="sccpclient" ssn="8" extraSsn="147,8" dialogidletimeout="60000" invoketimeout="30000" maxdialogs="5000" enable="false" />
+    <map name="mapclient" tcap="tcapclient" enable="false" />
+
+
+    <sccp name="sccpserver" m3ua="m3uaserver" enable="false">
+      <spc name="1001" remoteSpcId="1" remoteSpc="1001" remoteSpcFlag="0" mask="0" />
+      <ssn name="8" remoteSsnid="1" remoteSpc="1001" remoteSsn="8" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
+     
+      <!-- sap === Service Access Point-->
+      <sap name="SAPServer" id="1" mtp3Id="1" opc="1000" ni="2" networkId="0" localGtDigits="50373700000">
+        <destination name="SAPServer" destid="1" firstDpc="1001" lastDpc="1001" firstSls="0" lastSls="255" slsMask="255" />
+      </sap>
+      <routingAddress name="localRoutingServer" id="1" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="50373700000">
+        <sccpAddress dpc="1000" ssn="6">
+          <!-- encodingScheme = 2 => BCDEvenEncodingScheme-->
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="50373700000" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress name="remoteRoutingServer" id="2" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="50373700001">
+        <sccpAddress dpc="1001" ssn="8">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="50373700001" />
+        </sccpAddress>
+      </routingAddress>
+      <rule name="remoteRuleServer" id="1" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="REMOTE" pattern="*" mask="K" pAddressId="1" sAddressId="-1" networkId="0">
+        <!--  attribute for rule newCallingPartyAddressId if this is not available in the code it should be null-->
+        <patternSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="*" />
+        </patternSccpAddress>
+        <!-- <patternCallingSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+                    <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="4" natureOfAddress="INTERNATIONAL" digits="*" />
+                </patternCallingSccpAddress> -->
+      </rule>
+      <rule name="localRuleServer" id="2" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="LOCAL" pattern="*" mask="K" pAddressId="2" sAddressId="-1" networkId="0">
+        <!--  attribute for rule newCallingPartyAddressId if this is not available in the code it should be null-->
+        <patternSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+          <gt type="GT0100" translationType="0" encodingScheme="2" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="*" />
+        </patternSccpAddress>
+        <!-- <patternCallingSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="18">
+                    <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="4" natureOfAddress="INTERNATIONAL" digits="*" />
+                </patternCallingSccpAddress> -->
+      </rule>
+    </sccp>
+  </Layers>
+
+  <cdr/>
+</SignalingGateway>
