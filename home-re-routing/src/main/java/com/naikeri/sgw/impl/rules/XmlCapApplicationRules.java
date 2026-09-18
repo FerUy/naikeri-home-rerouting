@@ -7,9 +7,10 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import com.naikeri.sgw.helpers.SignalingResource;
+import com.naikeri.sgw.helpers.SgwResource;
 import com.naikeri.sgw.info.ServiceKeys;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPMessageType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -21,7 +22,7 @@ import org.w3c.dom.NodeList;
  */
 public class XmlCapApplicationRules {
 
-  private Logger logger = Logger.getLogger(XmlCapApplicationRules.class);
+  private Logger logger = LoggerFactory.getLogger(XmlCapApplicationRules.class);
   private String filename;
   private Pattern pattern = Pattern.compile("^\\d+$");
   private static final String PRIMITIVE = "primitives";
@@ -346,7 +347,7 @@ public class XmlCapApplicationRules {
     }
     logger.debug("Reading Application Rules. Filename: " + this.filename);
     try {
-      InputStream is = new SignalingResource(this.filename).getAsStream();
+      InputStream is = new SgwResource(this.filename).getAsStream();
       // Get document builder
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();

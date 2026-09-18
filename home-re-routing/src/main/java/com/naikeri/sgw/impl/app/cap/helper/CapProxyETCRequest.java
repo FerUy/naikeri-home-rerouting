@@ -13,7 +13,8 @@ import com.naikeri.sgw.impl.rules.MSRNNumbers;
 import com.naikeri.sgw.impl.rules.PatternSccpAddress;
 import com.naikeri.sgw.impl.rules.ReplacedValues;
 import com.naikeri.sgw.info.CapTransaction;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.CAPStack;
 import org.restcomm.protocols.ss7.cap.api.isup.CalledPartyNumberCap;
@@ -31,7 +32,7 @@ import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
  */
 public class CapProxyETCRequest {
 
-  private static final Logger logger = Logger.getLogger(CapProxyETCRequest.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapProxyETCRequest.class);
   private EstablishTemporaryConnectionRequest request;
   private String channelTransId;
   private CAPStack capStack;

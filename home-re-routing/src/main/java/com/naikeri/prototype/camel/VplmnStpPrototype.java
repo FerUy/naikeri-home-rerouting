@@ -7,7 +7,8 @@ import static com.naikeri.sgw.impl.settings.sccp.SccpHelpers.createRemoteAddress
 import java.util.ArrayList;
 import com.naikeri.sgw.impl.app.cap.BcsmCallContent;
 import com.naikeri.sgw.impl.app.cap.BcsmCallStep;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPApplicationContext;
 import org.restcomm.protocols.ss7.cap.api.CAPDialog;
 import org.restcomm.protocols.ss7.cap.api.CAPDialogListener;
@@ -149,7 +150,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
   // MSC (leg2)
   private static String partnerMscGtDigits = "97254121021";
   private static IMSI imsi;
-  private static Logger logger = Logger.getLogger(VplmnStpPrototype.class);
+  private static Logger logger = LoggerFactory.getLogger(VplmnStpPrototype.class);
 
   public VplmnStpPrototype(CAPProvider ssfCapProvider, CAPParameterFactory ssfCapParameterFactory,
       CAPProvider scfCapProvider, CAPParameterFactory scfCapParameterFactory,

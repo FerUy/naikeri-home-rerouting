@@ -8,7 +8,8 @@ import com.naikeri.sgw.impl.app.cap.CapDialogType;
 import com.naikeri.sgw.impl.app.cap.CapProxyHelperUtils;
 import com.naikeri.sgw.impl.app.cap.CapDialogOut.WriteLogState;
 import com.naikeri.sgw.info.CapTransaction;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.primitives.AppendFreeFormatData;
 import org.restcomm.protocols.ss7.cap.api.primitives.SendingSideID;
@@ -26,7 +27,7 @@ import org.restcomm.protocols.ss7.inap.api.primitives.LegType;
  */
 public class CapProxyEventReportBCSMRequest {
   private static final String OANSWER = "oAnswer";
-  private static final Logger logger = Logger.getLogger(CapProxyEventReportBCSMRequest.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapProxyEventReportBCSMRequest.class);
   private EventReportBCSMRequest request;
   private String channelTransId;
   private String erbEventName;

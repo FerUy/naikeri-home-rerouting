@@ -13,7 +13,8 @@ import com.naikeri.sgw.network.layers.M3uaLayer;
 import com.naikeri.sgw.network.layers.SccpLayer;
 import com.naikeri.sgw.network.layers.SctpLayer;
 import com.naikeri.sgw.network.layers.TcapLayer;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.map.MAPStackImpl;
 import org.restcomm.protocols.ss7.map.api.MAPApplicationContext;
 import org.restcomm.protocols.ss7.map.api.MAPApplicationContextName;
@@ -127,7 +128,7 @@ public class MapPrototype extends ChannelHandler
   private NetworkIdState networkIdState;
   private RateLimiter rateLimiterObj = null;
 
-  public static Logger logger = Logger.getLogger(MapPrototype.class);
+  public static Logger logger = LoggerFactory.getLogger(MapPrototype.class);
 
   public MapPrototype(ChannelSettings channelSettings) {
     super(channelSettings);

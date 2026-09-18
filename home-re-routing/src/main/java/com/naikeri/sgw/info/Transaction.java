@@ -7,13 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TransactionMap
  */
 public class Transaction {
-  private static final Logger logger = Logger.getLogger(Transaction.class);
+  private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 
   private int initialCapacity = 5000;
   private int maxTransactions = 10000;

@@ -2,7 +2,7 @@ package com.naikeri.prototype.camel;
 
 import com.naikeri.sgw.api.chn.ChannelMessage;
 import com.naikeri.sgw.api.network.LayerInterface;
-import com.naikeri.sgw.helpers.SignalingResource;
+import com.naikeri.sgw.helpers.SgwResource;
 import com.naikeri.sgw.impl.app.cap.BcsmCallStep;
 import com.naikeri.sgw.impl.chn.ChannelHandler;
 import com.naikeri.sgw.impl.settings.ChannelSettings;
@@ -17,7 +17,8 @@ import com.naikeri.sgw.network.layers.M3uaLayer;
 import com.naikeri.sgw.network.layers.SccpLayer;
 import com.naikeri.sgw.network.layers.SctpLayer;
 import com.naikeri.sgw.network.layers.TcapLayer;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPDialog;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.CAPMessage;
@@ -36,7 +37,7 @@ import java.io.InputStream;
  */
 public class CapPrototype extends ChannelHandler {
 
-  private static Logger logger = Logger.getLogger(CapPrototype.class);
+  private static Logger logger = LoggerFactory.getLogger(CapPrototype.class);
   // private static XmlConfiguration configuration;
 
   private static final int numberOfTestLayers = 6;
@@ -177,7 +178,7 @@ public class CapPrototype extends ChannelHandler {
   public static void main(String[] args) throws Exception {
     // read configuration
     InputStream inputStream =
-        new SignalingResource("naikeri-signaling-gateway-cap-prototype.xml").getAsStream();
+        new SgwResource("naikeri-signaling-gateway-cap-prototype.xml").getAsStream();
     XmlConfiguration configuration = new XmlConfiguration(inputStream);
 
     // initialize jss7 stack

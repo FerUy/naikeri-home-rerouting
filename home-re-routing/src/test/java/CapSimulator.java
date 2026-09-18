@@ -1,6 +1,6 @@
 import java.io.InputStream;
 // import java.util.Scanner;
-import com.naikeri.sgw.helpers.SignalingResource;
+import com.naikeri.sgw.helpers.SgwResource;
 import com.naikeri.sgw.impl.settings.XmlConfiguration;
 import com.naikeri.sgw.impl.settings.cap.CapSettings;
 import com.naikeri.sgw.impl.settings.m3ua.M3uaSettings;
@@ -14,14 +14,15 @@ import com.naikeri.sgw.network.layers.SctpLayer;
 import com.naikeri.sgw.network.layers.TcapLayer;
 import com.naikeri.prototype.camel.HplmnScpPrototype;
 import com.naikeri.prototype.camel.VplmnStpPrototype;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * CapSimulator
  */
 public class CapSimulator {
 
-  private static final Logger logger = Logger.getLogger(CapSimulator.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapSimulator.class);
   private XmlConfiguration configuration;
 
   private CapLayer getCapLayer(int index) {
@@ -54,7 +55,7 @@ public class CapSimulator {
 
   private void initialize() {
     try {
-      InputStream is = new SignalingResource("cap-simulator-config.xml").getAsStream();
+      InputStream is = new SgwResource("cap-simulator-config.xml").getAsStream();
       this.configuration = new XmlConfiguration(is);
 
       logger.info("Initializing the channel layers.");

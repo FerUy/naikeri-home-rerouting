@@ -3,7 +3,8 @@ package com.naikeri.sgw.impl.app.map;
 import com.naikeri.sgw.api.chn.ChannelMessage;
 import com.naikeri.sgw.api.network.LayerInterface;
 import com.naikeri.sgw.network.layers.MapLayer;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.map.api.MAPMessageType;
 
 /**
@@ -11,7 +12,7 @@ import org.restcomm.protocols.ss7.map.api.MAPMessageType;
  */
 public class MapProxyBuilder {
 
-  private static final Logger logger = Logger.getLogger(MapProxyBuilder.class);
+  private static final Logger logger = LoggerFactory.getLogger(MapProxyBuilder.class);
 
   public static class Builder {
     private MAPMessageType messageType;

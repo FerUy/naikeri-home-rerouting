@@ -6,7 +6,8 @@ import static com.naikeri.sgw.impl.settings.sccp.SccpHelpers.createRemoteAddress
 import java.util.ArrayList;
 import com.naikeri.sgw.impl.app.cap.BcsmCallContent;
 import com.naikeri.sgw.impl.app.cap.BcsmCallStep;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPDialog;
 import org.restcomm.protocols.ss7.cap.api.CAPDialogListener;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
@@ -97,7 +98,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
   private BcsmCallContent cc;
   // private BcsmCallStep step;
   private Boolean preArrangedEnd = false;
-  private static Logger logger = Logger.getLogger(HplmnScpPrototype.class);
+  private static Logger logger = LoggerFactory.getLogger(HplmnScpPrototype.class);
   // HPLMN SCP
   private static int hplmnScpPc = 941;
   private static int hplmnScpSsn = 146;

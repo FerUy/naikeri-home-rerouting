@@ -11,14 +11,15 @@ import com.naikeri.sgw.impl.rules.MapProxyApplicationRules;
 import com.naikeri.sgw.impl.settings.ApplicationSettings;
 import com.naikeri.sgw.info.DataElement;
 import com.naikeri.sgw.info.Transaction;
-import com.naikeri.sgw.network.layers.listeners.MapProxyContants;
-import org.apache.log4j.Logger;
+import com.naikeri.sgw.network.layers.listeners.ProxyConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.map.api.MAPDialog;
 import org.restcomm.protocols.ss7.map.api.errors.MAPErrorMessage;
 
 public class MapProxy extends Application {
 
-  private static final Logger logger = Logger.getLogger(MapProxy.class);
+  private static final Logger logger = LoggerFactory.getLogger(MapProxy.class);
 
   public MapProxy(ApplicationSettings applicationSettings) {
     super(applicationSettings);
@@ -31,8 +32,8 @@ public class MapProxy extends Application {
     MapProcessingNode map = new MapProxyBuilder.Builder().setChannelMessage(channelMessage)
         .setMapLayer(getChannelHandler().getLayerInterface()).buildMapProcessingNode();
 
-    Object message = channelMessage.getParameter(MapProxyContants.MESSAGE);
-    String messageType = (String) channelMessage.getParameter(MapProxyContants.MESSAGE_TYPE);
+    Object message = channelMessage.getParameter(ProxyConstants.MESSAGE);
+    String messageType = (String) channelMessage.getParameter(ProxyConstants.MESSAGE_TYPE);
     // check if there exist a message to be processed.
     // if the message does not exist, it will create a lot of null pointer exception
     // no message
@@ -75,9 +76,9 @@ public class MapProxy extends Application {
     MapProcessingNode map = new MapProxyBuilder.Builder().setChannelMessage(channelMessage)
         .setMapLayer(getChannelHandler().getLayerInterface()).buildMapProcessingNode();
     MapDialogOut respDialogOut = map.processResponse();
-    String messageType = (String) channelMessage.getParameter(MapProxyContants.MESSAGE_TYPE);
+    String messageType = (String) channelMessage.getParameter(ProxyConstants.MESSAGE_TYPE);
     // check if the message is not null to avoid nullpointer exceptions
-    Object message = channelMessage.getParameter(MapProxyContants.MESSAGE);
+    Object message = channelMessage.getParameter(ProxyConstants.MESSAGE);
     if (message == null) {
       logger
           .debug("Failed to process <" + messageType + "> response. The MapMessage Object is NULL");
@@ -105,8 +106,8 @@ public class MapProxy extends Application {
   public void processMessage(ChannelMessage channelMessage) {
     try {
       // process incoming message extracted from incoming queue
-      String messageType = (String) channelMessage.getParameter(MapProxyContants.MESSAGE_TYPE);
-      MAPDialog mapDialog = (MAPDialog) channelMessage.getParameter(MapProxyContants.DIALOG);
+      String messageType = (String) channelMessage.getParameter(ProxyConstants.MESSAGE_TYPE);
+      MAPDialog mapDialog = (MAPDialog) channelMessage.getParameter(ProxyConstants.DIALOG);
       if (messageType == null) {
         logger.info("[MAP::INVALID_MESSAGE_TYPE]. Message Type is NULL. Discarding message for "
             + channelMessage.toString());
@@ -119,14 +120,14 @@ public class MapProxy extends Application {
         processRequestMessages(channelMessage);
       } else if (messageType.endsWith("_Response")) {
         processResponseMessages(channelMessage);
-      } else if (messageType.equalsIgnoreCase(MapProxyContants.ON_ERROR_COMPONENT)) {
+      } else if (messageType.equalsIgnoreCase(ProxyConstants.ON_ERROR_COMPONENT)) {
         // process when there is error
         MAPErrorMessage mapErrorMessage =
-            (MAPErrorMessage) channelMessage.getParameter(MapProxyContants.MAP_ERROR_MESSAGE);
+            (MAPErrorMessage) channelMessage.getParameter(ProxyConstants.MAP_ERROR_MESSAGE);
         long errorCode = Optional.ofNullable(mapErrorMessage).map(MAPErrorMessage::getErrorCode)
             .map(Long::longValue).orElse(-1L);
-        String errorMsg = MapProxyContants.getMapErrorCodeToString(mapErrorMessage);
-        MAPDialog mDialog = (MAPDialog) channelMessage.getParameter(MapProxyContants.DIALOG);
+        String errorMsg = ProxyConstants.getMapErrorCodeToString(mapErrorMessage);
+        MAPDialog mDialog = (MAPDialog) channelMessage.getParameter(ProxyConstants.DIALOG);
         if (mDialog != null) {
           Long dialogId = mDialog.getLocalDialogId();
           MapProxyCDRWriter.writeCDR(dialogId, "Error", errorCode, errorMsg);
@@ -142,9 +143,9 @@ public class MapProxy extends Application {
   }
 
   private void procesSignals(String messageType, MAPDialog mapDialog, String channelId) {
-    if (messageType.equalsIgnoreCase(MapProxyContants.ON_DIALOG_TIMEOUT)) {
+    if (messageType.equalsIgnoreCase(ProxyConstants.ON_DIALOG_TIMEOUT)) {
       processOnDialogTimeout(mapDialog);
-    } else if (messageType.equalsIgnoreCase(MapProxyContants.ON_DIALOG_CLOSE)) {
+    } else if (messageType.equalsIgnoreCase(ProxyConstants.ON_DIALOG_CLOSE)) {
       // processOnDialogClose(mapDialog)
     } else {
       logger.info(

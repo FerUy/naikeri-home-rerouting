@@ -4,8 +4,9 @@ import java.lang.reflect.Method;
 import com.naikeri.sgw.api.chn.ChannelMessage;
 import com.naikeri.sgw.impl.settings.ServiceFunctionSetting.ServiceFunctionType;
 import com.naikeri.sgw.network.layers.CapLayer;
-import com.naikeri.sgw.network.layers.listeners.MapProxyContants;
-import org.apache.log4j.Logger;
+import com.naikeri.sgw.network.layers.listeners.ProxyConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPMessageType;
 
 /**
@@ -13,7 +14,7 @@ import org.restcomm.protocols.ss7.cap.api.CAPMessageType;
  */
 public class CapProcessingNode {
 
-  private static final Logger logger = Logger.getLogger(CapProcessingNode.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapProcessingNode.class);
 
   private CAPMessageType messageType;
   private Object capOperationObject;
@@ -31,8 +32,8 @@ public class CapProcessingNode {
 
     public Builder setChannelMessage(ChannelMessage channelMessage) {
       try {
-        String messageTypeL = (String) channelMessage.getParameter(MapProxyContants.MESSAGE_TYPE);
-        this.capOperationObject = channelMessage.getParameter(MapProxyContants.MESSAGE);
+        String messageTypeL = (String) channelMessage.getParameter(ProxyConstants.MESSAGE_TYPE);
+        this.capOperationObject = channelMessage.getParameter(ProxyConstants.MESSAGE);
         this.transactionId = channelMessage.getTransactionId();
         this.messageType = CAPMessageType.valueOf(messageTypeL);
       } catch (Exception ex) {

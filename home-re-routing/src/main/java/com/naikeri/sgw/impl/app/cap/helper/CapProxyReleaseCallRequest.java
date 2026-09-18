@@ -6,7 +6,8 @@ import com.naikeri.sgw.impl.app.cap.CapDialogOut;
 import com.naikeri.sgw.impl.app.cap.CapDialogType;
 import com.naikeri.sgw.impl.app.cap.CapProxyHelperUtils;
 import com.naikeri.sgw.info.CapTransaction;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.CAPDialogCircuitSwitchedCall;
 import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.ReleaseCallRequest;
@@ -17,7 +18,7 @@ import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.ReleaseCal
 public class CapProxyReleaseCallRequest {
   private ReleaseCallRequest request;
   private String channelTransId;
-  private static final Logger logger = Logger.getLogger(CapProxyReleaseCallRequest.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapProxyReleaseCallRequest.class);
 
   public CapProxyReleaseCallRequest(ReleaseCallRequest request, String channelTransId) {
     this.request = request;

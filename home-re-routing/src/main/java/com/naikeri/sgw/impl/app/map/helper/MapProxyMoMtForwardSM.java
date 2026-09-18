@@ -4,7 +4,8 @@ import com.naikeri.sgw.impl.app.map.MapDialogOut;
 import com.naikeri.sgw.impl.app.map.MapProxyDialog;
 import com.naikeri.sgw.info.DataElement;
 import com.naikeri.sgw.info.Transaction;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.map.api.MAPException;
 import org.restcomm.protocols.ss7.map.api.primitives.IMSI;
 import org.restcomm.protocols.ss7.map.api.service.sms.MAPDialogSms;
@@ -21,7 +22,7 @@ import org.restcomm.protocols.ss7.tcap.api.MessageType;
  */
 public class MapProxyMoMtForwardSM {
 
-  private static final Logger logger = Logger.getLogger(MapProxyMoMtForwardSM.class);
+  private static final Logger logger = LoggerFactory.getLogger(MapProxyMoMtForwardSM.class);
 
   private MapProxyMoMtForwardSM() {
   }

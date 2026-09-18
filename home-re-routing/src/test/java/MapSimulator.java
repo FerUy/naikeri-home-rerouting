@@ -1,6 +1,6 @@
 import java.io.InputStream;
 import java.util.Random;
-import com.naikeri.sgw.helpers.SignalingResource;
+import com.naikeri.sgw.helpers.SgwResource;
 import com.naikeri.sgw.impl.settings.XmlConfiguration;
 import com.naikeri.sgw.impl.settings.m3ua.M3uaSettings;
 import com.naikeri.sgw.impl.settings.map.MapSettings;
@@ -16,12 +16,13 @@ import com.naikeri.prototype.map.MapProtoTypeSMSListener;
 import com.naikeri.prototype.map.MapPrototypeListener;
 import com.naikeri.prototype.map.MapPrototypeMobility;
 import com.naikeri.prototype.map.MapSimulatorSendPrimitive;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.map.MAPStackImpl;
 
 
 public class MapSimulator {
-  private static final Logger logger = Logger.getLogger(MapSimulator.class);
+  private static final Logger logger = LoggerFactory.getLogger(MapSimulator.class);
   String imsiString = "425100402000108";
   String sgsn_address = "112233445500";
   String sgsn_number = "112233445501";
@@ -62,7 +63,7 @@ public class MapSimulator {
 
   public void initialize() {
     try {
-      InputStream is = new SignalingResource("map-simulator-config.xml").getAsStream();
+      InputStream is = new SgwResource("map-simulator-config.xml").getAsStream();
       XmlConfiguration configuration = new XmlConfiguration(is);
 
       logger.info("Initializing the channel layers.");

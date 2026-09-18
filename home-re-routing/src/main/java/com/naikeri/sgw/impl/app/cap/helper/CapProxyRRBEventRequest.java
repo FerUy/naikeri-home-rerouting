@@ -7,7 +7,8 @@ import com.naikeri.sgw.impl.app.cap.CapDialogType;
 import com.naikeri.sgw.impl.app.cap.CapProxyHelperUtils;
 import com.naikeri.sgw.impl.app.cap.CapDialogOut.WriteLogState;
 import com.naikeri.sgw.info.CapTransaction;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.CAPDialogCircuitSwitchedCall;
 import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.RequestReportBCSMEventRequest;
@@ -17,7 +18,7 @@ import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.RequestRep
  */
 public class CapProxyRRBEventRequest {
 
-  private static final Logger logger = Logger.getLogger(CapProxyRRBEventRequest.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapProxyRRBEventRequest.class);
   private RequestReportBCSMEventRequest request;
   private String channelTransId;
 

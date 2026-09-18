@@ -1,6 +1,7 @@
 package com.naikeri.sgw.impl.rules;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.indicator.NatureOfAddress;
 import org.restcomm.protocols.ss7.indicator.NumberingPlan;
 import org.restcomm.protocols.ss7.sccp.impl.parameter.ParameterFactoryImpl;
@@ -61,7 +62,7 @@ public class ApplicationReplaceRule {
     }
   }
 
-  private Logger logger = Logger.getLogger(ApplicationReplaceRule.class);
+  private Logger logger = LoggerFactory.getLogger(ApplicationReplaceRule.class);
 
   private ApplicationRuleGlobalTitle callingGt;
   private ApplicationRuleGlobalTitle calledGt;

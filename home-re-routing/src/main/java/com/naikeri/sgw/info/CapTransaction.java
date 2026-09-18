@@ -1,7 +1,8 @@
 package com.naikeri.sgw.info;
 
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.naikeri.sgw.impl.app.cap.BcsmCallContent;
 
 /**
@@ -9,7 +10,7 @@ import com.naikeri.sgw.impl.app.cap.BcsmCallContent;
  */
 public class CapTransaction {
 
-  private static final Logger logger = Logger.getLogger(CapTransaction.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapTransaction.class);
   private int initialCapacity = 1000;
   private int maxTransaction = 10000;
 

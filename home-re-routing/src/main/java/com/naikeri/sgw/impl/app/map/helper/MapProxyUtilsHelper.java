@@ -1,10 +1,11 @@
 package com.naikeri.sgw.impl.app.map.helper;
 
 import com.naikeri.sgw.impl.app.map.MapDialogOut;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MapProxyUtilsHelper {
-  private static final Logger logger = Logger.getLogger(MapProxyUtilsHelper.class);
+  private static final Logger logger = LoggerFactory.getLogger(MapProxyUtilsHelper.class);
   private static String cdrName;
   private static boolean cdrIsEnabled = false;
 

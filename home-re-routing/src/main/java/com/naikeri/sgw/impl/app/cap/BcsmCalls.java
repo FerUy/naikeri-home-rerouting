@@ -3,7 +3,8 @@ package com.naikeri.sgw.impl.app.cap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.isup.CalledPartyNumberCap;
 
@@ -11,7 +12,7 @@ public class BcsmCalls {
 
   // private static List<BcsmCallContent> bcsmCallList = new ArrayList<>();
   private static Map<String, BcsmCallContent> bcsmCallList = new HashMap<String, BcsmCallContent>();
-  private static final Logger logger = Logger.getLogger(BcsmCalls.class);
+  private static final Logger logger = LoggerFactory.getLogger(BcsmCalls.class);
 
   public static synchronized BcsmCallContent getBcsmCallContent(String callingPartyNumber,
       String calledPartyNumber) {
@@ -30,7 +31,7 @@ public class BcsmCalls {
           }
         }
       } catch (CAPException e) {
-        logger.error(e);
+        logger.error("CAP exception while handling the BCSM call", e);
       }
     }
     return null;

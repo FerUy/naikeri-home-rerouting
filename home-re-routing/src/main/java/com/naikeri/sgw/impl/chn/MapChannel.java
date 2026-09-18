@@ -8,8 +8,9 @@ import com.naikeri.sgw.impl.app.map.MapDialogOut;
 import com.naikeri.sgw.impl.settings.ChannelSettings;
 import com.naikeri.sgw.info.Transaction;
 import com.naikeri.sgw.network.layers.MapLayer;
-import com.naikeri.sgw.network.layers.listeners.MapProxyContants;
-import org.apache.log4j.Logger;
+import com.naikeri.sgw.network.layers.listeners.ProxyConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.map.api.MAPDialog;
 
 /**
@@ -17,12 +18,12 @@ import org.restcomm.protocols.ss7.map.api.MAPDialog;
  */
 public class MapChannel extends ChannelHandler {
 
-  private static final Logger logger = Logger.getLogger(MapChannel.class);
+  private static final Logger logger = LoggerFactory.getLogger(MapChannel.class);
   private static final List<String> handleSignalList = new ArrayList<>();
   static {
-    handleSignalList.add(MapProxyContants.ON_DIALOG_TIMEOUT);
-    handleSignalList.add(MapProxyContants.ON_INVOKE_TIMEOUT);
-    handleSignalList.add(MapProxyContants.ON_DIALOG_CLOSE);
+    handleSignalList.add(ProxyConstants.ON_DIALOG_TIMEOUT);
+    handleSignalList.add(ProxyConstants.ON_INVOKE_TIMEOUT);
+    handleSignalList.add(ProxyConstants.ON_DIALOG_CLOSE);
   }
 
   private MapLayer map = null;
@@ -64,8 +65,8 @@ public class MapChannel extends ChannelHandler {
   @Override
   public void receiveMessageRequest(ChannelMessage channelMessage) {
     try {
-      Object message = channelMessage.getParameter(MapProxyContants.MESSAGE);
-      String messagetype = (String) channelMessage.getParameter(MapProxyContants.MESSAGE_TYPE);
+      Object message = channelMessage.getParameter(ProxyConstants.MESSAGE);
+      String messagetype = (String) channelMessage.getParameter(ProxyConstants.MESSAGE_TYPE);
 
       if (message != null && messagetype != null) {
         logMessages(messagetype, channelMessage.toString());
@@ -96,7 +97,7 @@ public class MapChannel extends ChannelHandler {
     // send a response back to the channel
     String messageType = "";
     try {
-      messageType = (String) channelMessage.getParameter(MapProxyContants.MESSAGE_TYPE);
+      messageType = (String) channelMessage.getParameter(ProxyConstants.MESSAGE_TYPE);
       Object paramDialogOut = channelMessage.getParameter("DIALOGOUT");
       if (paramDialogOut != null) {
         MapDialogOut dialogOut = (MapDialogOut) paramDialogOut;

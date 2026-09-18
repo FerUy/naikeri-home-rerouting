@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 import com.google.common.util.concurrent.RateLimiter;
 import com.naikeri.sgw.impl.settings.sccp.SccpSettings;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.restcomm.protocols.ss7.map.MAPStackImpl;
 import org.restcomm.protocols.ss7.map.api.MAPApplicationContext;
@@ -86,7 +87,7 @@ import org.restcomm.protocols.ss7.sccp.NetworkIdState;
 public class MapSimulatorSendPrimitive {
 
   private RateLimiter rateLimiterObj = null;
-  private static final Logger logger = Logger.getLogger(MapSimulatorSendPrimitive.class);
+  private static final Logger logger = LoggerFactory.getLogger(MapSimulatorSendPrimitive.class);
 
   private SccpSettings sccpClientSettings;
   private SccpSettings sccpServerSettings;

@@ -10,14 +10,15 @@ import com.naikeri.sgw.impl.rules.CapProxyApplicationRules;
 import com.naikeri.sgw.impl.settings.ApplicationSettings;
 import com.naikeri.sgw.impl.settings.ServiceFunctionSetting.ServiceFunctionType;
 import com.naikeri.sgw.network.layers.CapLayer;
-import com.naikeri.sgw.network.layers.listeners.MapProxyContants;
-import org.apache.log4j.Logger;
+import com.naikeri.sgw.network.layers.listeners.ProxyConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPDialog;
 import org.restcomm.protocols.ss7.cap.api.errors.CAPErrorMessage;
 
 public class CapProxy extends Application {
 
-  private static final Logger logger = Logger.getLogger(CapProxy.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapProxy.class);
 
   public CapProxy(ApplicationSettings applicationSettings) {
     super(applicationSettings);
@@ -29,27 +30,27 @@ public class CapProxy extends Application {
   @Override
   public void processMessage(ChannelMessage channelMessage) {
     // process incoming message extracted from incoming queue
-    String messageType = (String) channelMessage.getParameter(MapProxyContants.MESSAGE_TYPE);
+    String messageType = (String) channelMessage.getParameter(ProxyConstants.MESSAGE_TYPE);
     if (messageType == null) {
       logger.debug("Unknown message type. Discarding message");
       return;
     }
     try {
       // check for onDialogtimeout processing
-      if (messageType.equalsIgnoreCase(MapProxyContants.ON_DIALOG_TIMEOUT)) {
-        Optional.ofNullable(channelMessage.getParameter(MapProxyContants.DIALOG))
+      if (messageType.equalsIgnoreCase(ProxyConstants.ON_DIALOG_TIMEOUT)) {
+        Optional.ofNullable(channelMessage.getParameter(ProxyConstants.DIALOG))
             .map(u -> ((CAPDialog) u).getLocalDialogId())
             .ifPresent(dialogId -> CapProxyCDRWriter.writeCDR(dialogId, "Timeout", null, null));
         return;
       }
       // check for error and write the logs
-      if (messageType.equalsIgnoreCase(MapProxyContants.ON_ERROR_COMPONENT)) {
+      if (messageType.equalsIgnoreCase(ProxyConstants.ON_ERROR_COMPONENT)) {
         CAPErrorMessage capErrorMessage =
-            (CAPErrorMessage) channelMessage.getParameter(MapProxyContants.CAP_ERROR_MESSAGE);
+            (CAPErrorMessage) channelMessage.getParameter(ProxyConstants.CAP_ERROR_MESSAGE);
         long errorCode = Optional.ofNullable(capErrorMessage).map(CAPErrorMessage::getErrorCode)
             .map(Long::longValue).orElse(-1L);
-        String errorMsg = MapProxyContants.getCapErrorCodeToString(capErrorMessage);
-        CAPDialog mDialog = (CAPDialog) channelMessage.getParameter(MapProxyContants.DIALOG);
+        String errorMsg = ProxyConstants.getCapErrorCodeToString(capErrorMessage);
+        CAPDialog mDialog = (CAPDialog) channelMessage.getParameter(ProxyConstants.DIALOG);
         if (mDialog != null) {
           Long dialogId = mDialog.getLocalDialogId();
           CapProxyCDRWriter.writeCDR(dialogId, "Failed", errorCode, errorMsg);
@@ -57,7 +58,7 @@ public class CapProxy extends Application {
         return;
       }
       // get the corresponse layers
-      String rcvLayerName = (String) channelMessage.getParameter(MapProxyContants.CAP_LAYER_NAME);
+      String rcvLayerName = (String) channelMessage.getParameter(ProxyConstants.CAP_LAYER_NAME);
       CapLayer rcvCapLayer = (CapLayer) getChannelHandler().getLayerInterface(rcvLayerName);
       CapProcessingNode.Builder builder = new CapProcessingNode.Builder();
       builder.setChannelMessage(channelMessage);
@@ -67,7 +68,7 @@ public class CapProxy extends Application {
       logger.info(String.format("Processing CAP Message Type <%s>: %s", messageType,
           channelMessage.toString()));
 
-      Object messageObject = channelMessage.getParameter(MapProxyContants.MESSAGE);
+      Object messageObject = channelMessage.getParameter(ProxyConstants.MESSAGE);
       if (messageObject == null) {
         logger.debug("No message object found for " + messageType);
       }

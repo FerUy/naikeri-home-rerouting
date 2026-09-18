@@ -1,13 +1,14 @@
 package com.naikeri.sgw.impl.app.cap;
 
 import com.naikeri.sgw.info.CapTransaction;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * CapDialogCloseHandler
  */
 public class CapDialogCloseHandler {
-  private static final Logger logger = Logger.getLogger(CapDialogCloseHandler.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapDialogCloseHandler.class);
 
   public static CapDialogOut closeCapDialog(Long dialogId) {
     if (dialogId == null) return null;

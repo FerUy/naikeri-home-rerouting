@@ -4,13 +4,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.*;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MapApplicationRules
  */
 public class MapProxyApplicationRules {
-  private static final Logger logger = Logger.getLogger(MapProxyApplicationRules.class);
+  private static final Logger logger = LoggerFactory.getLogger(MapProxyApplicationRules.class);
   private CopyOnWriteArrayList<ApplicationRulesSetting> mapApplicationRules;
   static MapProxyApplicationRules sInstance = null;
 

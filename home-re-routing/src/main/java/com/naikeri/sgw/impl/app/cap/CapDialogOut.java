@@ -1,7 +1,8 @@
 package com.naikeri.sgw.impl.app.cap;
 
 import java.util.Optional;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPDialog;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.CAPDialogCircuitSwitchedCall;
@@ -13,7 +14,7 @@ import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
  * CapDialogOutType
  */
 public class CapDialogOut {
-  private static final Logger logger = Logger.getLogger(CapDialogOut.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapDialogOut.class);
 
   private CapDialogType capDialogType;
   private CAPDialog capDialog;

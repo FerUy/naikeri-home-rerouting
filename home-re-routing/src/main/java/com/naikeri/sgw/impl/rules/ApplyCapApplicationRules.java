@@ -1,7 +1,8 @@
 package com.naikeri.sgw.impl.rules;
 
 import java.util.Optional;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
 
 /**
@@ -9,7 +10,7 @@ import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
  */
 public class ApplyCapApplicationRules {
 
-  private static final Logger logger = Logger.getLogger(ApplyCapApplicationRules.class);
+  private static final Logger logger = LoggerFactory.getLogger(ApplyCapApplicationRules.class);
 
   private ApplyCapApplicationRules() {
     //

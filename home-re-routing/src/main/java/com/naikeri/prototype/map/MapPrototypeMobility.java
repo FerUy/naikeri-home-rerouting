@@ -2,7 +2,8 @@ package com.naikeri.prototype.map;
 
 import java.util.ArrayList;
 import java.util.Random;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.restcomm.protocols.ss7.map.api.MAPDialog;
 import org.restcomm.protocols.ss7.map.api.MAPException;
@@ -71,7 +72,7 @@ import org.restcomm.protocols.ss7.map.service.mobility.subscriberManagement.Inse
 import org.restcomm.protocols.ss7.tcap.asn.comp.Problem;
 
 public class MapPrototypeMobility implements MAPServiceMobilityListener {
-  private static final Logger logger = Logger.getLogger(MapPrototypeMobility.class);
+  private static final Logger logger = LoggerFactory.getLogger(MapPrototypeMobility.class);
 
  
   private MAPParameterFactory mapParameterFactory;

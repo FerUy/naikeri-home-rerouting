@@ -7,7 +7,8 @@ import static com.naikeri.sgw.impl.settings.sccp.SccpHelpers.createRemoteAddress
 import java.util.ArrayList;
 import com.naikeri.sgw.impl.app.cap.BcsmCallContent;
 import com.naikeri.sgw.impl.app.cap.BcsmCallStep;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPApplicationContext;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.CAPParameterFactory;
@@ -74,7 +75,7 @@ public class CamelProxyPrototype {
   private Boolean preArrangedEnd = false;
   private int msrnIndex = 0;
   // private static XmlConfiguration configuration;
-  private static Logger logger = Logger.getLogger(CamelProxyPrototype.class);
+  private static Logger logger = LoggerFactory.getLogger(CamelProxyPrototype.class);
   // these should be retrieved from configuration
   // VPLMN - STP
   private static int stpScfPc = 1050;

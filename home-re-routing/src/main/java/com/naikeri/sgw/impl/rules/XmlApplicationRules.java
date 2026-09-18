@@ -7,12 +7,13 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import com.naikeri.sgw.helpers.SignalingResource;
+import com.naikeri.sgw.helpers.SgwResource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.map.api.MAPMessageType;
 
 /**
@@ -20,7 +21,7 @@ import org.restcomm.protocols.ss7.map.api.MAPMessageType;
  */
 public class XmlApplicationRules {
 
-  private Logger logger = Logger.getLogger(XmlApplicationRules.class);
+  private Logger logger = LoggerFactory.getLogger(XmlApplicationRules.class);
   private String filename;
   private Pattern pattern = Pattern.compile("^\\d+$");
 
@@ -262,7 +263,7 @@ public class XmlApplicationRules {
     }
     logger.debug("Reading Application Rules. Filename: " + this.filename);
     try {
-      InputStream is = new SignalingResource(this.filename).getAsStream();
+      InputStream is = new SgwResource(this.filename).getAsStream();
       // Get document builder
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();

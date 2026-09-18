@@ -6,7 +6,8 @@ import com.naikeri.sgw.impl.rules.PatternSccpAddress;
 import com.naikeri.sgw.impl.rules.ReplacedValues;
 import com.naikeri.sgw.impl.rules.CapRuleComponent.Remove;
 import com.naikeri.sgw.info.CapTransaction;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.CAPDialogCircuitSwitchedCall;
 import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.primitive.DestinationRoutingAddress;
@@ -20,7 +21,7 @@ import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
  */
 public class CapProxyHelperUtils {
   private DestinationRoutingAddress destinationRoutingAddress;
-  private static final Logger logger = Logger.getLogger(CapProxyHelperUtils.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapProxyHelperUtils.class);
   private static String cdrName = "";
   private static boolean cdrIsEnabled = false;
 

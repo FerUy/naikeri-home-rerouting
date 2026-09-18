@@ -4,14 +4,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * CapProxyApplicationRules
  */
 public class CapProxyApplicationRules {
 
-  private static final Logger logger = Logger.getLogger(CapProxyApplicationRules.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapProxyApplicationRules.class);
   private static CapProxyApplicationRules sInstance = null;
   private CopyOnWriteArrayList<ApplicationRulesSetting> capApplicationRules;
 

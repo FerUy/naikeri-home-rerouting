@@ -3,32 +3,40 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>naikeri-signaling-gateway</artifactId>
+        <artifactId>naikeri-home-rerouting</artifactId>
         <groupId>com.naikeri</groupId>
-        <version>1.1.0</version>
+        <version>2.2.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.partner</groupId>
-    <artifactId>home-re-routing</artifactId> 
-    <version>1.1.0</version>
+    <groupId>com.naikeri</groupId>
+    <artifactId>home-re-routing</artifactId>
+    <version>2.2.0</version>
     
     <dependencies>
         <dependency>
+            <!-- The library this application runs on, which used to be vendored as a copy in core/ -->
             <groupId>com.naikeri</groupId>
-            <artifactId>core</artifactId>
-            <version>1.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>${log4j.version}</version>
-            <scope>compile</scope>
+            <artifactId>naikeri-signaling-gateway-core</artifactId>
+            <version>${naikeri-signaling-gateway-core.version}</version>
         </dependency>
     </dependencies>
     <build>
         <plugins>
+            <plugin>
+                <!-- com/naikeri/prototype is the MAP and CAMEL test rig, still written against jSS7 8.5:
+                     removed constructors and changed add*Request signatures. Excluded until it is brought
+                     up to jSS7 9, which is its own job; nothing in the proxy engine depends on it. -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler.plugin.version}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>com/naikeri/prototype/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -53,13 +61,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>${maven-jar-plugin.version}</version>
                 <configuration>
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.partner.hrr.impl.HomeReRouting</mainClass>
+                            <mainClass>com.naikeri.hrr.impl.HomeReRouting</mainClass>
                         </manifest>
                     </archive>
                     <excludes>

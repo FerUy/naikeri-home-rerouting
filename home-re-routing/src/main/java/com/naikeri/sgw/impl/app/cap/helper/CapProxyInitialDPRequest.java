@@ -14,7 +14,8 @@ import com.naikeri.sgw.impl.rules.PatternSccpAddress;
 import com.naikeri.sgw.impl.rules.ReplacedValues;
 import com.naikeri.sgw.info.CapTransaction;
 import com.naikeri.sgw.info.ServiceKeys;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.cap.api.CAPApplicationContext;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.CAPStack;
@@ -37,7 +38,7 @@ import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
  */
 public class CapProxyInitialDPRequest {
 
-  private static final Logger logger = Logger.getLogger(CapProxyInitialDPRequest.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapProxyInitialDPRequest.class);
   private CAPStack capStack;
   private CAPStack capStackOut;
   private String channelTransId;

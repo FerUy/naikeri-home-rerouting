@@ -1,4 +1,4 @@
-package com.partner.hrr.impl;
+package com.naikeri.hrr.impl;
 
 import com.naikeri.sgw.impl.SignalingGateway;
 

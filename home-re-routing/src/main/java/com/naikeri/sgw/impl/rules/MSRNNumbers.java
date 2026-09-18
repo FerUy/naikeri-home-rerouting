@@ -3,7 +3,8 @@ package com.naikeri.sgw.impl.rules;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MSRNNumbers
@@ -41,7 +42,7 @@ public class MSRNNumbers {
 
   }
 
-  private static final Logger logger = Logger.getLogger(MSRNNumbers.class);
+  private static final Logger logger = LoggerFactory.getLogger(MSRNNumbers.class);
   // store the rule name in the hash map and the last active number
   private ConcurrentMap<String, MSRNNumberWithIndex> msrnNumbers;
   // keep track of the dialogid, the msrn number and the callingparty number

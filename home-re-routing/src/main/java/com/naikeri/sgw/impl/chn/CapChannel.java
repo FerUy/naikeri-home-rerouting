@@ -9,8 +9,9 @@ import com.naikeri.sgw.impl.app.cap.CapDialogOut;
 import com.naikeri.sgw.impl.settings.ChannelSettings;
 import com.naikeri.sgw.info.CapTransaction;
 import com.naikeri.sgw.network.layers.CapLayer;
-import com.naikeri.sgw.network.layers.listeners.MapProxyContants;
-import org.apache.log4j.Logger;
+import com.naikeri.sgw.network.layers.listeners.ProxyConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.restcomm.protocols.ss7.cap.api.CAPMessage;
 
@@ -19,12 +20,12 @@ import org.restcomm.protocols.ss7.cap.api.CAPMessage;
  */
 public class CapChannel extends ChannelHandler {
 
-  private static final Logger logger = Logger.getLogger(CapChannel.class);
+  private static final Logger logger = LoggerFactory.getLogger(CapChannel.class);
   private static final List<String> handleSignalList = new ArrayList<>();
   static {
-    handleSignalList.add(MapProxyContants.ON_DIALOG_TIMEOUT);
-    handleSignalList.add(MapProxyContants.ON_INVOKE_TIMEOUT);
-    handleSignalList.add(MapProxyContants.ON_DIALOG_CLOSE);
+    handleSignalList.add(ProxyConstants.ON_DIALOG_TIMEOUT);
+    handleSignalList.add(ProxyConstants.ON_INVOKE_TIMEOUT);
+    handleSignalList.add(ProxyConstants.ON_DIALOG_CLOSE);
   }
   private List<CapLayer> capLayers = new ArrayList<>();
   private ChannelSettings channelSetting = null;
@@ -57,8 +58,8 @@ public class CapChannel extends ChannelHandler {
 
   @Override
   public void receiveMessageRequest(ChannelMessage channelMessage) {
-    CAPMessage capMessage = (CAPMessage) channelMessage.getParameter(MapProxyContants.MESSAGE);
-    String messageType = (String) channelMessage.getParameter(MapProxyContants.MESSAGE_TYPE);
+    CAPMessage capMessage = (CAPMessage) channelMessage.getParameter(ProxyConstants.MESSAGE);
+    String messageType = (String) channelMessage.getParameter(ProxyConstants.MESSAGE_TYPE);
     if (capMessage != null && messageType != null) {
       if (capMessage.getMessageType().toString().endsWith("Request")) {
         logger.debug(String.format("[CAP::REQUEST<%s>] dialogId '%d', invokeId '%d', %s",
@@ -84,7 +85,7 @@ public class CapChannel extends ChannelHandler {
   public int sendMessageResponse(ChannelMessage channelMessage) {
     // send a response back to the channel
     try {
-      String messageType = (String) channelMessage.getParameter(MapProxyContants.MESSAGE_TYPE);
+      String messageType = (String) channelMessage.getParameter(ProxyConstants.MESSAGE_TYPE);
       Object paramDialogOut = channelMessage.getParameter("DIALOGOUT");
       if (paramDialogOut != null) {
         CapDialogOut dialogOut = (CapDialogOut) paramDialogOut;

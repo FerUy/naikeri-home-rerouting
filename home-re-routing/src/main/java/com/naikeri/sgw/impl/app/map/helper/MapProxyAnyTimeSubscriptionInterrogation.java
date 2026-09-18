@@ -4,7 +4,8 @@ import com.naikeri.sgw.impl.app.map.MapDialogOut;
 import com.naikeri.sgw.impl.app.map.MapProxyDialog;
 import com.naikeri.sgw.info.DataElement;
 import com.naikeri.sgw.info.Transaction;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.restcomm.protocols.ss7.map.api.MAPException;
 import org.restcomm.protocols.ss7.map.api.service.mobility.MAPDialogMobility;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeSubscriptionInterrogationRequest;
@@ -20,7 +21,7 @@ public class MapProxyAnyTimeSubscriptionInterrogation {
   }
 
   private static final Logger logger =
-      Logger.getLogger(MapProxyAnyTimeSubscriptionInterrogation.class);
+      LoggerFactory.getLogger(MapProxyAnyTimeSubscriptionInterrogation.class);
 
   public static MapDialogOut getResponse(Object message, String transactionId) {
     AnyTimeSubscriptionInterrogationResponse anyTimeSubResponse =
