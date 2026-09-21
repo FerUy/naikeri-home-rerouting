@@ -12,14 +12,14 @@ import com.naikeri.sgw.impl.settings.ApplicationSettings;
 import com.naikeri.sgw.info.DataElement;
 import com.naikeri.sgw.info.Transaction;
 import com.naikeri.sgw.network.layers.listeners.ProxyConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.api.MAPDialog;
 import org.restcomm.protocols.ss7.map.api.errors.MAPErrorMessage;
 
 public class MapProxy extends Application {
 
-  private static final Logger logger = LoggerFactory.getLogger(MapProxy.class);
+  private static final Logger logger = LogManager.getLogger(MapProxy.class);
 
   public MapProxy(ApplicationSettings applicationSettings) {
     super(applicationSettings);
@@ -38,8 +38,7 @@ public class MapProxy extends Application {
     // if the message does not exist, it will create a lot of null pointer exception
     // no message
     if (message == null) {
-      logger
-          .debug("Unable to process <" + messageType + "> request. The MapMessage Object is NULL");
+      logger.debug("Unable to process <{}> request. The MapMessage Object is NULL", messageType);
       return;
     }
 
@@ -51,9 +50,7 @@ public class MapProxy extends Application {
       DataElement dataElement = new DataElement(messageType, newInvokeId, dialogId, message);
       String logInvokeId = String.format("InvokeId = %d", newInvokeId);
       if (dialogId > 0 && newInvokeId != null) {
-        logger.info(String.format(
-            "[MAP::REQUEST<%s>] New DialogId = '%d', Original DialogId = '%d', %s, %s", messageType,
-            dialogId, dialogOut.getOriginalDialogId(), logInvokeId, channelMessage.toString()));
+        logger.info("[MAP::REQUEST<{}>] New DialogId = '{}', Original DialogId = '{}', {}, {}", messageType, dialogId, dialogOut.getOriginalDialogId(), logInvokeId, channelMessage);
         // store the corresponding dialog Id with request object
         Transaction.getInstance().setDialogData(dialogId, newInvokeId, dataElement);
         // add the dialog id to the store
@@ -61,8 +58,7 @@ public class MapProxy extends Application {
             || messageType.equals("updateGprsLocation_Request")) {
           Transaction.getInstance().setDialogId(dialogId, dataElement);
         }
-        logger.debug(String.format("Stored ObjectId = %d-%d, Message Type ='%s'", dialogId,
-            newInvokeId, messageType));
+        logger.debug("Stored ObjectId = {}-{}, Message Type ='{}'", dialogId, newInvokeId, messageType);
         // setting up the initials values for the CDRS
         if (MapProxyUtilsHelper.isCDREnabled()) {
           MapProxyCDRWriter.addFields(dialogOut, messageType, channelMessage.getTransactionId());
@@ -80,14 +76,11 @@ public class MapProxy extends Application {
     // check if the message is not null to avoid nullpointer exceptions
     Object message = channelMessage.getParameter(ProxyConstants.MESSAGE);
     if (message == null) {
-      logger
-          .debug("Failed to process <" + messageType + "> response. The MapMessage Object is NULL");
+      logger.debug("Failed to process <{}> response. The MapMessage Object is NULL", messageType);
       return;
     }
     if (respDialogOut != null) {
-      logger.info(String.format("[MAP::RESPONSE<%s>] DialogId = %d, Original DialogId = %d, %s, %s",
-          messageType, respDialogOut.getOriginalDialogId(), respDialogOut.getNewDialogId(),
-          respDialogOut.getLogInvokeIds(), channelMessage.toString()));
+      logger.info("[MAP::RESPONSE<{}>] DialogId = {}, Original DialogId = {}, {}, {}", messageType, respDialogOut.getOriginalDialogId(), respDialogOut.getNewDialogId(), respDialogOut.getLogInvokeIds(), channelMessage);
       // use the original dialogId
       if (MapProxyUtilsHelper.isCDREnabled()) {
         if (respDialogOut.getIsResponse()) {
@@ -109,12 +102,10 @@ public class MapProxy extends Application {
       String messageType = (String) channelMessage.getParameter(ProxyConstants.MESSAGE_TYPE);
       MAPDialog mapDialog = (MAPDialog) channelMessage.getParameter(ProxyConstants.DIALOG);
       if (messageType == null) {
-        logger.info("[MAP::INVALID_MESSAGE_TYPE]. Message Type is NULL. Discarding message for "
-            + channelMessage.toString());
+        logger.info("[MAP::INVALID_MESSAGE_TYPE]. Message Type is NULL. Discarding message for {}", channelMessage);
         return;
       }
-      logger.debug(String.format("Processing <%s>: Message '%s' received, sending reply.",
-          messageType, channelMessage.toString()));
+      logger.debug("Processing <{}>: Message '{}' received, sending reply.", messageType, channelMessage);
 
       if (messageType.endsWith("_Request")) {
         processRequestMessages(channelMessage);
@@ -138,7 +129,7 @@ public class MapProxy extends Application {
       // send a response back to the channel
       getChannelHandler().sendMessageResponse(channelMessage);
     } catch (Exception ex) {
-      logger.error("Exception when processing " + channelMessage.toString() + ". Error: ", ex);
+      logger.error("Exception when processing {}. Error: ", channelMessage.toString(), ex);
     }
   }
 
@@ -148,8 +139,7 @@ public class MapProxy extends Application {
     } else if (messageType.equalsIgnoreCase(ProxyConstants.ON_DIALOG_CLOSE)) {
       // processOnDialogClose(mapDialog)
     } else {
-      logger.info(
-          String.format("MessageType = '%s' cannot be processed, %s", messageType, channelId));
+      logger.info("MessageType = '{}' cannot be processed, {}", messageType, channelId);
     }
   }
 

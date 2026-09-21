@@ -22,37 +22,37 @@ import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberManagement.
  */
 public class AnyTimeSubInterrogationResponseCopy {
 
-  private CallForwardingData callForwardingData;
+  private final CallForwardingData callForwardingData;
 
-  private CallBarringData callBarringData;
+  private final CallBarringData callBarringData;
 
-  private ODBInfo odbInfo;
+  private final ODBInfo odbInfo;
 
-  private CAMELSubscriptionInfo camelSubscriptionInfo;
+  private final CAMELSubscriptionInfo camelSubscriptionInfo;
 
-  private SupportedCamelPhases supportedVlrCamelPhases;
+  private final SupportedCamelPhases supportedVlrCamelPhases;
 
-  private SupportedCamelPhases supportedSgsnCamelPhases;
+  private final SupportedCamelPhases supportedSgsnCamelPhases;
 
-  private MAPExtensionContainer extensionContainer;
+  private final MAPExtensionContainer extensionContainer;
 
-  private OfferedCamel4CSIs offeredCamel4CSIsInVlr;
+  private final OfferedCamel4CSIs offeredCamel4CSIsInVlr;
 
-  private OfferedCamel4CSIs offeredCamel4CSIsInSgsn;
+  private final OfferedCamel4CSIs offeredCamel4CSIsInSgsn;
 
-  private ArrayList<MSISDNBS> msisdnBsList;
+  private final ArrayList<MSISDNBS> msisdnBsList;
 
-  private ArrayList<CSGSubscriptionData> csgSubscriptionDataList;
+  private final ArrayList<CSGSubscriptionData> csgSubscriptionDataList;
 
-  private CallWaitingData cwData;
+  private final CallWaitingData cwData;
 
-  private CallHoldData chData;
+  private final CallHoldData chData;
 
-  private ClipData clipData;
+  private final ClipData clipData;
 
-  private ClirData clirData;
+  private final ClirData clirData;
 
-  private EctData ectData;
+  private final EctData ectData;
 
   public AnyTimeSubInterrogationResponseCopy(AnyTimeSubscriptionInterrogationResponse response){
     this.callBarringData = response.getCallBarringData();
@@ -71,65 +71,56 @@ public class AnyTimeSubInterrogationResponseCopy {
     this.offeredCamel4CSIsInVlr = response.getOfferedCamel4CSIsInVlr();
     this.supportedSgsnCamelPhases = response.getsupportedSgsnCamelPhases();
     this.supportedVlrCamelPhases = response.getsupportedVlrCamelPhases();
-    
+
   }
 
   public CallForwardingData getCallForwardingData() {
     return callForwardingData;
-  } 
+  }
 
   public CallBarringData getCallBarringData() {
     return callBarringData;
-  } 
+  }
 
   public ODBInfo getOdbInfo() {
     return odbInfo;
   }
- 
 
   public CAMELSubscriptionInfo getCamelSubscriptionInfo() {
     return camelSubscriptionInfo;
-  } 
+  }
 
   public SupportedCamelPhases getSupportedVlrCamelPhases() {
     return supportedVlrCamelPhases;
   }
- 
 
   public SupportedCamelPhases getSupportedSgsnCamelPhases() {
     return supportedSgsnCamelPhases;
   }
- 
 
   public MAPExtensionContainer getExtensionContainer() {
     return extensionContainer;
   }
- 
 
   public OfferedCamel4CSIs getOfferedCamel4CSIsInVlr() {
     return offeredCamel4CSIsInVlr;
   }
- 
 
   public OfferedCamel4CSIs getOfferedCamel4CSIsInSgsn() {
     return offeredCamel4CSIsInSgsn;
   }
- 
 
   public ArrayList<MSISDNBS> getMsisdnBsList() {
     return msisdnBsList;
   }
- 
 
   public ArrayList<CSGSubscriptionData> getCsgSubscriptionDataList() {
     return csgSubscriptionDataList;
   }
- 
 
   public CallWaitingData getCwData() {
     return cwData;
   }
- 
 
   public CallHoldData getChData() {
     return chData;
@@ -137,7 +128,7 @@ public class AnyTimeSubInterrogationResponseCopy {
 
   public ClipData getClipData() {
     return clipData;
-  } 
+  }
 
   public ClirData getClirData() {
     return clirData;

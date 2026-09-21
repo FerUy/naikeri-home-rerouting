@@ -4,8 +4,8 @@ import com.naikeri.sgw.impl.app.map.MapDialogOut;
 import com.naikeri.sgw.impl.app.map.MapProxyDialog;
 import com.naikeri.sgw.info.DataElement;
 import com.naikeri.sgw.info.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.api.MAPException;
 import org.restcomm.protocols.ss7.map.api.service.mobility.MAPDialogMobility;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.PurgeMSRequest;
@@ -17,16 +17,14 @@ import org.restcomm.protocols.ss7.tcap.api.MessageType;
  */
 public class MapProxyPurgeMS {
 
-  private static final Logger logger = LoggerFactory.getLogger(MapProxyPurgeMS.class);
+  private static final Logger logger = LogManager.getLogger(MapProxyPurgeMS.class);
 
   private MapProxyPurgeMS() {
   }
 
   /**
-   * process response for PurgeMSResponse
+   * Process response for PurgeMSResponse
    *
-   * @param message
-   * @param transactionId
    * @return MapDialogOut
    */
   public static MapDialogOut getResponse(Object message, String transactionId) {
@@ -37,20 +35,14 @@ public class MapProxyPurgeMS {
       Long respInvokeId = purgeMSResponse.getInvokeId();
       MapDialogOut mapDialogOut = new MapDialogOut();
       mapDialogOut.setOriginalDialogId(dialogId);
-      logger.debug(String.format("[MAP::RESPONSE<%s>] Incoming DialogId '%d', invokeId '%d', %s",
-          purgeMSResponse.getMessageType().toString(),
-          purgeMSResponse.getMAPDialog().getLocalDialogId(), purgeMSResponse.getInvokeId(),
-          transactionId));
+      logger.debug("[MAP::RESPONSE<{}>] Incoming DialogId '{}', invokeId '{}', {}", purgeMSResponse.getMessageType().toString(), purgeMSResponse.getMAPDialog().getLocalDialogId(), purgeMSResponse.getInvokeId(), transactionId);
 
-      DataElement dataElement = null;
-      logger.debug(String.format(
-          "TCAP Message Type = '%s', dialogId = %d, InvokeId = %d, Service = '%s'",
-          purgeMSResponse.getMAPDialog().getTCAPMessageType(), dialogId,
-          purgeMSResponse.getInvokeId(), purgeMSResponse.getMAPDialog().getService().toString()));
+      DataElement dataElement;
+      logger.debug("TCAP Message Type = '{}', dialogId = {}, InvokeId = {}, Service = '{}'", purgeMSResponse.getMAPDialog().getTCAPMessageType(), dialogId, purgeMSResponse.getInvokeId(), purgeMSResponse.getMAPDialog().getService().toString());
 
       if (purgeMSResponse.getMAPDialog().getTCAPMessageType() == MessageType.End
           || purgeMSResponse.getMAPDialog().getTCAPMessageType() == MessageType.Abort) {
-        logger.debug("Closing for dialogId = " + dialogId);
+        logger.debug("Closing for dialogId = {}", dialogId);
         dataElement = Transaction.getInstance().removeDialogData(dialogId, respInvokeId);
         mapDialogOut.setIsResponse();
       } else {
@@ -58,8 +50,7 @@ public class MapProxyPurgeMS {
       }
 
       if (dataElement == null) {
-        logger.debug(String.format("Dialog Id = %d not found in Transaction Map. %s", dialogId,
-            transactionId));
+        logger.debug("Dialog Id = {} not found in Transaction Map. {}", dialogId, transactionId);
         return null;
       }
       PurgeMSRequest origEvent = (PurgeMSRequest) dataElement.getRequestObject();
@@ -74,24 +65,23 @@ public class MapProxyPurgeMS {
       mapDialogOut.setMapDialog(mapDialogMobility);
       return mapDialogOut;
     } catch (MAPException mapex) {
-      logger.error("PurgeMSResponse with DialogId " + dialogId + " failed " + transactionId
-          + ". Exception caught '" + mapex + "'");
+      logger.error("PurgeMSResponse with DialogId {} failed {}. Exception caught '{}'", dialogId, transactionId, mapex);
     }
     return null;
   }
 
   /**
-   * process Purge MS request
-   * 
+   * Process Purge MS request
+   *
    * @param mapProxyDialog MapProxyDialog
    * @param purgeMSRequest PurgeMSRequest
    * @return MapDialogOut
    */
   public static MapDialogOut getRequest(MapProxyDialog mapProxyDialog,
-      PurgeMSRequest purgeMSRequest, String transactionId) {
+                                        PurgeMSRequest purgeMSRequest, String transactionId) {
     Long dialogId = purgeMSRequest.getMAPDialog().getLocalDialogId();
     String messageType = purgeMSRequest.getMessageType().toString();
-    String logmsg = "";
+    String logmsg;
     if (mapProxyDialog == null) {
       logmsg = String.format(
           "%s, MAP Application Rule not found for DialogId = '%d', InvokeId = '%d', MessageType = '%s'. MAP Message will be discarded",
@@ -100,20 +90,20 @@ public class MapProxyPurgeMS {
       return MapProxyUtilsHelper.discardReason(logmsg, messageType, transactionId);
     }
     try {
-      logger.debug(String.format("[MAP::REQUEST<%s>] Incoming DialogId = '%d', InvokeId = '%d', %s",
-          messageType, dialogId, purgeMSRequest.getInvokeId(), transactionId));
-
+      logger.debug("[MAP::REQUEST<{}>] Incoming DialogId = '{}', InvokeId = '{}', {}", messageType, dialogId, purgeMSRequest.getInvokeId(), transactionId);
 
       MAPDialogMobility mapMobilityOut = mapProxyDialog.getMapDialogMobility();
 
-      Long newInvokeId =
-          mapMobilityOut.addPurgeMSRequest(mapProxyDialog.getImsi(), purgeMSRequest.getVlrNumber(),
-              purgeMSRequest.getSgsnNumber(), purgeMSRequest.getExtensionContainer());
-
+      Long newInvokeId = mapMobilityOut.addPurgeMSRequest(mapProxyDialog.getImsi(),
+          purgeMSRequest.getVlrNumber(),
+          purgeMSRequest.getSgsnNumber(),
+          purgeMSRequest.getExtensionContainer(),
+          purgeMSRequest.getLocationInformation(),
+          purgeMSRequest.getLocationInformationGPRS(),
+          purgeMSRequest.getLocationInformationEPS());
       return new MapDialogOut(mapMobilityOut, newInvokeId, dialogId, mapProxyDialog);
     } catch (MAPException mapex) {
-      logger.error("PurgeMSRequest with DialogId " + dialogId + " failed. Exception caught '"
-          + mapex + "', " + transactionId);
+      logger.error("PurgeMSRequest with DialogId {} failed. Exception caught '{}', {}", dialogId, mapex, transactionId);
       logmsg = mapex.getMessage();
     } catch (Exception ex) {
       logmsg = ex.getMessage();

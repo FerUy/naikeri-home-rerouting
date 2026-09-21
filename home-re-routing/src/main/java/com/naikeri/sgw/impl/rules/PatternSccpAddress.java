@@ -3,10 +3,11 @@ package com.naikeri.sgw.impl.rules;
 import java.util.Optional;
 import org.restcomm.protocols.ss7.indicator.RoutingIndicator;
 
-public class PatternSccpAddress{
-  private Integer destPointCode = 0;
-  private Integer subSystemNumber;
-  private String routingIndicator;
+public class PatternSccpAddress {
+
+  private final Integer destPointCode;
+  private final Integer subSystemNumber;
+  private final String routingIndicator;
 
   public PatternSccpAddress(Integer dpc, Integer ssn, String ri){
     this.destPointCode = dpc;

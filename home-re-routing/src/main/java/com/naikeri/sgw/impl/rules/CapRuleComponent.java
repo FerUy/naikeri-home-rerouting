@@ -11,8 +11,8 @@ public class CapRuleComponent {
   /**
    * Remove
    */
-  public class Remove {
-    private List<String> primitives = new ArrayList<>();
+  public static class Remove {
+    private final List<String> primitives = new ArrayList<>();
 
     public List<String> getPrimitives() {
       return primitives;
@@ -28,12 +28,12 @@ public class CapRuleComponent {
   /**
    * Replace
    */
-  public class Replace {
+  public static class Replace {
 
     /**
      * ReplaceArguments
      */
-    public class ReplaceArguments {
+    public static class ReplaceArguments {
 
       private String primitives;
       private String cdPN;

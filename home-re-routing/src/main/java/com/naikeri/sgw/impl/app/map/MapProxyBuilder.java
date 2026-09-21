@@ -3,8 +3,8 @@ package com.naikeri.sgw.impl.app.map;
 import com.naikeri.sgw.api.chn.ChannelMessage;
 import com.naikeri.sgw.api.network.LayerInterface;
 import com.naikeri.sgw.network.layers.MapLayer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.api.MAPMessageType;
 
 /**
@@ -12,7 +12,7 @@ import org.restcomm.protocols.ss7.map.api.MAPMessageType;
  */
 public class MapProxyBuilder {
 
-  private static final Logger logger = LoggerFactory.getLogger(MapProxyBuilder.class);
+  private static final Logger logger = LogManager.getLogger(MapProxyBuilder.class);
 
   public static class Builder {
     private MAPMessageType messageType;
@@ -32,14 +32,13 @@ public class MapProxyBuilder {
         this.transactionId = channelMessage.toString();
 
       } catch (Exception ex) {
-        logger.error("Exception: Message Type: '" + messageType + "'. Error " + ex);
+        logger.error("Exception: Message Type: '{}'. Error {}", messageType, ex);
       }
       return this;
     }
 
     public Builder setMapLayer(LayerInterface channelParameter) {
-      MapLayer mapLayer = (MapLayer) channelParameter;
-      this.map = mapLayer;
+      this.map = (MapLayer) channelParameter;
       return this;
     }
 

@@ -1,8 +1,8 @@
 package com.naikeri.sgw.impl.app.cap;
 
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPDialog;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.CAPDialogCircuitSwitchedCall;
@@ -14,12 +14,13 @@ import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
  * CapDialogOutType
  */
 public class CapDialogOut {
-  private static final Logger logger = LoggerFactory.getLogger(CapDialogOut.class);
 
-  private CapDialogType capDialogType;
+  private static final Logger logger = LogManager.getLogger(CapDialogOut.class);
+
+  private final CapDialogType capDialogType;
   private CAPDialog capDialog;
   private boolean isClose = false;
-  private String channelTransId;
+  private final String channelTransId;
   private String discardReason;
   private boolean isDiscarded = false;
   private SccpAddress callingSccpAddress;
@@ -122,17 +123,16 @@ public class CapDialogOut {
   }
 
   /**
-   * send the CAP request
+   * Send the CAP request
    *
    * @throws CAPException
    */
   public void send() throws CAPException {
     if (this.isClose) {
-      logger.debug(
-          String.format("CAP Response to close dialog for: %s, %s", capDialog, channelTransId));
+      logger.debug("CAP Response to close dialog for: {}, {}", capDialog, channelTransId);
       capDialog.close(false);
     } else {
-      logger.debug(String.format("CAP Response for: %s, %s", capDialog, channelTransId));
+      logger.debug("CAP Response for: {}, {}", capDialog, channelTransId);
       capDialog.send();
     }
   }

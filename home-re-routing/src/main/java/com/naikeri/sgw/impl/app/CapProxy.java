@@ -11,14 +11,14 @@ import com.naikeri.sgw.impl.settings.ApplicationSettings;
 import com.naikeri.sgw.impl.settings.ServiceFunctionSetting.ServiceFunctionType;
 import com.naikeri.sgw.network.layers.CapLayer;
 import com.naikeri.sgw.network.layers.listeners.ProxyConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPDialog;
 import org.restcomm.protocols.ss7.cap.api.errors.CAPErrorMessage;
 
 public class CapProxy extends Application {
 
-  private static final Logger logger = LoggerFactory.getLogger(CapProxy.class);
+  private static final Logger logger = LogManager.getLogger(CapProxy.class);
 
   public CapProxy(ApplicationSettings applicationSettings) {
     super(applicationSettings);
@@ -47,8 +47,7 @@ public class CapProxy extends Application {
       if (messageType.equalsIgnoreCase(ProxyConstants.ON_ERROR_COMPONENT)) {
         CAPErrorMessage capErrorMessage =
             (CAPErrorMessage) channelMessage.getParameter(ProxyConstants.CAP_ERROR_MESSAGE);
-        long errorCode = Optional.ofNullable(capErrorMessage).map(CAPErrorMessage::getErrorCode)
-            .map(Long::longValue).orElse(-1L);
+        long errorCode = Optional.ofNullable(capErrorMessage).map(CAPErrorMessage::getErrorCode).orElse(-1L);
         String errorMsg = ProxyConstants.getCapErrorCodeToString(capErrorMessage);
         CAPDialog mDialog = (CAPDialog) channelMessage.getParameter(ProxyConstants.DIALOG);
         if (mDialog != null) {
@@ -65,12 +64,11 @@ public class CapProxy extends Application {
 
       getSSFSCFLayers(rcvLayerName, rcvCapLayer, builder);
 
-      logger.info(String.format("Processing CAP Message Type <%s>: %s", messageType,
-          channelMessage.toString()));
+      logger.info("Processing CAP Message Type <{}>: {}", messageType, channelMessage);
 
       Object messageObject = channelMessage.getParameter(ProxyConstants.MESSAGE);
       if (messageObject == null) {
-        logger.debug("No message object found for " + messageType);
+        logger.debug("No message object found for {}", messageType);
       }
 
       CapProcessingNode capProcessingNode = builder.build();
@@ -78,15 +76,15 @@ public class CapProxy extends Application {
       if (messageType.endsWith("Request")) {
         CapDialogOut capDialogOut = capProcessingNode.processRequest();
         Long dialogId = capDialogOut.getNewCapDialogId();
-        logger.trace(String.format("New DialogId = %d, Message Type = %s", dialogId, messageType));
+        logger.trace("New DialogId = {}, Message Type = {}", dialogId, messageType);
         channelMessage.setParameter("DIALOGOUT", capDialogOut);
         if (CapProxyHelperUtils.isCDREnabled()) {
           CapProxyCDRWriter.addCDRRecords(capDialogOut, channelMessage.getTransactionId());
         }
       } else if (messageType.endsWith("Response")) {
-        logger.debug("Primitive Response for CAP not handled. Message Type = " + messageType);
+        logger.debug("Primitive Response for CAP not handled. Message Type = {}", messageType);
       } else {
-        logger.debug("Unhandled message type: " + messageType);
+        logger.debug("Unhandled message type: {}", messageType);
       }
       // send reply
       getChannelHandler().sendMessageResponse(channelMessage);
@@ -96,7 +94,7 @@ public class CapProxy extends Application {
   }
 
   private void getSSFSCFLayers(String rcvLayerName, CapLayer rcvCapLayer,
-      CapProcessingNode.Builder builder) {
+                               CapProcessingNode.Builder builder) {
     getApplicationSettings().getServiceFunctions().stream().forEach(srvFunc -> {
       if (srvFunc.getLayerName().equalsIgnoreCase(rcvLayerName)) {
         if (srvFunc.getServiceType() == ServiceFunctionType.SSF) {

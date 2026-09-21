@@ -1,10 +1,10 @@
 package com.naikeri.sgw.info;
 
 public class DataElement{
-  private String messageType;
-  private Object requestObject;
-  private Long newInvokeId; 
-  private Long dialogId;
+  private final String messageType;
+  private final Object requestObject;
+  private final Long newInvokeId;
+  private final Long dialogId;
 
   public DataElement(String messageType, Long newInvokeId, Long dialogId, Object requestObject){
     this.messageType = messageType;

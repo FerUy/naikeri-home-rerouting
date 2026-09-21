@@ -10,8 +10,8 @@ import com.naikeri.sgw.impl.settings.ChannelSettings;
 import com.naikeri.sgw.info.CapTransaction;
 import com.naikeri.sgw.network.layers.CapLayer;
 import com.naikeri.sgw.network.layers.listeners.ProxyConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.restcomm.protocols.ss7.cap.api.CAPMessage;
 
@@ -20,15 +20,15 @@ import org.restcomm.protocols.ss7.cap.api.CAPMessage;
  */
 public class CapChannel extends ChannelHandler {
 
-  private static final Logger logger = LoggerFactory.getLogger(CapChannel.class);
+  private static final Logger logger = LogManager.getLogger(CapChannel.class);
   private static final List<String> handleSignalList = new ArrayList<>();
   static {
     handleSignalList.add(ProxyConstants.ON_DIALOG_TIMEOUT);
     handleSignalList.add(ProxyConstants.ON_INVOKE_TIMEOUT);
     handleSignalList.add(ProxyConstants.ON_DIALOG_CLOSE);
   }
-  private List<CapLayer> capLayers = new ArrayList<>();
-  private ChannelSettings channelSetting = null;
+  private final List<CapLayer> capLayers = new ArrayList<>();
+  private final ChannelSettings channelSetting;
 
 
   public CapChannel(ChannelSettings channelSettings) {
@@ -50,8 +50,7 @@ public class CapChannel extends ChannelHandler {
       }
       CapTransaction.instance().setMaxTransaction(maxDialog);
     } catch (Exception e) {
-      logger.error(
-          "ERROR: Failed to get Max Dialogs from TCAP Layer. Setting default value. Error: " + e);
+      logger.error("ERROR: Failed to get Max Dialogs from TCAP Layer. Setting default value. Error: {}", String.valueOf(e));
     }
     logger.debug("CapChannel initialization complete!");
   }
@@ -62,16 +61,11 @@ public class CapChannel extends ChannelHandler {
     String messageType = (String) channelMessage.getParameter(ProxyConstants.MESSAGE_TYPE);
     if (capMessage != null && messageType != null) {
       if (capMessage.getMessageType().toString().endsWith("Request")) {
-        logger.debug(String.format("[CAP::REQUEST<%s>] dialogId '%d', invokeId '%d', %s",
-            capMessage.getMessageType().toString(), capMessage.getCAPDialog().getLocalDialogId(),
-            capMessage.getInvokeId(), channelMessage.getTransactionId()));
+        logger.debug("[CAP::REQUEST<{}>] dialogId '{}', invokeId '{}', {}", capMessage.getMessageType().toString(), capMessage.getCAPDialog().getLocalDialogId(), capMessage.getInvokeId(), channelMessage.getTransactionId());
       } else if (capMessage.getMessageType().toString().endsWith("Response")) {
-        logger.debug(String.format("[CAP::RESPONSE<%s>] dialogId '%d', invokeId '%d', %s",
-            capMessage.getMessageType().toString(), capMessage.getCAPDialog().getLocalDialogId(),
-            capMessage.getInvokeId(), channelMessage.getTransactionId()));
+        logger.debug("[CAP::RESPONSE<{}>] dialogId '{}', invokeId '{}', {}", capMessage.getMessageType().toString(), capMessage.getCAPDialog().getLocalDialogId(), capMessage.getInvokeId(), channelMessage.getTransactionId());
       } else {
-        logger.info(String.format("Sending message '%s' to application. %s",
-            capMessage.getMessageType().toString(), channelMessage.getTransactionId()));
+        logger.info("Sending message '{}' to application. {}", capMessage.getMessageType().toString(), channelMessage.getTransactionId());
       }
       // process only primitives defined in the Channel
       if ((this.channelSetting != null && this.channelSetting.isPrimitiveExist(messageType))
@@ -89,14 +83,13 @@ public class CapChannel extends ChannelHandler {
       Object paramDialogOut = channelMessage.getParameter("DIALOGOUT");
       if (paramDialogOut != null) {
         CapDialogOut dialogOut = (CapDialogOut) paramDialogOut;
-        logger.debug(
-            String.format("[CAP::RESPONSE<%s>]  %s", messageType, channelMessage.toString()));
+        logger.debug("[CAP::RESPONSE<{}>]  {}", messageType, channelMessage);
         dialogOut.send();
       } else {
-        logger.debug("Discarding message '" + channelMessage.toString());
+        logger.debug("Discarding message '{}", channelMessage);
       }
     } catch (Exception e) {
-      logger.error("Exception caught for " + channelMessage.getTransactionId() + "Details: ", e);
+      logger.error("Exception caught for {}Details: ", channelMessage.getTransactionId(), e);
     }
     return 0;
   }
@@ -109,9 +102,9 @@ public class CapChannel extends ChannelHandler {
   @Override
   public LayerInterface getLayerInterface(String layerName) {
     CapLayer cap = null;
-    for (int i = 0; i < capLayers.size(); i++) {
-      if (capLayers.get(i).getName().equalsIgnoreCase(layerName)) {
-        cap = capLayers.get(i);
+    for (CapLayer capLayer : capLayers) {
+      if (capLayer.getName().equalsIgnoreCase(layerName)) {
+        cap = capLayer;
         break;
       }
     }

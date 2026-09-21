@@ -6,8 +6,8 @@ import static com.naikeri.sgw.impl.settings.sccp.SccpHelpers.createRemoteAddress
 import java.util.ArrayList;
 import com.naikeri.sgw.impl.app.cap.BcsmCallContent;
 import com.naikeri.sgw.impl.app.cap.BcsmCallStep;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPDialog;
 import org.restcomm.protocols.ss7.cap.api.CAPDialogListener;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
@@ -97,16 +97,16 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
   private GlobalTitle hplmnScpGt, vplmnVlrGt;
   private BcsmCallContent cc;
   // private BcsmCallStep step;
-  private Boolean preArrangedEnd = false;
-  private static Logger logger = LoggerFactory.getLogger(HplmnScpPrototype.class);
+  private final Boolean preArrangedEnd = false;
+  private static final Logger logger = LogManager.getLogger(HplmnScpPrototype.class);
   // HPLMN SCP
-  private static int hplmnScpPc = 941;
-  private static int hplmnScpSsn = 146;
-  private static String hplmnScpGtDigits = "97254121030";
+  private static final int hplmnScpPc = 941;
+  private static final int hplmnScpSsn = 146;
+  private static final String hplmnScpGtDigits = "97254121030";
   // VPLMN - STP
-  private static int vplmnVlrPc = 1051;
-  private static int vplmnVlrSsn = 7;
-  private static String vplmnVlrGtDigits = "38354121022";
+  private static final int vplmnVlrPc = 1051;
+  private static final int vplmnVlrSsn = 7;
+  private static final String vplmnVlrGtDigits = "38354121022";
 
   public HplmnScpPrototype(CAPProvider capProvider, CAPParameterFactory capParameterFactory) {
     this.scfCapProvider = capProvider;
@@ -123,21 +123,21 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
     this.cc.setStep(BcsmCallStep.idpReceived);
     this.cc.setIdp(initialDPRequest);
     this.cc.setServiceKey(initialDPRequest.getServiceKey());
-    logger.debug("InitialDPRequest detected on HPLMN SCP over dialog: " + initialDPRequest.getCAPDialog());
+    logger.debug("InitialDPRequest detected on HPLMN SCP over dialog: {}", initialDPRequest.getCAPDialog());
     this.cc.setCapDialog(initialDPRequest.getCAPDialog());
     SccpAddress idpCalledPartyAddress = initialDPRequest.getCAPDialog().getLocalAddress();
     this.hplmnScpGt = idpCalledPartyAddress.getGlobalTitle();
-    logger.debug("InitialDPRequest detected on HPLMN SCP; IDP LOCAL address: " + idpCalledPartyAddress);
+    logger.debug("InitialDPRequest detected on HPLMN SCP; IDP LOCAL address: {}", idpCalledPartyAddress);
     SccpAddress idpCallingPartyAddress = initialDPRequest.getCAPDialog().getRemoteAddress();
     this.vplmnVlrGt = idpCallingPartyAddress.getGlobalTitle();
-    logger.debug("InitialDPRequest detected on HPLMN SCP; IDP REMOTE address: " + idpCallingPartyAddress);
-    logger.debug("scfCurrentCapDialog state = " + this.cc.getCapDialog().getState());
+    logger.debug("InitialDPRequest detected on HPLMN SCP; IDP REMOTE address: {}", idpCallingPartyAddress);
+    logger.debug("scfCurrentCapDialog state = {}", this.cc.getCapDialog().getState());
     sendRRBRequest();
   }
 
   private void sendRRBRequest() {
     logger.debug("scfPrototype sendRRBRequest(InitialDPRequest initialDPRequest) ");
-    logger.debug("scfCurrentCapDialog state = " + this.cc.getCapDialog().getState());
+    logger.debug("scfCurrentCapDialog state = {}", this.cc.getCapDialog().getState());
     // New SCCP Called Party Address to replace proxyScpAddress
     this.vplmnVlrGt = createGlobalTitle0100(vplmnVlrGtDigits, 5);
     this.hplmnScpGt = createGlobalTitle0100(hplmnScpGtDigits);
@@ -180,29 +180,26 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           EventTypeBCSM.oNoAnswer, MonitorMode.notifyAndContinue, legId_2, null, false);
       bcsmEventList.add(leg2_oNoAnswer);
 
-      logger.debug("RequestReportBCSMEventRequest to be sent to CAP Proxy on dialog: "
-          + this.cc.getCapDialog() + ", with Calling Party Address="
-          + this.cc.getCapDialog().getLocalAddress() + ", Called Party Address="
-          + this.cc.getCapDialog().getRemoteAddress());
+      logger.debug("RequestReportBCSMEventRequest to be sent to CAP Proxy on dialog: {}, with Calling Party Address={}, Called Party Address={}", this.cc.getCapDialog(), this.cc.getCapDialog().getLocalAddress(), this.cc.getCapDialog().getRemoteAddress());
       // Step 4: send RRB to VPLMN VLR via CAP Proxy from HPLMN SCP
       this.cc.getCapDialog().addRequestReportBCSMEventRequest(30000, bcsmEventList, null);
       this.cc.setRrb(new RequestReportBCSMEventRequestImpl(bcsmEventList, null));
       this.cc.setEventList(bcsmEventList);
       this.cc.getCapDialog().send();
       this.cc.setStep(BcsmCallStep.rrbSent);
-      logger.debug("RRB sent from HPLMN SCF to VPLMN SSF over dialog : " + this.cc.getCapDialog());
-      logger.debug("this.cc.capDialog state = " + this.cc.getCapDialog().getState());
+      logger.debug("RRB sent from HPLMN SCF to VPLMN SSF over dialog : {}", this.cc.getCapDialog());
+      logger.debug("this.cc.capDialog state = {}", this.cc.getCapDialog().getState());
 
       new Thread(new HPLMNTimer(this)).start();
 
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error(e.getStackTrace());
     }
   }
 
-  private class HPLMNTimer implements Runnable {
+  private static class HPLMNTimer implements Runnable {
 
-    private HplmnScpPrototype hplmnScpPrototype;
+    private final HplmnScpPrototype hplmnScpPrototype;
 
     public HPLMNTimer(HplmnScpPrototype hplmnScpPrototype) {
       this.hplmnScpPrototype = hplmnScpPrototype;
@@ -213,7 +210,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
       try {
         Thread.sleep(100);
       } catch (InterruptedException ie) {
-        ie.printStackTrace();
+        logger.error(ie.getStackTrace());
       }
       try {
         if (hplmnScpPrototype.cc.getCapDialog().getLocalDialogId() % 2 == 1) {
@@ -224,14 +221,13 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           hplmnScpPrototype.sendConnectRequestAndContinueRequests();
         }
       } catch (CAPException e) {
-        e.printStackTrace();
+        logger.error(e.getStackTrace());
       }
     }
   }
 
   private void sendEstablishTemporaryConnectionAndContinueRequests() throws CAPException {
-    logger.debug("CAP ETC / CAP CUE to be sent from HPLMN SCP to CAP Proxy, CAP dialog state = "
-        + this.cc.getCapDialog().getState());
+    logger.debug("CAP ETC / CAP CUE to be sent from HPLMN SCP to CAP Proxy, CAP dialog state = {}", this.cc.getCapDialog().getState());
     // We need to check if neither the CAP dialog is already closed nor a disconnect event has been received
     if (this.cc.getCapDialog() != null && this.cc != null
         && this.cc.getStep() != BcsmCallStep.disconnected) {
@@ -243,38 +239,36 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
       int callSegmentId = 7;
       try {
         this.cc.getCapDialog().addContinueRequest(30000);
-        logger.debug("CUE added in HPLMN SCP prototype over dialog : " + this.cc.getCapDialog());
+        logger.debug("CUE added in HPLMN SCP prototype over dialog : {}", this.cc.getCapDialog());
         this.cc.getCapDialog().addEstablishTemporaryConnectionRequest(30000,
             assistingSSPIPRoutingAddress, null, null, null, null, null, null, null, null, null,
             null);
-        logger.debug("CAP ETC added in HPLMN SCP over dialog : " + this.cc.getCapDialog()
-            + ", ETC assistingSSPIPRoutingAddress: " + assistingSSPIPRoutingAddress.toString());
-        logger.debug("CAP CUE added in HPLMN SCP over dialog : " + this.cc.getCapDialog());
+        logger.debug("CAP ETC added in HPLMN SCP over dialog : {}, ETC assistingSSPIPRoutingAddress: {}", this.cc.getCapDialog(), assistingSSPIPRoutingAddress);
+        logger.debug("CAP CUE added in HPLMN SCP over dialog : {}", this.cc.getCapDialog());
         this.cc.getCapDialog().send();
         this.cc.setStep(BcsmCallStep.etcSent);
         this.cc.setEtc(new EstablishTemporaryConnectionRequestImpl(assistingSSPIPRoutingAddress,
             null, null, null, null, null, callSegmentId, null, null, null, null, false));
-        logger.debug("ETC and CUE sent from HPLMN SCP prototype to CAP proxy via STP over dialog : "
-            + this.cc.getCapDialog());
+        logger.debug("ETC and CUE sent from HPLMN SCP prototype to CAP proxy via STP over dialog : {}", this.cc.getCapDialog());
       } catch (CAPException e) {
-        e.printStackTrace();
+        logger.error(e.getStackTrace());
       }
     } else {
       // else, close the HPLMN CAP dialog via a TC-Close
       try {
+        assert this.cc != null;
         if (this.cc.getCapDialog() != null) {
           logger.debug("No CAP dialog on SSF for sending ETC/CUE, about to close the HPLMN CAP dialog via a TC-Close");
           this.cc.getCapDialog().close(preArrangedEnd);
         }
       } catch (CAPException e) {
-        e.printStackTrace();
+        logger.error(e.getStackTrace());
       }
     }
   }
 
   private void sendConnectRequestAndContinueRequests() throws CAPException {
-    logger.debug("CAP CON / CAP CUE to be sent from HPLMN SCP to CAP Proxy via STP, CAP dialog state = "
-        + this.cc.getCapDialog().getState());
+    logger.debug("CAP CON / CAP CUE to be sent from HPLMN SCP to CAP Proxy via STP, CAP dialog state = {}", this.cc.getCapDialog().getState());
     if (this.cc.getCapDialog() != null && this.cc != null
         && this.cc.getStep() != BcsmCallStep.disconnected) {
       // byte[] etcData = new byte[]{48, 18, (byte) 128, 11, 3, 19, 17, 32, 67, 99, 69, 96,
@@ -285,11 +279,10 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
       // int callSegmentId = 7;
       try {
         this.cc.getCapDialog().addContinueRequest(30000);
-        logger.debug("CUE added in HPLMN SCP over dialog : " + this.cc.getCapDialog());
+        logger.debug("CUE added in HPLMN SCP over dialog : {}", this.cc.getCapDialog());
 
         ArrayList<CalledPartyNumberCap> calledPartyNumber = new ArrayList<>();
-        CalledPartyNumber cpn =
-            this.scfCapProvider.getISUPParameterFactory().createCalledPartyNumber();
+        CalledPartyNumber cpn = this.scfCapProvider.getISUPParameterFactory().createCalledPartyNumber();
         String cpnAddress = "9725457161810";
         cpn.setAddress(cpnAddress);
         cpn.setNatureOfAddresIndicator(NAINumber._NAI_INTERNATIONAL_NUMBER);
@@ -323,40 +316,37 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             serviceInteractionIndicatorsTwo, locationNumberCap, legToBeConnected, cugInterlock,
             cugOutgoingAccess, suppressionOfAnnouncement, ocsIApplicable, naoliInfo,
             borInterrogationRequested, suppressNCSI);
-        logger.debug("CAP CON added in HPLMN SCP prototype over dialog : " + this.cc.getCapDialog()
-            + ", CON destinationRoutingAddress: " + destinationRoutingAddress.toString());
-        logger.debug("CAP CUE added in HPLMN SCP over dialog : " + this.cc.getCapDialog());
+        logger.debug("CAP CON added in HPLMN SCP prototype over dialog : {}, CON destinationRoutingAddress: {}", this.cc.getCapDialog(), destinationRoutingAddress.toString());
+        logger.debug("CAP CUE added in HPLMN SCP over dialog : {}", this.cc.getCapDialog());
         this.cc.getCapDialog().send();
         this.cc.setStep(BcsmCallStep.conSent);
-        logger.debug("CON and CUE sent from HPLMN SCP to CAP proxy over dialog : "
-            + this.cc.getCapDialog());
+        logger.debug("CON and CUE sent from HPLMN SCP to CAP proxy over dialog : {}", this.cc.getCapDialog());
       } catch (CAPException e) {
-        e.printStackTrace();
+        logger.error(e.getStackTrace());
       }
     } else {
       // else, close the HPLMN CAP dialog via a TC-Close
       try {
+        assert this.cc != null;
         if (this.cc.getCapDialog() != null) {
-          logger.debug(
-              "No CAP dialog on SSF for sending ETC/CUE, about to close the HPLMN CAP dialog via a TC-Close");
+          logger.debug("No CAP dialog on SSF for sending ETC/CUE, about to close the HPLMN CAP dialog via a TC-Close");
           this.cc.getCapDialog().close(preArrangedEnd);
         }
       } catch (CAPException e) {
-        e.printStackTrace();
+        logger.error(e.getStackTrace());
       }
     }
   }
 
   @Override
   public void onEventReportBCSMRequest(EventReportBCSMRequest eventReportBCSMRequest) {
-    logger.debug("ERB event captured on HPLMN SCP: " + eventReportBCSMRequest);
+    logger.debug("ERB event captured on HPLMN SCP: {}", eventReportBCSMRequest);
     // We need to check if neither the CAP dialog is already closed nor a disconnect event has
     // been received
     if (this.cc != null) {
       if (this.cc.getCapDialog() != null && this.cc.getStep() != BcsmCallStep.disconnected) {
         this.cc.getErbEventList().add(eventReportBCSMRequest);
-        logger.debug("ERB oAnswer event captured on CAP proxy, about to relay to SCP "
-            + eventReportBCSMRequest.getEventTypeBCSM());
+        logger.debug("ERB oAnswer event captured on CAP proxy, about to relay to SCP {}", eventReportBCSMRequest.getEventTypeBCSM());
         switch (eventReportBCSMRequest.getEventTypeBCSM()) {
           case collectedInfo:
             this.cc.setStep(BcsmCallStep.collectedInfo);
@@ -368,16 +358,17 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             this.cc.setStep(BcsmCallStep.routeSelectFailure);
             break;
           case oNoAnswer:
-            this.cc.setStep(BcsmCallStep.noAnswer);
+            case tNoAnswer:
+                this.cc.setStep(BcsmCallStep.noAnswer);
             break;
           case oAnswer:
             this.cc.setStep(BcsmCallStep.answerReceived);
             // Answer event has been received, thus forward ERB to HPLMN SCP with modified parameters
-            logger.debug("ERB oAnswer event captured on HPLMN SCP from GT : "
-                + cc.getCapDialog().getRemoteAddress().getGlobalTitle().getDigits());
+            logger.debug("ERB oAnswer event captured on HPLMN SCP from GT : {}", cc.getCapDialog().getRemoteAddress().getGlobalTitle().getDigits());
             break;
           case oMidCall:
-            this.cc.setStep(BcsmCallStep.midCall);
+            case tMidCall:
+                this.cc.setStep(BcsmCallStep.midCall);
             break;
           case oDisconnect:
             this.cc.setStep(BcsmCallStep.disconnected);
@@ -393,24 +384,17 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           case tBusy:
             this.cc.setStep(BcsmCallStep.busy);
             break;
-          case tNoAnswer:
-            this.cc.setStep(BcsmCallStep.noAnswer);
-            break;
           case tAnswer:
             this.cc.setStep(BcsmCallStep.answerReceived);
             // Answer event has been received
             logger.debug("ERB tAnswer event captured on HPLMN SCP, processing without answer");
-            break;
-          case tMidCall:
-            this.cc.setStep(BcsmCallStep.midCall);
             break;
           case tDisconnect:
             this.cc.setStep(BcsmCallStep.disconnected);
             break;
           case tAbandon:
             this.cc.setStep(BcsmCallStep.abandoned);
-            logger.debug(
-                "ERB tAbandon event captured on CAP proxy, about to close the HPLMN CAP dialog via a TC-Close");
+            logger.debug("ERB tAbandon event captured on CAP proxy, about to close the HPLMN CAP dialog via a TC-Close");
             break;
           case oTermSeized:
             this.cc.setStep(BcsmCallStep.termSeized);
@@ -424,11 +408,9 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             this.cc.setStep(BcsmCallStep.changeOfPosition);
             break;
           case oServiceChange:
-            this.cc.setStep(BcsmCallStep.serviceChange);
-            break;
           case tServiceChange:
-            this.cc.setStep(BcsmCallStep.serviceChange);
-            break;
+                this.cc.setStep(BcsmCallStep.serviceChange);
+          break;
           default:
             this.cc.setStep(BcsmCallStep.erbReceived);
             break;
@@ -439,7 +421,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           if (this.cc.getCapDialog() != null)
             this.cc.getCapDialog().close(preArrangedEnd);
         } catch (CAPException e) {
-          e.printStackTrace();
+          logger.error(e.getStackTrace());
         }
       }
     }
@@ -447,14 +429,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
 
   @Override
   public void onDialogDelimiter(CAPDialog capDialog) {
-    logger.info("*** onDialogDelimiter at HPLMN SCP Prototype:" + "\n\t\t*** capDialog=" + capDialog
-        + "\n\t\t*** TCAP message type = " + capDialog.getTCAPMessageType()
-        + "\n\t\t*** Local Address: GT = " + capDialog.getLocalAddress().getGlobalTitle()
-        + ", PC = " + capDialog.getLocalAddress().getSignalingPointCode() + ", SSN = "
-        + capDialog.getLocalAddress().getSubsystemNumber() + "\n\t\t*** Remote Address: GT = "
-        + capDialog.getRemoteAddress().getGlobalTitle() + ", PC = "
-        + capDialog.getRemoteAddress().getSignalingPointCode() + " SSN = "
-        + capDialog.getRemoteAddress().getSubsystemNumber() + "\n\t\t****************************");
+    logger.info("*** onDialogDelimiter at HPLMN SCP Prototype:\n\t\t*** capDialog={}\n\t\t*** TCAP message type = {}\n\t\t*** Local Address: GT = {}, PC = {}, SSN = {}\n\t\t*** Remote Address: GT = {}, PC = {} SSN = {}\n\t\t****************************", capDialog, capDialog.getTCAPMessageType(), capDialog.getLocalAddress().getGlobalTitle(), capDialog.getLocalAddress().getSignalingPointCode(), capDialog.getLocalAddress().getSubsystemNumber(), capDialog.getRemoteAddress().getGlobalTitle(), capDialog.getRemoteAddress().getSignalingPointCode(), capDialog.getRemoteAddress().getSubsystemNumber());
     try {
       if (this.cc != null) {
         if (this.cc.getStep() != null) {
@@ -480,7 +455,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
                   this.cc.getCapDialog().close(preArrangedEnd);
                 }
               } catch (CAPException e) {
-                e.printStackTrace();
+                logger.error(e.getStackTrace());
               }
               break;
             default:
@@ -490,89 +465,78 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
       }
 
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error(e.getStackTrace());
     }
   }
 
   @Override
   public void onDialogTimeout(CAPDialog capDialog) {
-    logger.debug("onDialogTimeout captured on HPLMN SCP prototype, dialog : " + capDialog);
+    logger.debug("onDialogTimeout captured on HPLMN SCP prototype, dialog : {}", capDialog);
   }
 
   @Override
   public void onActivityTestResponse(ActivityTestResponse activityTestResponse) {
-    logger.debug("onActivityTestResponse captured on HPLMN SCP prototype, dialog : " + activityTestResponse);
+    logger.debug("onActivityTestResponse captured on HPLMN SCP prototype, dialog : {}", activityTestResponse);
   }
 
   @Override
   public void onDialogRequest(CAPDialog capDialog, CAPGprsReferenceNumber capGprsReferenceNumber) {
-    logger.debug("onDialogRequest captured on HPLMN SCP prototype, CAP dialog : " + capDialog
-        + "; CAPGprsReferenceNumber : " + capGprsReferenceNumber);
+    logger.debug("onDialogRequest captured on HPLMN SCP prototype, CAP dialog : {}; CAPGprsReferenceNumber : {}", capDialog, capGprsReferenceNumber);
   }
 
   @Override
   public void onDialogAccept(CAPDialog capDialog, CAPGprsReferenceNumber capGprsReferenceNumber) {
-    logger.debug("onDialogAccept captured on HPLMN SCP prototype, CAP dialog : " + capDialog
-        + "; CAPGprsReferenceNumber : " + capGprsReferenceNumber);
+    logger.debug("onDialogAccept captured on HPLMN SCP prototype, CAP dialog : {}; CAPGprsReferenceNumber : {}", capDialog, capGprsReferenceNumber);
   }
 
   @Override
   public void onDialogUserAbort(CAPDialog capDialog, CAPGeneralAbortReason capGeneralAbortReason, CAPUserAbortReason capUserAbortReason) {
-    logger.debug("onDialogAccept captured on HPLMN SCP prototype, CAP dialog : " + capDialog
-        + "; CAPGeneralAbortReason : " + capGeneralAbortReason + ", " + "CAPUserAbortReason : "
-        + capUserAbortReason);
+    logger.debug("onDialogAccept captured on HPLMN SCP prototype, CAP dialog : {}; CAPGeneralAbortReason : {}, CAPUserAbortReason : {}", capDialog, capGeneralAbortReason, capUserAbortReason);
   }
 
   @Override
   public void onDialogProviderAbort(CAPDialog capDialog, PAbortCauseType pAbortCauseType) {
-    logger.debug("onDialogProviderAbort captured on HPLMN SCP prototype, CAP dialog : " + capDialog
-        + "; PAbortCauseType : " + pAbortCauseType);
+    logger.debug("onDialogProviderAbort captured on HPLMN SCP prototype, CAP dialog : {}; PAbortCauseType : {}", capDialog, pAbortCauseType);
   }
 
   @Override
   public void onDialogClose(CAPDialog capDialog) {
-    logger.debug("onDialogClose captured on HPLMN SCP prototype, dialog : " + capDialog);
+    logger.debug("onDialogClose captured on HPLMN SCP prototype, dialog : {}", capDialog);
   }
 
   @Override
   public void onDialogRelease(CAPDialog capDialog) {
-    logger.debug("onDialogRelease captured on HPLMN SCP prototype, dialog : " + capDialog);
+    logger.debug("onDialogRelease captured on HPLMN SCP prototype, dialog : {}", capDialog);
   }
 
   @Override
   public void onDialogNotice(CAPDialog capDialog, CAPNoticeProblemDiagnostic capNoticeProblemDiagnostic) {
-    logger.debug("onDialogNotice captured on HPLMN SCP prototype, dialog : " + capDialog
-        + "; CAPNoticeProblemDiagnostic : " + capNoticeProblemDiagnostic);
+    logger.debug("onDialogNotice captured on HPLMN SCP prototype, dialog : {}; CAPNoticeProblemDiagnostic : {}", capDialog, capNoticeProblemDiagnostic);
   }
 
   @Override
-  public void onRequestReportBCSMEventRequest(
-      RequestReportBCSMEventRequest requestReportBCSMEventRequest) {
-    logger.debug("onRequestReportBCSMEventRequest captured on HPLMN SCP prototype, RequestReportBCSMEventRequest : "
-            + requestReportBCSMEventRequest);
+  public void onRequestReportBCSMEventRequest(RequestReportBCSMEventRequest requestReportBCSMEventRequest) {
+    logger.debug("onRequestReportBCSMEventRequest captured on HPLMN SCP prototype, RequestReportBCSMEventRequest : {}", requestReportBCSMEventRequest);
   }
 
   @Override
   public void onApplyChargingRequest(ApplyChargingRequest applyChargingRequest) {
-    logger.debug("onApplyChargingRequest captured on HPLMN SCP prototype, ApplyChargingRequest : "
-        + applyChargingRequest);
+    logger.debug("onApplyChargingRequest captured on HPLMN SCP prototype, ApplyChargingRequest : {}", applyChargingRequest);
   }
 
   @Override
   public void onContinueRequest(ContinueRequest continueRequest) {
-    logger.debug("onContinueRequest captured on HPLMN SCP prototype, ContinueRequest : " + continueRequest);
+    logger.debug("onContinueRequest captured on HPLMN SCP prototype, ContinueRequest : {}", continueRequest);
   }
 
   @Override
   public void onContinueWithArgumentRequest(ContinueWithArgumentRequest continueWithArgumentRequest) {
-    logger.debug("onContinueWithArgumentRequest captured on HPLMN SCP prototype, ContinueWithArgumentRequest : "
-            + continueWithArgumentRequest);
+    logger.debug("onContinueWithArgumentRequest captured on HPLMN SCP prototype, ContinueWithArgumentRequest : {}", continueWithArgumentRequest);
   }
 
   @Override
   public void onApplyChargingReportRequest(ApplyChargingReportRequest applyChargingReportRequest) {
-    logger.debug("onApplyChargingReportRequest captured on HPLMN SCP prototype, ApplyChargingReportRequest : "
-        + applyChargingReportRequest);
+    logger.debug("onApplyChargingReportRequest captured on HPLMN SCP prototype, ApplyChargingReportRequest : {}", applyChargingReportRequest);
   }
 
   @Override
@@ -717,26 +681,25 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
 
   @Override
   public void onErrorComponent(CAPDialog capDialog, Long aLong, CAPErrorMessage capErrorMessage) {
-    logger.debug("onErrorComponent captured on HPLMN SCP prototype, dialog : " + capDialog
-        + ", CAPErrorMessage : " + capErrorMessage);
+    logger.debug("onErrorComponent captured on HPLMN SCP prototype, dialog : {}, CAPErrorMessage : {}", capDialog, capErrorMessage);
 
   }
 
   @Override
   public void onRejectComponent(CAPDialog capDialog, Long aLong, Problem problem, boolean b) {
-    logger.debug("onRejectComponent captured on HPLMN SCP prototype, dialog : " + capDialog + ", Problem : " + problem);
+    logger.debug("onRejectComponent captured on HPLMN SCP prototype, dialog : {}, Problem : {}", capDialog, problem);
   }
 
   @Override
   public void onInvokeTimeout(CAPDialog capDialog, Long aLong) {
-    logger.debug("onInvokeTimeout captured on HPLMN SCP prototype, dialog : " + capDialog);
-    logger.debug("onInvokeTimeout captured on HPLMN SCP prototype, invokeId : " + aLong);
-    logger.debug("onInvokeTimeout on HPLMN SCF. SCF Call Content params: Step = " + this.cc.getStep());
+    logger.debug("onInvokeTimeout captured on HPLMN SCP prototype, dialog : {}", capDialog);
+    logger.debug("onInvokeTimeout captured on HPLMN SCP prototype, invokeId : {}", aLong);
+    logger.debug("onInvokeTimeout on HPLMN SCF. SCF Call Content params: Step = {}", this.cc.getStep());
   }
 
   @Override
   public void onCAPMessage(CAPMessage capMessage) {
-    logger.debug("onCAPMessage captured on HPLMN SCP prototype, CAP message : " + capMessage);
+    logger.debug("onCAPMessage captured on HPLMN SCP prototype, CAP message : {}", capMessage);
   }
 }
 

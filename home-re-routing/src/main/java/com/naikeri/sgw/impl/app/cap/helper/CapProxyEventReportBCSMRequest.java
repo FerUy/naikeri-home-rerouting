@@ -8,8 +8,8 @@ import com.naikeri.sgw.impl.app.cap.CapDialogType;
 import com.naikeri.sgw.impl.app.cap.CapProxyHelperUtils;
 import com.naikeri.sgw.impl.app.cap.CapDialogOut.WriteLogState;
 import com.naikeri.sgw.info.CapTransaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.primitives.AppendFreeFormatData;
 import org.restcomm.protocols.ss7.cap.api.primitives.SendingSideID;
@@ -26,10 +26,11 @@ import org.restcomm.protocols.ss7.inap.api.primitives.LegType;
  * CapProxyEventReportBCSMRequest
  */
 public class CapProxyEventReportBCSMRequest {
+
   private static final String OANSWER = "oAnswer";
-  private static final Logger logger = LoggerFactory.getLogger(CapProxyEventReportBCSMRequest.class);
-  private EventReportBCSMRequest request;
-  private String channelTransId;
+  private static final Logger logger = LogManager.getLogger(CapProxyEventReportBCSMRequest.class.getName());
+  private final EventReportBCSMRequest request;
+  private final String channelTransId;
   private String erbEventName;
   public CapProxyEventReportBCSMRequest(EventReportBCSMRequest request, String channelTransId) {
     this.request = request;
@@ -38,26 +39,24 @@ public class CapProxyEventReportBCSMRequest {
 
   public CapDialogOut process() {
     try {
-      logger.debug(String.format("[CAP::REQUEST<%s>] dialogId '%d', invokeId '%d', %s",
-          request.getMessageType().toString(), request.getCAPDialog().getLocalDialogId(),
-          request.getInvokeId(), channelTransId));
+      logger.debug("[CAP::REQUEST<{}>] dialogId '{}', invokeId '{}', {}",
+          request.getMessageType().toString(), request.getCAPDialog().getLocalDialogId(), request.getInvokeId(), channelTransId);
       Long dialogId = request.getCAPDialog().getLocalDialogId();
       logger.trace("Checking for which leg this transaction belongs");
       // check for the second leg if the call exist.
-      BcsmCallContent callContent = null;
+      BcsmCallContent callContent;
       boolean isLeg2 = false;
       callContent = CapTransaction.instance().getLeg2BcsmCall(dialogId); // leg2
       if (callContent == null) {
         // second leg does not exist. Check the first leg
         callContent = CapTransaction.instance().getScfBcsmCallContent(dialogId, false);
         if (callContent == null) {
-          logger.debug(String.format("Transaction not found for DialogId = '%d'", dialogId));
-          return CapProxyHelperUtils.closeDialog(request.getCAPDialog(), dialogId, channelTransId,
-              true);
+          logger.debug("Transaction not found for DialogId = '{}'", dialogId);
+          return CapProxyHelperUtils.closeDialog(request.getCAPDialog(), dialogId, channelTransId, true);
         }
-        logger.trace(String.format("Transaction found in Leg1. DialogId = %d", dialogId));
+        logger.trace("Transaction found in Leg1. DialogId = {}", dialogId);
       } else {
-        logger.trace(String.format("Transaction found in Leg2. DialogId = %d", dialogId));
+        logger.trace("Transaction found in Leg2. DialogId = {}", dialogId);
         isLeg2 = true;
       }
 
@@ -80,11 +79,11 @@ public class CapProxyEventReportBCSMRequest {
         }
       }
     } catch (CAPException capEx) {
-      logger.error("Processing CAP ERB Request failed " + channelTransId + "Details: ", capEx);
+      logger.error("Processing CAP ERB Request failed {}Details: ", channelTransId, capEx);
       return CapProxyHelperUtils.discardReason(CapDialogType.CircuitSwitchedCallControl,
           capEx.getMessage(), request.getMessageType().toString(), channelTransId);
     } catch (Exception e) {
-      logger.error("Exception caught for " + channelTransId + ". Details: ", e);
+      logger.error("Exception caught for {}. Details: ", channelTransId, e);
       return CapProxyHelperUtils.discardReason(CapDialogType.CircuitSwitchedCallControl,
           e.getMessage(), request.getMessageType().toString(), channelTransId);
     }
@@ -105,18 +104,20 @@ public class CapProxyEventReportBCSMRequest {
         callContent.setStep(BcsmCallStep.routeSelectFailure);
         break;
       case oNoAnswer:
-        callContent.setStep(BcsmCallStep.noAnswer);
+        case tNoAnswer:
+            callContent.setStep(BcsmCallStep.noAnswer);
         break;
       case oAnswer:
-        logger.debug("ERB " + request.getEventTypeBCSM() + " - event type captured on CAP proxy");
+        logger.debug("ERB {} - event type captured on CAP proxy", request.getEventTypeBCSM());
         callContent.setStep(BcsmCallStep.answerReceived);
         break;
       case oMidCall:
-        callContent.setStep(BcsmCallStep.midCall);
+        case tMidCall:
+            callContent.setStep(BcsmCallStep.midCall);
         break;
       case oDisconnect:
         callContent.setStep(BcsmCallStep.disconnectReceived);
-        logger.debug("ERB " + request.getEventTypeBCSM() + ", event type captured on CAP proxy");
+        logger.debug("ERB {}, event type captured on CAP proxy", request.getEventTypeBCSM());
         break;
       case oAbandon:
         callContent.setStep(BcsmCallStep.abandoned);
@@ -125,15 +126,9 @@ public class CapProxyEventReportBCSMRequest {
       case tBusy:
         callContent.setStep(BcsmCallStep.busy);
         break;
-      case tNoAnswer:
-        callContent.setStep(BcsmCallStep.noAnswer);
-        break;
       case tAnswer:
         callContent.setStep(BcsmCallStep.answerReceived);
         logger.debug("ERB tAnswer event captured on CAP proxy");
-        break;
-      case tMidCall:
-        callContent.setStep(BcsmCallStep.midCall);
         break;
       case tDisconnect:
         callContent.setStep(BcsmCallStep.disconnected);
@@ -153,8 +148,6 @@ public class CapProxyEventReportBCSMRequest {
         callContent.setStep(BcsmCallStep.changeOfPosition);
         break;
       case oServiceChange:
-        callContent.setStep(BcsmCallStep.serviceChange);
-        break;
       case tServiceChange:
         callContent.setStep(BcsmCallStep.serviceChange);
         break;
@@ -179,18 +172,20 @@ public class CapProxyEventReportBCSMRequest {
         callContent.setStep(BcsmCallStep.routeSelectFailure);
         break;
       case oNoAnswer:
+      case tNoAnswer:
         callContent.setStep(BcsmCallStep.noAnswer);
         break;
       case oAnswer:
-        logger.debug("ERB " + request.getEventTypeBCSM() + " event type captured on CAP proxy");
+        logger.debug("ERB {} event type captured on CAP proxy", request.getEventTypeBCSM());
         callContent.setStep(BcsmCallStep.answerReceived);
         break;
       case oMidCall:
+      case tMidCall:
         callContent.setStep(BcsmCallStep.midCall);
         break;
       case oDisconnect:
         callContent.setStep(BcsmCallStep.disconnected);
-        logger.debug("ERB " + request.getEventTypeBCSM() + " event type captured on CAP proxy");
+        logger.debug("ERB {} event type captured on CAP proxy", request.getEventTypeBCSM());
         break;
       case oAbandon:
         callContent.setStep(BcsmCallStep.abandoned);
@@ -199,15 +194,9 @@ public class CapProxyEventReportBCSMRequest {
       case tBusy:
         callContent.setStep(BcsmCallStep.busy);
         break;
-      case tNoAnswer:
-        callContent.setStep(BcsmCallStep.noAnswer);
-        break;
       case tAnswer:
         callContent.setStep(BcsmCallStep.answerReceived);
         logger.debug("ERB tAnswer event captured on CAP proxy");
-        break;
-      case tMidCall:
-        callContent.setStep(BcsmCallStep.midCall);
         break;
       case tDisconnect:
         callContent.setStep(BcsmCallStep.disconnected);
@@ -227,8 +216,6 @@ public class CapProxyEventReportBCSMRequest {
         callContent.setStep(BcsmCallStep.changeOfPosition);
         break;
       case oServiceChange:
-        callContent.setStep(BcsmCallStep.serviceChange);
-        break;
       case tServiceChange:
         callContent.setStep(BcsmCallStep.serviceChange);
         break;
@@ -244,9 +231,7 @@ public class CapProxyEventReportBCSMRequest {
         new CapDialogOut(CapDialogType.CircuitSwitchedCallControl, channelTransId);
     capDialogOut.setTransDialogId(dialogId);
     capDialogOut.setErbEventName(erbEventName);
-    logger.debug(
-        String.format("CAP Proxy to send CAP CAN and CAP FCI on leg 2 to VPLMN, DialogId = %d, %s",
-            dialogId, channelTransId));
+    logger.debug("CAP Proxy to send CAP CAN and CAP FCI on leg 2 to VPLMN, DialogId = {}, {}", dialogId, channelTransId);
     try {
       CAPDialogCircuitSwitchedCall erbDialogOut = CapProxyHelperUtils.applyReplaceRulesOnly(
           request.getMessageType().toString(), request.getCAPDialog(), callContent.getCapDialog(),
@@ -271,7 +256,7 @@ public class CapProxyEventReportBCSMRequest {
       CapTransaction.instance().removeLeg2BcsmCall(dialogId);
       return capDialogOut;
     } catch (CAPException e) {
-      logger.error("Exception caught for " + channelTransId + ". Details: ", e);
+      logger.error("Exception caught for {}. Details: ", channelTransId, e);
       return CapProxyHelperUtils.discardReason(CapDialogType.CircuitSwitchedCallControl,
           e.getMessage(), request.getMessageType().toString(), channelTransId);
     }
@@ -281,8 +266,7 @@ public class CapProxyEventReportBCSMRequest {
   // LEG1
   private CapDialogOut relayERBForLeg1(BcsmCallContent callContent) throws CAPException {
     Long dialogId = request.getCAPDialog().getLocalDialogId();
-    logger.trace("CAP Proxy about to relay ERB with event type " + request.getEventTypeBCSM()
-        + " to HPLMN SCF via VPLMN STP SSF " + channelTransId);
+    logger.trace("CAP Proxy about to relay ERB with event type {} to HPLMN SCF via VPLMN STP SSF {}", request.getEventTypeBCSM(), channelTransId);
     CapDialogOut capDialogOut =
         new CapDialogOut(CapDialogType.CircuitSwitchedCallControl, channelTransId);
     capDialogOut.setErbEventName(erbEventName);
@@ -294,9 +278,8 @@ public class CapProxyEventReportBCSMRequest {
         request.getEventSpecificInformationBCSM(), request.getLegID(), request.getMiscCallInfo(),
         null);
 
-    logger.debug("CAP ERB sent to HPLMN SCF from CAP Proxy via VPLMN STP SSF over dialog: "
-        + ssfDialogOut + "; Calling Party Address=" + ssfDialogOut.getLocalAddress()
-        + "; Called Party Address=" + ssfDialogOut.getRemoteAddress() + "; " + channelTransId);
+    logger.debug("CAP ERB sent to HPLMN SCF from CAP Proxy via VPLMN STP SSF over dialog: {}; Calling Party Address={}; Called Party Address={}; {}",
+        ssfDialogOut, ssfDialogOut.getLocalAddress(), ssfDialogOut.getRemoteAddress(), channelTransId);
     capDialogOut.setTransDialogId(ssfDialogOut.getLocalDialogId());
     if (request.getEventTypeBCSM().name().equalsIgnoreCase(OANSWER)) {
       callContent.setStep(BcsmCallStep.answerSent);

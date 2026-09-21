@@ -13,8 +13,8 @@ import com.naikeri.sgw.impl.rules.MSRNNumbers;
 import com.naikeri.sgw.impl.rules.PatternSccpAddress;
 import com.naikeri.sgw.impl.rules.ReplacedValues;
 import com.naikeri.sgw.info.CapTransaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.CAPStack;
 import org.restcomm.protocols.ss7.cap.api.isup.CalledPartyNumberCap;
@@ -32,10 +32,10 @@ import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
  */
 public class CapProxyETCRequest {
 
-  private static final Logger logger = LoggerFactory.getLogger(CapProxyETCRequest.class);
-  private EstablishTemporaryConnectionRequest request;
-  private String channelTransId;
-  private CAPStack capStack;
+  private static final Logger logger = LogManager.getLogger(CapProxyETCRequest.class);
+  private final EstablishTemporaryConnectionRequest request;
+  private final String channelTransId;
+  private final CAPStack capStack;
 
   public CapProxyETCRequest(EstablishTemporaryConnectionRequest request, String channelTransId,
       CAPStack capStack) {
@@ -46,21 +46,15 @@ public class CapProxyETCRequest {
 
   public CapDialogOut process() {
     try {
-      logger.debug(String.format("[CAP::REQUEST<%s>] dialogId '%d', invokeId '%d'",
-          request.getMessageType().toString(), request.getCAPDialog().getLocalDialogId(),
-          request.getInvokeId()));
+      logger.debug("[CAP::REQUEST<{}>] dialogId '{}', invokeId '{}'", request.getMessageType().toString(), request.getCAPDialog().getLocalDialogId(), request.getInvokeId());
       Long dialogId = request.getCAPDialog().getLocalDialogId();
-      BcsmCallContent callContent =
-          CapTransaction.instance().getSSFBcsmCallContent(dialogId, false);
-      CapDialogOut capDialogOut =
-          new CapDialogOut(CapDialogType.CircuitSwitchedCallControl, channelTransId);
+      BcsmCallContent callContent = CapTransaction.instance().getSSFBcsmCallContent(dialogId, false);
+      CapDialogOut capDialogOut = new CapDialogOut(CapDialogType.CircuitSwitchedCallControl, channelTransId);
       capDialogOut.setTransDialogId(dialogId);
       if (callContent == null) {
-        logger.info(
-            "CAP ETC received on CAP Proxy but no action on that CAP operation required for this HPLMN");
+        logger.info("CAP ETC received on CAP Proxy but no action on that CAP operation required for this HPLMN");
         /* call content not found */
-        return CapProxyHelperUtils.closeDialog(request.getCAPDialog(), dialogId, channelTransId,
-            false);
+        return CapProxyHelperUtils.closeDialog(request.getCAPDialog(), dialogId, channelTransId, false);
       } else {
         callContent.setEtc(request);
         callContent.setStep(BcsmCallStep.etcReceived);
@@ -73,7 +67,7 @@ public class CapProxyETCRequest {
             calledSccpAddress, imsi, request.getMessageType().toString(), this.channelTransId);
         if (result == null) {
           // No rule found. Proceed ....
-          logger.trace("Rule not found for ETC request " + request + ", " + this.channelTransId);
+          logger.trace("Rule not found for ETC request {}, {}", request, this.channelTransId);
           etcDialogOut.addContinueRequest();
         } else {
           capDialogOut.setRuleName(result.getRuleName());
@@ -87,47 +81,36 @@ public class CapProxyETCRequest {
             if (replaceComponent != null && replaceComponent.getApply()) {
               // apply the argument
               CapRuleComponent.Replace.ReplaceArguments replArgs = replaceComponent.getArgument();
-              String callingNumber =
-                  callContent.getCallingPartyNumberCap().getCallingPartyNumber().getAddress();
-              logger.trace(String.format("Getting the MSRN Number using the RULE '%s'",
-                  result.getRuleName()));
+              String callingNumber = callContent.getCallingPartyNumberCap().getCallingPartyNumber().getAddress();
+              logger.trace("Getting the MSRN Number using the RULE '{}'", result.getRuleName());
               String msrnNumber = MSRNNumbers.instance().getMSRNAddress(result.getRuleName(),
                   replArgs.getCdPN(), replArgs.getRange(), dialogId, callingNumber);
-              logger.info("MSRN Number = " + msrnNumber + "; " + channelTransId);
+              logger.info("MSRN Number = {}; {}", msrnNumber, channelTransId);
               capDialogOut.setMSRN(msrnNumber);
               ArrayList<CalledPartyNumberCap> calledPartyNumber = new ArrayList<>();
-              CalledPartyNumber cpn =
-                  capStack.getCAPProvider().getISUPParameterFactory().createCalledPartyNumber();
+              CalledPartyNumber cpn = capStack.getCAPProvider().getISUPParameterFactory().createCalledPartyNumber();
               cpn.setAddress(msrnNumber);
 
               cpn.setNatureOfAddresIndicator(replArgs.getNai());
               cpn.setNumberingPlanIndicator(replArgs.getNpi());
               cpn.setInternalNetworkNumberIndicator(replArgs.getInni());
-              CalledPartyNumberCap cpnc = capStack.getCAPProvider().getCAPParameterFactory()
-                  .createCalledPartyNumberCap(cpn);
+              CalledPartyNumberCap cpnc = capStack.getCAPProvider().getCAPParameterFactory().createCalledPartyNumberCap(cpn);
               calledPartyNumber.add(cpnc);
               // add the call to the bcsm
               callContent.setCalledPartyNumberCap(cpnc);
               DestinationRoutingAddress destinationRoutingAddress = capStack.getCAPProvider()
                   .getCAPParameterFactory().createDestinationRoutingAddress(calledPartyNumber);
               helper.setDestinationRoutingAddress(destinationRoutingAddress);
-              helper.replaceComponent(etcDialogOut, replaceComponent.getPrimitive(),
-                  removeComponent);
-              logger.debug(
-                  "CAP ETC removed and CAP CON to be sent on CAP proxy to VPLMN over dialog: "
-                      + etcDialogOut + "; Calling Party Address=" + etcDialogOut.getLocalAddress()
-                      + "; Called Party Address=" + etcDialogOut.getRemoteAddress() + "; "
-                      + channelTransId);
+              helper.replaceComponent(etcDialogOut, replaceComponent.getPrimitive(), removeComponent);
+              logger.debug("CAP ETC removed and CAP CON to be sent on CAP proxy to VPLMN over dialog: {}; Calling Party Address={}; Called Party Address={}; {}", etcDialogOut, etcDialogOut.getLocalAddress(), etcDialogOut.getRemoteAddress(), channelTransId);
               CapTransaction.instance().setMsrnTransaction(callingNumber, msrnNumber, callContent);
             } else {
               etcDialogOut.addContinueRequest();
-              logger.trace("Replace argument equals false. " + channelTransId + ". Relaying TCAP component with only CAP CUE " +
-                      "and ETC removed");
+              logger.trace("Replace argument equals false. {}. Relaying TCAP component with only CAP CUE and ETC removed", channelTransId);
             }
           } else {
             etcDialogOut.addContinueRequest();
-            logger.trace("Rule Component not found. " + channelTransId + ". Relaying TCAP component with only CAP CUE " +
-                    "and ETC removed");
+            logger.trace("Rule Component not found. {}. Relaying TCAP component with only CAP CUE and ETC removed", channelTransId);
           }
         }
         // update the bcsm
@@ -138,11 +121,11 @@ public class CapProxyETCRequest {
         return capDialogOut;
       }
     } catch (CAPException capEx) {
-      logger.error("Processing CAP ETC Request failed for " + channelTransId, capEx);
+      logger.error("Processing CAP ETC Request failed for {}", channelTransId, capEx);
       return CapProxyHelperUtils.discardReason(CapDialogType.CircuitSwitchedCallControl,
           capEx.getMessage(), request.getMessageType().toString(), channelTransId);
     } catch (Exception e) {
-      logger.error("Exception caught for " + channelTransId + ". Details: ", e);
+      logger.error("Exception caught for {}. Details: ", channelTransId, e);
       return CapProxyHelperUtils.discardReason(CapDialogType.CircuitSwitchedCallControl,
           e.getMessage(), request.getMessageType().toString(), channelTransId);
     }
@@ -163,7 +146,7 @@ public class CapProxyETCRequest {
             .flatMap(PatternSccpAddress::getSubSystemNumber)
             .orElse(calledSccpAddress.getSubsystemNumber());
         calledSccpAddress = new SccpAddressImpl(ri, gt, dpc, ssn);
-        logger.info("SccpAddress: " + calledSccpAddress.toString() + "; " + channelTransId);
+        logger.info("SccpAddress: {}; {}", calledSccpAddress, channelTransId);
       }
 
       etcDialogOut.setRemoteAddress(calledSccpAddress); // change the called address
@@ -179,7 +162,7 @@ public class CapProxyETCRequest {
             .flatMap(PatternSccpAddress::getSubSystemNumber)
             .orElse(callingSccpAddress.getSubsystemNumber());
         callingSccpAddress = new SccpAddressImpl(ri, gt, dpc, ssn);
-        logger.info("SccpAddress: " + callingSccpAddress.toString() + "; " + channelTransId);
+        logger.info("SccpAddress: {}; {}", callingSccpAddress, channelTransId);
       }
       etcDialogOut.setLocalAddress(callingSccpAddress);
     }

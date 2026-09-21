@@ -1,7 +1,7 @@
 package com.naikeri.sgw.impl.rules;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.indicator.NatureOfAddress;
 import org.restcomm.protocols.ss7.indicator.NumberingPlan;
 import org.restcomm.protocols.ss7.sccp.impl.parameter.ParameterFactoryImpl;
@@ -15,6 +15,7 @@ import org.restcomm.protocols.ss7.sccp.parameter.GlobalTitle;
  * The replacement for the match rule
  */
 public class ApplicationReplaceRule {
+
   public static class Builder {
     private ApplicationRuleGlobalTitle callingGt;
     private ApplicationRuleGlobalTitle calledGt;
@@ -62,7 +63,7 @@ public class ApplicationReplaceRule {
     }
   }
 
-  private Logger logger = LoggerFactory.getLogger(ApplicationReplaceRule.class);
+  private final Logger logger = LogManager.getLogger(ApplicationReplaceRule.class);
 
   private ApplicationRuleGlobalTitle callingGt;
   private ApplicationRuleGlobalTitle calledGt;
@@ -154,7 +155,7 @@ public class ApplicationReplaceRule {
 
       return factory.createGlobalTitle(newGtValue, tempRuleGt.getTranslationType(), np, ec, noa);
     } catch (Exception e) {
-      logger.error("Exception caught: " + e);
+      logger.error("Exception caught: {}", String.valueOf(e));
     }
     return null;
   }
@@ -203,7 +204,7 @@ public class ApplicationReplaceRule {
 
       return factory.createGlobalTitle(newGtValue, tempRuleGt.getTranslationType(), np, ec, noa);
     } catch (Exception e) {
-      logger.error("Exception caught: " + e);
+      logger.error("Exception caught: {}", String.valueOf(e));
     }
     return null;
   }

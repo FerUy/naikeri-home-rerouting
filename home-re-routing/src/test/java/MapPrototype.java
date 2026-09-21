@@ -1,5 +1,7 @@
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+
 import com.google.common.util.concurrent.RateLimiter;
 import com.naikeri.sgw.api.chn.ChannelMessage;
 import com.naikeri.sgw.api.network.LayerInterface;
@@ -13,8 +15,8 @@ import com.naikeri.sgw.network.layers.M3uaLayer;
 import com.naikeri.sgw.network.layers.SccpLayer;
 import com.naikeri.sgw.network.layers.SctpLayer;
 import com.naikeri.sgw.network.layers.TcapLayer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.MAPStackImpl;
 import org.restcomm.protocols.ss7.map.api.MAPApplicationContext;
 import org.restcomm.protocols.ss7.map.api.MAPApplicationContextName;
@@ -32,12 +34,14 @@ import org.restcomm.protocols.ss7.map.api.dialog.MAPUserAbortChoice;
 import org.restcomm.protocols.ss7.map.api.errors.MAPErrorMessage;
 import org.restcomm.protocols.ss7.map.api.primitives.AddressNature;
 import org.restcomm.protocols.ss7.map.api.primitives.AddressString;
+import org.restcomm.protocols.ss7.map.api.primitives.DiameterIdentity;
 import org.restcomm.protocols.ss7.map.api.primitives.GSNAddress;
 import org.restcomm.protocols.ss7.map.api.primitives.IMEI;
 import org.restcomm.protocols.ss7.map.api.primitives.IMSI;
 import org.restcomm.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.restcomm.protocols.ss7.map.api.primitives.MAPExtensionContainer;
 import org.restcomm.protocols.ss7.map.api.primitives.NumberingPlan;
+import org.restcomm.protocols.ss7.map.api.primitives.PlmnId;
 import org.restcomm.protocols.ss7.map.api.service.lsm.MAPServiceLsmListener;
 import org.restcomm.protocols.ss7.map.api.service.lsm.ProvideSubscriberLocationRequest;
 import org.restcomm.protocols.ss7.map.api.service.lsm.ProvideSubscriberLocationResponse;
@@ -61,9 +65,11 @@ import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.AD
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.CancelLocationRequest;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.CancelLocationResponse;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.EPSInfo;
+import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.ExtSupportedFeatures;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.PurgeMSRequest;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.PurgeMSResponse;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SGSNCapability;
+import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SMSRegisterRequest;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SendIdentificationRequest;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SendIdentificationResponse;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SuperChargerInfo;
@@ -80,6 +86,8 @@ import org.restcomm.protocols.ss7.map.api.service.mobility.oam.ActivateTraceMode
 import org.restcomm.protocols.ss7.map.api.service.mobility.oam.ActivateTraceModeResponse_Mobility;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeInterrogationRequest;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeInterrogationResponse;
+import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeModificationRequest;
+import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeModificationResponse;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeSubscriptionInterrogationRequest;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeSubscriptionInterrogationResponse;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.ProvideSubscriberInfoRequest;
@@ -104,7 +112,7 @@ import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
 import org.restcomm.protocols.ss7.tcap.asn.ApplicationContextName;
 import org.restcomm.protocols.ss7.tcap.asn.comp.Problem;
 
-/*
+/**
  * MAP Prototype
  *
  */
@@ -123,12 +131,9 @@ public class MapPrototype extends ChannelHandler
   private TcapLayer tcapClient;
   private MAPStackImpl mapServer;
   private MAPStackImpl mapClient;
-  private MAPProvider serverMapProvider;
   private MAPProvider clientMapProvider;
-  private NetworkIdState networkIdState;
-  private RateLimiter rateLimiterObj = null;
 
-  public static Logger logger = LoggerFactory.getLogger(MapPrototype.class);
+  public static Logger logger = LogManager.getLogger(MapPrototype.class.getName());
 
   public MapPrototype(ChannelSettings channelSettings) {
     super(channelSettings);
@@ -171,8 +176,7 @@ public class MapPrototype extends ChannelHandler
       m3uaServer = new M3uaLayer(m3uaServerSettings, sctpServer);
 
       // Configure load Client
-      M3uaSettings m3uaClientSettings =
-          new M3uaSettings("m3uaClient", "NAIKERI_SGW", 10000, "sctpClient", true);
+      M3uaSettings m3uaClientSettings = new M3uaSettings("m3uaClient", "NAIKERI_SGW", 10000, "sctpClient", true);
       m3uaClientSettings.addApplicationServer("AS2", "AS", "SE", "CLIENT", 100, "LOADSHARE", 0, 0);
       m3uaClientSettings.addApplicationServerProcess("AS2", "ASP2", "assoc_0", true);
       m3uaClientSettings.addApplicationServerRoute("AS2", 1000, 1001, -1);
@@ -271,7 +275,7 @@ public class MapPrototype extends ChannelHandler
       mapClient.start();
 
       mapServer = new MAPStackImpl("mapServer", tcapServer.getTcapProvider());
-      serverMapProvider = mapServer.getMAPProvider();
+      MAPProvider serverMapProvider = mapServer.getMAPProvider();
       serverMapProvider.addMAPDialogListener(this);
 
       serverMapProvider.getMAPServiceMobility().addMAPServiceListener(this);
@@ -290,21 +294,21 @@ public class MapPrototype extends ChannelHandler
       throws MAPException {
     try {
       logger.info("Sending MAP Message");
-      this.rateLimiterObj = RateLimiter.create(5000);
-      this.networkIdState = this.mapClient.getMAPProvider().getNetworkIdState(0);
-      if (!(this.networkIdState == null
-          || this.networkIdState.isAvailable() && this.networkIdState.getCongLevel() == 0)) {
+      RateLimiter rateLimiterObj = RateLimiter.create(5000);
+      NetworkIdState networkIdState = this.mapClient.getMAPProvider().getNetworkIdState(0);
+      if (!(networkIdState == null
+          || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
         logger.warn("Outgoing congestion control: MAP load test client: networkIdState="
-            + this.networkIdState);
+            + networkIdState);
         try {
           Thread.sleep(3000);
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          logger.error(e.getStackTrace());
         }
       }
 
-      this.rateLimiterObj.acquire();
+      rateLimiterObj.acquire();
 
       // TO DO: For now i declared these variables manually but they need to be
       // some
@@ -338,7 +342,7 @@ public class MapPrototype extends ChannelHandler
       OfferedCamel4CSIs offeredCamel4CSIs = null;
       boolean smsCallBarringSupportIndicator = true;
       SupportedRATTypes supportedRATTypesIndicator =
-          new SupportedRATTypesImpl(true, true, false, false, true);
+          new SupportedRATTypesImpl(true, true, false, false, true, false);
       boolean lcsCapabilitySetRelease98_99 = true;
       boolean lcsCapabilitySetRelease4 = true;
       boolean lcsCapabilitySetRelease5 = true;
@@ -350,11 +354,19 @@ public class MapPrototype extends ChannelHandler
       SupportedFeatures supportedFeatures = null;
       boolean tAdsDataRetrieval = true;
       Boolean homogeneousSupportOfIMSVoiceOverPSSessions = null;
+      boolean cancellationTypeInitialAttach = false;
+      boolean misdnlessOperationSupported = false;
+      boolean updateOfHomogeneousSupportOfIMSVoiceOverPSSessions = false;
+      boolean resetIdsSupported = false;
+      ExtSupportedFeatures extSupportedFeatures = null;
       SGSNCapability sgsnCapability = new SGSNCapabilityImpl(solsaSupportIndicator,
           extensionContainer, superChargerSupportedInServingNetworkEntity,
           gprsEnhancementsSupportIndicator, supportedCamelPhases, supportedLCSCapabilitySets,
           offeredCamel4CSIs, smsCallBarringSupportIndicator, supportedRATTypesIndicator,
-          supportedFeatures, tAdsDataRetrieval, homogeneousSupportOfIMSVoiceOverPSSessions);
+          supportedFeatures, tAdsDataRetrieval, homogeneousSupportOfIMSVoiceOverPSSessions,
+          cancellationTypeInitialAttach, misdnlessOperationSupported,
+          updateOfHomogeneousSupportOfIMSVoiceOverPSSessions, resetIdsSupported, extSupportedFeatures);
+
       boolean informPreviousNetworkEntity = false;
       boolean psLCSNotSupportedByUE = false;
       byte[] visitedGmlcAddress = new BigInteger("112233445500", 16).toByteArray();
@@ -371,15 +383,26 @@ public class MapPrototype extends ChannelHandler
       boolean ueReachableIndicator = false;
       boolean epsSubscriptionDataNotNeeded = true;
       UESRVCCCapability uesrvccCapability = UESRVCCCapability.ueSrvccSupported;
+      ArrayList<PlmnId> ePLMNList = null;
+      ISDNAddressString mmeNumberForMTSMS = null;
+      SMSRegisterRequest smsRegisterRequest = null;
+      boolean smsOnly = false;
+      DiameterIdentity sgsnName = null;
+      DiameterIdentity sgsnRealm = null;
+      boolean lgdSupportIndicator = false;
+      boolean removalOfMMERegistrationForSMS = false;
+      ArrayList<PlmnId> adjacentPLMNList = null;
 
       mapDialogMobility.addUpdateGprsLocationRequest(imsi, sgsnNumber, sgsnAddress,
           extensionContainer, sgsnCapability, informPreviousNetworkEntity, psLCSNotSupportedByUE,
           vGmlcAddress, addInfo, epsInfo, servingNodeTypeIndicator, skipSubscriberDataUpdate,
           usedRATType, gprsSubscriptionDataNotNeeded, nodeTypeIndicator, areaRestricted,
-          ueReachableIndicator, epsSubscriptionDataNotNeeded, uesrvccCapability);
+          ueReachableIndicator, epsSubscriptionDataNotNeeded, uesrvccCapability, ePLMNList,
+          mmeNumberForMTSMS, smsRegisterRequest, smsOnly, sgsnName, sgsnRealm, lgdSupportIndicator,
+          removalOfMMERegistrationForSMS, adjacentPLMNList);
       mapDialogMobility.send();
     } catch (MAPException e) {
-      logger.error("Error while sending MAP ATI:" + e);
+      logger.error("Error while sending MAP ATI:{}", String.valueOf(e));
     }
   }
 
@@ -418,7 +441,7 @@ public class MapPrototype extends ChannelHandler
       }
 
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error(e.getStackTrace());
     }
 
   }
@@ -508,8 +531,8 @@ public class MapPrototype extends ChannelHandler
           .createNewDialog(appCntx, destAddress, destReference, origAddress, origReference);
 
       IMSI imsi = updateGprsLocationRequest.getImsi();
-      logger.info("Received IMSI: " + imsi.getData());
-      logger.info("From GT: " + origAddress.getGlobalTitle().getDigits());
+      logger.info("Received IMSI: {}", imsi.getData());
+      logger.info("From GT: {}", origAddress.getGlobalTitle().getDigits());
       if (origAddress.getGlobalTitle().getDigits().equals("50373700001")
           && imsi.getData().startsWith("42501")) {
         logger.info("Performing IMSI Replacement");
@@ -530,14 +553,23 @@ public class MapPrototype extends ChannelHandler
             updateGprsLocationRequest.getAreaRestricted(),
             updateGprsLocationRequest.getUeReachableIndicator(),
             updateGprsLocationRequest.getEpsSubscriptionDataNotNeeded(),
-            updateGprsLocationRequest.getUESRVCCCapability());
+            updateGprsLocationRequest.getUESRVCCCapability(),
+            updateGprsLocationRequest.getEPLMNList(),
+            updateGprsLocationRequest.getMmeNumberForMTSMS(),
+            updateGprsLocationRequest.getSMSRegisterRequest(),
+            updateGprsLocationRequest.getSmsOnly(),
+            updateGprsLocationRequest.getSgsnName(),
+            updateGprsLocationRequest.getSgsnRealm(),
+            updateGprsLocationRequest.getLgdSupportIndicator(),
+            updateGprsLocationRequest.getRemovalOfMMERegistrationForSMS(),
+            updateGprsLocationRequest.getAdjacentPLMNList());
         ulgDialogOut.send();
       }
 
     } catch (MAPException mapException) {
-      logger.error("MAP Exception while processing UpdateGprsLocationRequest " + mapException);
+      logger.error("MAP Exception while processing UpdateGprsLocationRequest {}", String.valueOf(mapException));
     } catch (Exception e) {
-      logger.error("Exception while processing AnyTimeInterrogationRequest" + e);
+      logger.error("Exception while processing AnyTimeInterrogationRequest{}", String.valueOf(e));
     }
 
   }
@@ -627,6 +659,16 @@ public class MapPrototype extends ChannelHandler
   }
 
   @Override
+  public void onAnyTimeModificationRequest(AnyTimeModificationRequest anyTimeModificationRequest) {
+
+  }
+
+  @Override
+  public void onAnyTimeModificationResponse(AnyTimeModificationResponse anyTimeModificationResponse) {
+
+  }
+
+  @Override
   public void onProvideSubscriberInfoRequest(
       ProvideSubscriberInfoRequest provideSubscriberInfoRequest) {
 
@@ -711,13 +753,13 @@ public class MapPrototype extends ChannelHandler
 
   @Override
   public void onDialogRequest(MAPDialog mapDialog, AddressString addressString,
-      AddressString addressString1, MAPExtensionContainer mapExtensionContainer) {
+                              AddressString addressString1, MAPExtensionContainer mapExtensionContainer) {
 
   }
 
   @Override
   public void onDialogRequestEricsson(MAPDialog mapDialog, AddressString addressString,
-      AddressString addressString1, AddressString addressString2, AddressString addressString3) {
+                                      AddressString addressString1, AddressString addressString2, AddressString addressString3) {
 
   }
 
@@ -728,20 +770,20 @@ public class MapPrototype extends ChannelHandler
 
   @Override
   public void onDialogReject(MAPDialog mapDialog, MAPRefuseReason mapRefuseReason,
-      ApplicationContextName applicationContextName, MAPExtensionContainer mapExtensionContainer) {
+                             ApplicationContextName applicationContextName, MAPExtensionContainer mapExtensionContainer) {
 
   }
 
   @Override
   public void onDialogUserAbort(MAPDialog mapDialog, MAPUserAbortChoice mapUserAbortChoice,
-      MAPExtensionContainer mapExtensionContainer) {
+                                MAPExtensionContainer mapExtensionContainer) {
 
   }
 
   @Override
   public void onDialogProviderAbort(MAPDialog mapDialog,
-      MAPAbortProviderReason mapAbortProviderReason, MAPAbortSource mapAbortSource,
-      MAPExtensionContainer mapExtensionContainer) {
+                                    MAPAbortProviderReason mapAbortProviderReason, MAPAbortSource mapAbortSource,
+                                    MAPExtensionContainer mapExtensionContainer) {
 
   }
 
@@ -752,7 +794,7 @@ public class MapPrototype extends ChannelHandler
 
   @Override
   public void onDialogNotice(MAPDialog mapDialog,
-      MAPNoticeProblemDiagnostic mapNoticeProblemDiagnostic) {
+                             MAPNoticeProblemDiagnostic mapNoticeProblemDiagnostic) {
 
   }
 

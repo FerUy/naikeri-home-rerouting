@@ -1,5 +1,7 @@
 package com.naikeri.prototype.map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.api.MAPDialog;
 import org.restcomm.protocols.ss7.map.api.MAPMessage;
 import org.restcomm.protocols.ss7.map.api.errors.MAPErrorMessage;
@@ -25,16 +27,18 @@ import org.restcomm.protocols.ss7.tcap.asn.comp.Problem;
 
 public class MapProtoTypeSMSListener implements MAPServiceSmsListener {
 
+  private static final Logger logger = LogManager.getLogger(MapProtoTypeSMSListener.class);
+
   @Override
   public void onErrorComponent(MAPDialog mapDialog, Long invokeId,
-      MAPErrorMessage mapErrorMessage) {
+                               MAPErrorMessage mapErrorMessage) {
     //  Auto-generated method stub
 
   }
 
   @Override
   public void onRejectComponent(MAPDialog mapDialog, Long invokeId, Problem problem,
-      boolean isLocalOriginated) {
+                                boolean isLocalOriginated) {
     //  Auto-generated method stub
 
   }
@@ -82,7 +86,7 @@ public class MapProtoTypeSMSListener implements MAPServiceSmsListener {
       MAPDialogSms dialogSms = mtForwSmInd.getMAPDialog();
       dialogSms.addMtForwardShortMessageResponse(mtForwSmInd.getInvokeId(), mtForwSmInd.getSM_RP_UI(), null);
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error(e.getStackTrace());
     }
   }
 

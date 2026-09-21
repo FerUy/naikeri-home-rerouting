@@ -9,8 +9,8 @@ import com.naikeri.sgw.impl.settings.ChannelSettings;
 import com.naikeri.sgw.info.Transaction;
 import com.naikeri.sgw.network.layers.MapLayer;
 import com.naikeri.sgw.network.layers.listeners.ProxyConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.api.MAPDialog;
 
 /**
@@ -18,7 +18,7 @@ import org.restcomm.protocols.ss7.map.api.MAPDialog;
  */
 public class MapChannel extends ChannelHandler {
 
-  private static final Logger logger = LoggerFactory.getLogger(MapChannel.class);
+  private static final Logger logger = LogManager.getLogger(MapChannel.class);
   private static final List<String> handleSignalList = new ArrayList<>();
   static {
     handleSignalList.add(ProxyConstants.ON_DIALOG_TIMEOUT);
@@ -27,7 +27,7 @@ public class MapChannel extends ChannelHandler {
   }
 
   private MapLayer map = null;
-  private ChannelSettings channelSetting = null;
+  private final ChannelSettings channelSetting;
 
   public MapChannel(ChannelSettings channelSettings) {
     super(channelSettings);
@@ -52,13 +52,11 @@ public class MapChannel extends ChannelHandler {
     if (messagetype.isEmpty())
       return;
     if (messagetype.endsWith("Request")) {
-      logger.info(String.format("[MAP::REQUEST<%s>] Sending message '%s' to application.",
-          messagetype, chnMessage));
+      logger.info("[MAP::REQUEST<{}>] Sending message '{}' to application.", messagetype, chnMessage);
     } else if (messagetype.endsWith("Response")) {
-      logger.info(String.format("[MAP::RESPONSE<%s>] Sending message '%s' to application.",
-          messagetype, chnMessage));
+      logger.info("[MAP::RESPONSE<{}>] Sending message '{}' to application.", messagetype, chnMessage);
     } else {
-      logger.info(String.format("Sending message '%s' to application.", chnMessage));
+      logger.info("Sending message '{}' to application.", chnMessage);
     }
   }
 
@@ -77,10 +75,9 @@ public class MapChannel extends ChannelHandler {
       } else {
         MAPDialog mapDialog = (MAPDialog) channelMessage.getParameter("dialog");
         if (mapDialog != null) {
-          logger.debug(String.format(
-              "[MAP::SIGNAL<%s>] dialogId = '%d', appCtx<%s>, NetworkId = %d, %s", messagetype,
-              mapDialog.getLocalDialogId(), mapDialog.getApplicationContext().toString(),
-              mapDialog.getNetworkId(), channelMessage.toString()));
+          logger.debug("[MAP::SIGNAL<{}>] dialogId = '{}', appCtx<{}>, NetworkId = {}, {}",
+              messagetype, mapDialog.getLocalDialogId(), mapDialog.getApplicationContext().toString(),
+              mapDialog.getNetworkId(), channelMessage.toString());
           // handle onDialogTimeout
           if (handleSignalList.contains(messagetype)) {
             sendMessageRequest(channelMessage);
@@ -104,27 +101,22 @@ public class MapChannel extends ChannelHandler {
         // check if there is discard message then don't send the MAP message
         String discardMsg = dialogOut.getDiscardReason();
         if (discardMsg != null && !discardMsg.isEmpty()) {
-          logger.info(String.format("MAP::DISCARD<%s>] Reason: %s, %s", messageType,
-              dialogOut.getDiscardReason(), channelMessage.toString()));
+          logger.info("MAP::DISCARD<{}>] Reason: {}, {}", messageType, dialogOut.getDiscardReason(), channelMessage.toString());
         } else {
           String classDialogOut = dialogOut.getDialogOutName(messageType);
 
-          logger.info(String.format(
-              "MAPmessage '%s' sending from '%s' dialog '%d' to remote '%s' dialog '%d', %s",
-              classDialogOut, dialogOut.getLocalAddress(), dialogOut.getLocalDialogId(),
-              dialogOut.getRemoteAddress(), dialogOut.getRemoteDialogId(),
-              channelMessage.toString()));
+          logger.info("MAPmessage '{}' sending from '{}' dialog '{}' to remote '{}' dialog '{}', {}",
+              classDialogOut, dialogOut.getLocalAddress(), dialogOut.getLocalDialogId(), dialogOut.getRemoteAddress(),
+              dialogOut.getRemoteDialogId(), channelMessage.toString());
           dialogOut.send();
         }
       } else {
         if (!messageType.equals("onDialogClose")) {
-          logger
-              .info(String.format("MAP::DISCARD<%s>] Discarding message for %s with unknown reason",
-                  messageType, channelMessage.toString()));
+          logger.info("MAP::DISCARD<{}>] Discarding message for {} with unknown reason", messageType, channelMessage.toString());
         }
       }
     } catch (Exception e) {
-      logger.error("Exception caught for <" + messageType + ">: " + channelMessage.toString(), e);
+        logger.error("Exception caught for <{}>: {}", messageType, channelMessage.toString(), e);
     }
     return 0;
 

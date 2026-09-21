@@ -9,19 +9,22 @@ import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.Up
  */
 public class UpdateGprsLocationResponseCopy {
 
-  private ISDNAddressString hlrNumber;
+  private final ISDNAddressString hlrNumber;
 
-  private MAPExtensionContainer extensionContainer;
+  private final MAPExtensionContainer extensionContainer;
 
-  private boolean addCapability;
+  private final boolean addCapability;
 
-  private boolean sgsnMmeSeparationSupported;
+  private final boolean sgsnMmeSeparationSupported;
 
-  public UpdateGprsLocationResponseCopy(UpdateGprsLocationResponse response){
+  private final boolean mmeRegisteredForSMS;
+
+  public UpdateGprsLocationResponseCopy(UpdateGprsLocationResponse response) {
     this.hlrNumber = response.getHlrNumber();
     this.extensionContainer = response.getExtensionContainer();
-    this.addCapability = response.getAddCapability();
-    this.sgsnMmeSeparationSupported = response.getSgsnMmeSeparationSupported();
+    this.addCapability = response.isAddCapability();
+    this.sgsnMmeSeparationSupported = response.isMmeRegisteredForSMS();
+    this.mmeRegisteredForSMS = response.isMmeRegisteredForSMS();
   }
 
   public ISDNAddressString getHlrNumber() {
@@ -32,11 +35,15 @@ public class UpdateGprsLocationResponseCopy {
     return extensionContainer;
   }
 
-  public boolean getAddCapability() {
+  public boolean isCapability() {
     return addCapability;
   }
 
-  public boolean getSgsnMmeSeparationSupported() {
+  public boolean isSgsnMmeSeparationSupported() {
     return sgsnMmeSeparationSupported;
+  }
+
+  public boolean isMmeRegisteredForSM() {
+    return mmeRegisteredForSMS;
   }
 }

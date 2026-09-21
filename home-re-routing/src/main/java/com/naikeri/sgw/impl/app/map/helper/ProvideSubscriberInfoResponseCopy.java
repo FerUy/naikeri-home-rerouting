@@ -9,18 +9,18 @@ import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation
  */
 public class ProvideSubscriberInfoResponseCopy {
 
-  private SubscriberInfo subscriberInfo;
+  private final SubscriberInfo subscriberInfo;
 
-  private MAPExtensionContainer extensionContainer;
+  private final MAPExtensionContainer extensionContainer;
 
-  public ProvideSubscriberInfoResponseCopy(ProvideSubscriberInfoResponse response){
+  public ProvideSubscriberInfoResponseCopy(ProvideSubscriberInfoResponse response) {
     this.subscriberInfo = response.getSubscriberInfo();
     this.extensionContainer = response.getExtensionContainer();
   }
 
   public SubscriberInfo getSubscriberInfo() {
     return subscriberInfo;
-  } 
+  }
 
   public MAPExtensionContainer getExtensionContainer() {
     return extensionContainer;

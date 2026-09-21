@@ -2,8 +2,8 @@ package com.naikeri.prototype.map;
 
 import java.util.ArrayList;
 import java.util.Random;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.restcomm.protocols.ss7.map.api.MAPDialog;
 import org.restcomm.protocols.ss7.map.api.MAPException;
@@ -42,6 +42,8 @@ import org.restcomm.protocols.ss7.map.api.service.mobility.oam.ActivateTraceMode
 import org.restcomm.protocols.ss7.map.api.service.mobility.oam.ActivateTraceModeResponse_Mobility;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeInterrogationRequest;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeInterrogationResponse;
+import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeModificationRequest;
+import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeModificationResponse;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeSubscriptionInterrogationRequest;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeSubscriptionInterrogationResponse;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.ProvideSubscriberInfoRequest;
@@ -72,27 +74,27 @@ import org.restcomm.protocols.ss7.map.service.mobility.subscriberManagement.Inse
 import org.restcomm.protocols.ss7.tcap.asn.comp.Problem;
 
 public class MapPrototypeMobility implements MAPServiceMobilityListener {
-  private static final Logger logger = LoggerFactory.getLogger(MapPrototypeMobility.class);
 
- 
-  private MAPParameterFactory mapParameterFactory;
+  private static final Logger logger = LogManager.getLogger(MapPrototypeMobility.class);
+
+  private final MAPParameterFactory mapParameterFactory;
   private Integer numberOfTest = 0;
-  private Random rand = new Random();
+  private final Random rand = new Random();
 
   public MapPrototypeMobility(MAPParameterFactory mapParameterFactory){
     this.mapParameterFactory = mapParameterFactory;
   }
-  
+
   @Override
   public void onErrorComponent(MAPDialog mapDialog, Long invokeId,
-      MAPErrorMessage mapErrorMessage) {
+                               MAPErrorMessage mapErrorMessage) {
     // Auto-generated method stub
 
   }
 
   @Override
   public void onRejectComponent(MAPDialog mapDialog, Long invokeId, Problem problem,
-      boolean isLocalOriginated) {
+                                boolean isLocalOriginated) {
     // Auto-generated method stub
 
   }
@@ -112,12 +114,10 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
   @Override
   public void onUpdateLocationRequest(UpdateLocationRequest updateLocationReq) {
     if (logger.isDebugEnabled()) {
-      logger.debug(String.format("UpdateLocationRequest for DialogId=%d",
-          updateLocationReq.getMAPDialog().getLocalDialogId()));
+      logger.debug("UpdateLocationRequest for DialogId={}", updateLocationReq.getMAPDialog().getLocalDialogId());
     }
     if (logger.isInfoEnabled()) {
-      logger.info(String.format("UpdateLocationRequest for DialogId=%d",
-          updateLocationReq.getMAPDialog().getLocalDialogId()));
+      logger.info("UpdateLocationRequest for DialogId={}", updateLocationReq.getMAPDialog().getLocalDialogId());
     }
     // initiate a new call with the ISD
     try {
@@ -159,7 +159,6 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
       }
     } catch (Exception e) {
       logger.error("Unable to process update location request. " + e.getMessage());
-      e.printStackTrace();
     }
   }
 
@@ -197,12 +196,10 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
   public void onUpdateGprsLocationRequest(UpdateGprsLocationRequest request) {
     // Auto-generated method stub
     if (logger.isDebugEnabled()) {
-      logger.debug(String.format("UpdateGprsLocationRequest for DialogId=%d",
-          request.getMAPDialog().getLocalDialogId()));
+      logger.debug("UpdateGprsLocationRequest for DialogId={}", request.getMAPDialog().getLocalDialogId());
     }
     if (logger.isInfoEnabled()) {
-      logger.info(String.format("UpdateGprsLocationRequest for DialogId=%d",
-          request.getMAPDialog().getLocalDialogId()));
+      logger.info("UpdateGprsLocationRequest for DialogId={}", request.getMAPDialog().getLocalDialogId());
     }
 
     try {
@@ -217,7 +214,7 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
       boolean sgsnMmeSeparationSupported = true;
 
       mapDialogMobility.addUpdateGprsLocationResponse(invokeId, hlrNumber, extensionContainer,
-          addCapability, sgsnMmeSeparationSupported);
+          addCapability, sgsnMmeSeparationSupported, false);
 
       // This will initiate the TC-BEGIN with INVOKE component
       mapDialogMobility.send();
@@ -252,12 +249,10 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
   public void onSendAuthenticationInfoRequest(SendAuthenticationInfoRequest request) {
     // Auto-generated method stub
     if (logger.isDebugEnabled()) {
-      logger.debug(String.format("onUpdateGprsLocationRequest for DialogId=%d",
-          request.getMAPDialog().getLocalDialogId()));
+      logger.debug("onUpdateGprsLocationRequest for DialogId={}", request.getMAPDialog().getLocalDialogId());
     }
     if (logger.isInfoEnabled()) {
-      logger.info(String.format("onUpdateGprsLocationRequest for DialogId=%d",
-          request.getMAPDialog().getLocalDialogId()));
+      logger.info("onUpdateGprsLocationRequest for DialogId={}", request.getMAPDialog().getLocalDialogId());
     }
 
     try {
@@ -267,7 +262,7 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
 
       MAPExtensionContainer extensionContainer = null;
       logger.info("Sending authenticationrequestinfo. ;");
-      mapDialogMobility.addSendAuthenticationInfoResponse(invokeId, null, extensionContainer, null);
+      mapDialogMobility.addSendAuthenticationInfoResponse(invokeId, null, extensionContainer, null, null);
       // This will initiate the TC-BEGIN with INVOKE component
       mapDialogMobility.close(false);
 
@@ -348,6 +343,16 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
   }
 
   @Override
+  public void onAnyTimeModificationRequest(AnyTimeModificationRequest anyTimeModificationRequest) {
+
+  }
+
+  @Override
+  public void onAnyTimeModificationResponse(AnyTimeModificationResponse anyTimeModificationResponse) {
+
+  }
+
+  @Override
   public void onProvideSubscriberInfoRequest(ProvideSubscriberInfoRequest request) {
     // Auto-generated method stub
 
@@ -363,11 +368,9 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
   public void onInsertSubscriberDataRequest(InsertSubscriberDataRequest request) {
     // Auto-generated method stub
     if (logger.isDebugEnabled()) {
-      logger.debug(String.format("onInsertSubscriberDataRequest  for DialogId=%d",
-          request.getMAPDialog().getLocalDialogId()));
+      logger.debug("onInsertSubscriberDataRequest  for DialogId={}", request.getMAPDialog().getLocalDialogId());
     } else {
-      logger.info(String.format("onInsertSubscriberDataRequest  for DialogId=%d",
-          request.getMAPDialog().getLocalDialogId()));
+      logger.info("onInsertSubscriberDataRequest  for DialogId={}", request.getMAPDialog().getLocalDialogId());
     }
     try {
       MAPDialogMobility d = request.getMAPDialog();
@@ -384,14 +387,10 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
       numberOfTest = 0;
       d.addInsertSubscriberDataResponse(ind.getInvokeId(), teleserviceList, bearerServiceList,
           ssList, odbGeneralData, regionalSubscriptionResponse, supportedCamelPhases,
-          extensionContainer, offeredCamel4CSIs, supportedFeatures);
+          extensionContainer, offeredCamel4CSIs, supportedFeatures, null);
       // a random close or send
       if (rand.nextBoolean()) {
-        if (rand.nextBoolean()) {
-          d.close(false);
-        } else {
-          d.close(true);
-        }
+        d.close(!rand.nextBoolean());
       } else {
         d.send();
       }
@@ -404,23 +403,19 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
   public void onInsertSubscriberDataResponse(InsertSubscriberDataResponse request) {
     // Auto-generated method stub
     if (logger.isDebugEnabled()) {
-      logger.debug(String.format("InsertSubscriberDataResponse for DialogId=%d",
-          request.getMAPDialog().getLocalDialogId()));
+      logger.debug("InsertSubscriberDataResponse for DialogId={}", request.getMAPDialog().getLocalDialogId());
     }
     if (logger.isInfoEnabled()) {
-      logger.info(String.format("InsertSubscriberDataResponse for DialogId=%d",
-          request.getMAPDialog().getLocalDialogId()));
+      logger.info("InsertSubscriberDataResponse for DialogId={}", request.getMAPDialog().getLocalDialogId());
     }
     try {
       MAPDialogMobility mapDialogMobility = request.getMAPDialog();
       long invokeId = request.getInvokeId();
       if (logger.isDebugEnabled()) {
-        logger.debug(String.format("onInsertSubscriberDataResponse for DialogId=%d",
-            request.getMAPDialog().getLocalDialogId()));
+        logger.debug("onInsertSubscriberDataResponse for DialogId={}", request.getMAPDialog().getLocalDialogId());
       }
       if (logger.isInfoEnabled()) {
-        logger.info(String.format("onInsertSubscriberDataResponse for DialogId=%d",
-            request.getMAPDialog().getLocalDialogId()));
+        logger.info("onInsertSubscriberDataResponse for DialogId={}", request.getMAPDialog().getLocalDialogId());
       }
 
       try {
@@ -448,7 +443,7 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
 
         if (request.getSupportedCamelPhases() != null
             && request.getSupportedCamelPhases().getPhase4Supported()) {
-          logger.info("supported pahse " + request.getSupportedCamelPhases().getPhase4Supported());
+          logger.info("supported pahse {}", request.getSupportedCamelPhases().getPhase4Supported());
           mapDialogMobility.addInsertSubscriberDataResponse(request.getInvokeId(), teleserviceList,
               bearerserviceList, null, null, null);
           mapDialogMobility.close(false);

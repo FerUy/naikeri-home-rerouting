@@ -5,8 +5,8 @@ import com.naikeri.sgw.api.chn.ChannelMessage;
 import com.naikeri.sgw.impl.settings.ServiceFunctionSetting.ServiceFunctionType;
 import com.naikeri.sgw.network.layers.CapLayer;
 import com.naikeri.sgw.network.layers.listeners.ProxyConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPMessageType;
 
 /**
@@ -14,7 +14,7 @@ import org.restcomm.protocols.ss7.cap.api.CAPMessageType;
  */
 public class CapProcessingNode {
 
-  private static final Logger logger = LoggerFactory.getLogger(CapProcessingNode.class);
+  private static final Logger logger = LogManager.getLogger(CapProcessingNode.class);
 
   private CAPMessageType messageType;
   private Object capOperationObject;
@@ -37,7 +37,7 @@ public class CapProcessingNode {
         this.transactionId = channelMessage.getTransactionId();
         this.messageType = CAPMessageType.valueOf(messageTypeL);
       } catch (Exception ex) {
-        logger.error("Unknown primitive: '" + messageType + "'. Error: ", ex);
+          logger.error("Unknown primitive: '{}'. Error: ", messageType, ex);
       }
       return this;
     }
@@ -80,13 +80,11 @@ public class CapProcessingNode {
    * @return CapDialogOut
    */
   public CapDialogOut processRequest() {
-    logger.info(String.format("Processing primitive = %s, transactionId = %s", this.messageType,
-        this.transactionId));
+    logger.info("Processing primitive = {}, transactionId = {}", this.messageType, this.transactionId);
     // check which primitive needs to be processed
     // if no layer return
     if (capLayerIn == null || capLayerOut == null) {
-      logger.error(String.format("<%s, %s> The Caplayers are not found", this.transactionId,
-          this.messageType));
+      logger.error("<{}, {}> The Caplayers are not found", this.transactionId, this.messageType);
       return null;
     }
 
@@ -165,8 +163,7 @@ public class CapProcessingNode {
         return processCamelSmsControl();
 
       default:
-        logger.info(
-            String.format("<%s>. Unhandled message: '%s' ", this.transactionId, this.messageType));
+        logger.info("<{}>. Unhandled message: '{}' ", this.transactionId, this.messageType);
         break;
     }
     return null;

@@ -11,7 +11,7 @@ public class CapProxyCdrRecords {
 
   /**
    * Get an instance of the CapProxyCdrRecords
-   * 
+   *
    * @return CapProxyCdrRecords
    */
   public static synchronized CapProxyCdrRecords getInstance() {
@@ -30,8 +30,8 @@ public class CapProxyCdrRecords {
 
   /**
    * Return the an optional list of key value pair associated with the dialog ID
-   * 
-   * @param dialogId
+   *
+   * @param dialogId the dialog id
    * @return Optional<Map<String, Object>>
    */
   public Optional<Map<String, Object>> getCDRRecords(Long dialogId) {
@@ -40,7 +40,7 @@ public class CapProxyCdrRecords {
 
   /**
    * Add a list of key-value pair of the CDR associated with the dialog ID
-   * 
+   *
    * @param dialogId Long
    * @param fields   Map<String,Object>
    */

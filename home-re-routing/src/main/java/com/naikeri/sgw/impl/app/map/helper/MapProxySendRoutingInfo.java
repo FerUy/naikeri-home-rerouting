@@ -4,8 +4,8 @@ import com.naikeri.sgw.impl.app.map.MapDialogOut;
 import com.naikeri.sgw.impl.app.map.MapProxyDialog;
 import com.naikeri.sgw.info.DataElement;
 import com.naikeri.sgw.info.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.api.MAPException;
 import org.restcomm.protocols.ss7.map.api.dialog.Reason;
 import org.restcomm.protocols.ss7.map.api.service.callhandling.MAPDialogCallHandling;
@@ -18,7 +18,7 @@ import org.restcomm.protocols.ss7.tcap.api.MessageType;
  */
 public class MapProxySendRoutingInfo {
 
-  private static final Logger logger = LoggerFactory.getLogger(MapProxySendRoutingInfo.class);
+  private static final Logger logger = LogManager.getLogger(MapProxySendRoutingInfo.class);
 
   private MapProxySendRoutingInfo(){}
 
@@ -32,19 +32,13 @@ public class MapProxySendRoutingInfo {
       MapDialogOut mapDialogOut = new MapDialogOut();
       mapDialogOut.setOriginalDialogId(dialogId);
 
-      logger.debug(String.format("[MAP::RESPONSE<%s>] Incoming DialogId '%d', invokeId '%d', %s",
-          sendRoutingInfoResponse.getMessageType().toString(), dialogId,
-          sendRoutingInfoResponse.getInvokeId(), transactionId));
-      DataElement dataElement = null;
-      logger.debug(
-          String.format("TCAP Message Type = '%s', dialogId = %d, InvokeId = %d, Service = '%s'",
-              sendRoutingInfoResponse.getMAPDialog().getTCAPMessageType(), dialogId,
-              sendRoutingInfoResponse.getInvokeId(),
-              sendRoutingInfoResponse.getMAPDialog().getService().toString()));
+      logger.debug("[MAP::RESPONSE<{}>] Incoming DialogId '{}', invokeId '{}', {}", sendRoutingInfoResponse.getMessageType().toString(), dialogId, sendRoutingInfoResponse.getInvokeId(), transactionId);
+      DataElement dataElement;
+      logger.debug("TCAP Message Type = '{}', dialogId = {}, InvokeId = {}, Service = '{}'", sendRoutingInfoResponse.getMAPDialog().getTCAPMessageType(), dialogId, sendRoutingInfoResponse.getInvokeId(), sendRoutingInfoResponse.getMAPDialog().getService().toString());
 
       if (sendRoutingInfoResponse.getMAPDialog().getTCAPMessageType() == MessageType.End
           || sendRoutingInfoResponse.getMAPDialog().getTCAPMessageType() == MessageType.Abort) {
-        logger.debug("Closing for dialogId = " + dialogId);
+        logger.debug("Closing for dialogId = {}", dialogId);
         dataElement = Transaction.getInstance().removeDialogData(dialogId, respInvokeId);
         mapDialogOut.setIsResponse();
       } else {
@@ -69,17 +63,15 @@ public class MapProxySendRoutingInfo {
       mapDialogOut.setMapDialog(origCallHandlingOut);
       return mapDialogOut;
     } catch (MAPException mapex) {
-      logger.error("SendRoutingInformationResponse with DialogId " + dialogId + " failed "
-          + transactionId + ". Exception caught '" + mapex + "'");
-          return MapProxyUtilsHelper.discardReason(mapex.getMessage(), messageType, transactionId);
+      logger.error("SendRoutingInformationResponse with DialogId {} failed {}. Exception caught '{}'", dialogId, transactionId, mapex);
+      return MapProxyUtilsHelper.discardReason(mapex.getMessage(), messageType, transactionId);
     }catch(Exception ex){
       return MapProxyUtilsHelper.discardReason(ex.getMessage(), messageType, transactionId);
     }
   }
 
 
-  public static MapDialogOut getRequest(MapProxyDialog mapProxyDialog,
-      SendRoutingInformationRequest dialogInSendRoutingInfo, String transactionId) {
+  public static MapDialogOut getRequest(MapProxyDialog mapProxyDialog, SendRoutingInformationRequest dialogInSendRoutingInfo, String transactionId) {
     Long dialogId = 0L;
     String messageType = dialogInSendRoutingInfo.getMessageType().toString();
     try {
@@ -87,19 +79,13 @@ public class MapProxySendRoutingInfo {
       MapDialogOut mapDialogOut = new MapDialogOut();
       mapDialogOut.setOriginalDialogId(dialogId);
       if (mapProxyDialog == null) {
-        logger.info(String.format(
-            "%s, MAP Application Rule not found for DialogId = '%d', InvokeId = '%d', MessageType = '%s'. MAP Message will be discarded",
-            transactionId, dialogId, dialogInSendRoutingInfo.getInvokeId(),
-            dialogInSendRoutingInfo.getMessageType().toString()));
+        logger.info("{}, MAP Application Rule not found for DialogId = '{}', InvokeId = '{}', MessageType = '{}'. MAP Message will be discarded", transactionId, dialogId, dialogInSendRoutingInfo.getInvokeId(), dialogInSendRoutingInfo.getMessageType().toString());
         MAPDialogCallHandling dialogIn = dialogInSendRoutingInfo.getMAPDialog();
         dialogIn.refuse(Reason.noReasonGiven);
         mapDialogOut.setMapDialog(dialogIn);
         mapDialogOut.setInvokeId(null);
       } else {
-        logger
-            .debug(String.format("[MAP::REQUEST<%s>] Incoming DialogId = '%d', InvokeId = '%d', %s",
-                dialogInSendRoutingInfo.getMessageType().toString(), dialogId,
-                dialogInSendRoutingInfo.getInvokeId(), transactionId));
+        logger.debug("[MAP::REQUEST<{}>] Incoming DialogId = '{}', InvokeId = '{}', {}", dialogInSendRoutingInfo.getMessageType().toString(), dialogId, dialogInSendRoutingInfo.getInvokeId(), transactionId);
 
         MAPDialogCallHandling callHandlingOut = mapProxyDialog.getMapDialogCallHandling();
         Long newInvokeId = callHandlingOut.addSendRoutingInformationRequest(
@@ -136,9 +122,8 @@ public class MapProxySendRoutingInfo {
       }
       return mapDialogOut;
     } catch (MAPException mapex) {
-      logger.error("SendRoutingInformationRequest with DialogId " + dialogId
-          + " failed. Exception caught '" + mapex + "', " + transactionId);
-          return MapProxyUtilsHelper.discardReason(mapex.getMessage(), messageType, transactionId);
+      logger.error("SendRoutingInformationRequest with DialogId {} failed. Exception caught '{}', {}", dialogId, mapex, transactionId);
+      return MapProxyUtilsHelper.discardReason(mapex.getMessage(), messageType, transactionId);
     } catch (Exception ex) {
       logger.error("Error occurred: ", ex);
       return MapProxyUtilsHelper.discardReason(ex.getMessage(), messageType, transactionId);

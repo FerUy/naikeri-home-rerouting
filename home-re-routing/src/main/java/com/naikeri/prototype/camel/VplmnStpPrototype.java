@@ -5,10 +5,12 @@ import static com.naikeri.sgw.impl.settings.sccp.SccpHelpers.createGlobalTitle01
 import static com.naikeri.sgw.impl.settings.sccp.SccpHelpers.createLocalAddress;
 import static com.naikeri.sgw.impl.settings.sccp.SccpHelpers.createRemoteAddress;
 import java.util.ArrayList;
+import java.util.Objects;
+
 import com.naikeri.sgw.impl.app.cap.BcsmCallContent;
 import com.naikeri.sgw.impl.app.cap.BcsmCallStep;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPApplicationContext;
 import org.restcomm.protocols.ss7.cap.api.CAPDialog;
 import org.restcomm.protocols.ss7.cap.api.CAPDialogListener;
@@ -129,28 +131,28 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
   private BcsmCallContent leg1ScfCallContent, leg1SsfCallContent, hplmnCallContent,
       leg2SsfCallContent;
   private BcsmCallStep step;
-  private Boolean preArrangedEnd = false;
+  private final Boolean preArrangedEnd = false;
   // these should be retrieved from configuration
   // VPLMN - STP
-  private static int stpSsfPc = 82;
-  private static int stpScfPc = 1050;
-  private static int stpSsfHplmnPc = 1051;
-  private static int vplmnVlrSsn = 7;
-  private static String vplmnGtDigits = "97254121022";
-  private static String vplmnGtDigitsForHplmn = "38354121022";
+  private static final int stpSsfPc = 82;
+  private static final int stpScfPc = 1050;
+  private static final int stpSsfHplmnPc = 1051;
+  private static final int vplmnVlrSsn = 7;
+  private static final String vplmnGtDigits = "97254121022";
+  private static final String vplmnGtDigitsForHplmn = "38354121022";
   // CAP Proxy
-  private static int proxySsfPc = 948;
-  private static int proxyScfPc = 947;
-  private static int proxySsn = 146;
-  private static String proxyGtDigits = "97254160047";
+  private static final int proxySsfPc = 948;
+  private static final int proxyScfPc = 947;
+  private static final int proxySsn = 146;
+  private static final String proxyGtDigits = "97254160047";
   // HPLMN SCP
-  private static int hplmnScpPc = 941;
-  private static int hplmnScpSsn = 146;
-  private static String hplmnScpGtDigits = "97254121030";
+  private static final int hplmnScpPc = 941;
+  private static final int hplmnScpSsn = 146;
+  private static final String hplmnScpGtDigits = "97254121030";
   // MSC (leg2)
-  private static String partnerMscGtDigits = "97254121021";
+  private static final String partnerMscGtDigits = "97254121021";
   private static IMSI imsi;
-  private static Logger logger = LoggerFactory.getLogger(VplmnStpPrototype.class);
+  private static final Logger logger = LogManager.getLogger(VplmnStpPrototype.class);
 
   public VplmnStpPrototype(CAPProvider ssfCapProvider, CAPParameterFactory ssfCapParameterFactory,
       CAPProvider scfCapProvider, CAPParameterFactory scfCapParameterFactory,
@@ -206,12 +208,12 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
     LocationNumber locationNumber = new LocationNumberImpl(natureOfAddressIndicator,
         locationNumberAddressDigits, numberingPlanIndicator, internalNetworkNumberIndicator,
         addressRepresentationRestrictedIndicator, screeningIndicator);
-    logger.debug("locationNumber: " + locationNumber);
+    logger.debug("locationNumber: {}", locationNumber);
     ISDNAddressString vlrNumber = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, vplmnGtDigits);
     ISDNAddressString mscNumber = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, vplmnGtDigits);
     int ageOfLocationInformation = 1;
     CellGlobalIdOrServiceAreaIdFixedLength cellGlobalIdOrServiceAreaIdFixedLength =
-        new CellGlobalIdOrServiceAreaIdFixedLengthImpl(425, 01, 5206, 64043);
+        new CellGlobalIdOrServiceAreaIdFixedLengthImpl(425, 1, 5206, 64043);
     CellGlobalIdOrServiceAreaIdOrLAI cgiOrSaiOrLai =
         new CellGlobalIdOrServiceAreaIdOrLAIImpl(cellGlobalIdOrServiceAreaIdFixedLength);
     LocationInformation locationInformation =
@@ -242,7 +244,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
     logger.debug("CAP IDP from CAP Proxy SCF received on STP SCF");
     this.leg1ScfCallContent.setStep(BcsmCallStep.idpReceived);
     this.leg1ScfCallContent.setIdp(idp);
-    logger.debug("IDP Called Party Number = " + this.leg1ScfCallContent.getIdp().getCalledPartyBCDNumber());
+    logger.debug("IDP Called Party Number = {}", this.leg1ScfCallContent.getIdp().getCalledPartyBCDNumber());
     relayInitialDPRequestToHplmnScp(idp);
   }
 
@@ -304,11 +306,10 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
       logger.debug("CAP IDP added to SSF-SCF dialog");
       this.hplmnCallContent.getCapDialog().send();
       this.hplmnCallContent.setStep(BcsmCallStep.idpSent);
-      logger.debug("IDP sent from STP SSF to HPLMN SCP over dialog : " + this.hplmnCallContent.getCapDialog());
-      logger.debug("scfCurrentCapDialog state = " + this.hplmnCallContent.getCapDialog().getState());
+      logger.debug("IDP sent from STP SSF to HPLMN SCP over dialog : {}", this.hplmnCallContent.getCapDialog());
+      logger.debug("scfCurrentCapDialog state = {}", this.hplmnCallContent.getCapDialog().getState());
     } catch (CAPException e) {
       logger.error("Error: ", e);
-      e.printStackTrace();
     }
   }
 
@@ -321,8 +322,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
         if (this.leg1SsfCallContent.getCapDialog() != null && this.leg1SsfCallContent.getStep() != BcsmCallStep.disconnected) {
           this.leg1SsfCallContent.setStep(BcsmCallStep.rrbReceived);
           this.leg1SsfCallContent.setRrb(rrb);
-          logger.debug("CAP RRB received from HPLMN SCF : " + this.leg1SsfCallContent.getRrb()
-              + " over dialog : " + this.leg1SsfCallContent.getCapDialog());
+          logger.debug("CAP RRB received from HPLMN SCF : {} over dialog : {}", this.leg1SsfCallContent.getRrb(), this.leg1SsfCallContent.getCapDialog());
           return;
         } else {
           // terminate CAMEL dialog
@@ -335,7 +335,6 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             }
           } catch (CAPException e) {
             logger.error("Error: ", e);
-            e.printStackTrace();
           }
         }
       } else if (leg1SsfCallContent.getStep() == BcsmCallStep.rrbReceived) {
@@ -356,25 +355,26 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             }
           } catch (CAPException e) {
             logger.error("Error: ", e);
-            e.printStackTrace();
           }
         }
       }
     }
-    if (this.leg2SsfCallContent != null && leg1SsfCallContent.getStep() == BcsmCallStep.conReceived) {
-      if (this.leg2SsfCallContent.getCapDialog() != null
-          && this.leg2SsfCallContent.getStep() != BcsmCallStep.idpReceived) {
-        this.leg2SsfCallContent.setRrb(rrb);
-        this.leg2SsfCallContent.setStep(BcsmCallStep.rrbReceived);
-        logger.debug("CAP RRB received on LEG2 from CAP Proxy SCF : " + this.leg2SsfCallContent.getRrb()
-                + " over dialog : " + this.leg2SsfCallContent.getCapDialog());
-        new Thread(new VPLMNTimer(this)).start();
+    if (this.leg2SsfCallContent != null) {
+      assert leg1SsfCallContent != null;
+      if (leg1SsfCallContent.getStep() == BcsmCallStep.conReceived) {
+        if (this.leg2SsfCallContent.getCapDialog() != null
+            && this.leg2SsfCallContent.getStep() != BcsmCallStep.idpReceived) {
+          this.leg2SsfCallContent.setRrb(rrb);
+          this.leg2SsfCallContent.setStep(BcsmCallStep.rrbReceived);
+          logger.debug("CAP RRB received on LEG2 from CAP Proxy SCF : {} over dialog : {}", this.leg2SsfCallContent.getRrb(), this.leg2SsfCallContent.getCapDialog());
+          new Thread(new VPLMNTimer(this)).start();
+        }
       }
     }
   }
 
   public void relayRRBRequestToProxySsf(RequestReportBCSMEventRequest requestReportBCSMEventRequest) {
-    logger.debug("RRB to be relayed to CAP Proxy SSF : " + requestReportBCSMEventRequest);
+    logger.debug("RRB to be relayed to CAP Proxy SSF : {}", requestReportBCSMEventRequest);
     if (this.leg1ScfCallContent != null) {
       // We need to check if the CAP dialog is neither closed nor a disconnect event has been
       // received
@@ -383,7 +383,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
         this.leg1ScfCallContent.setStep(BcsmCallStep.rrbReceived);
         this.leg1ScfCallContent.setRrb(requestReportBCSMEventRequest);
 
-        if (requestReportBCSMEventRequest.getCAPDialog().getLocalAddress().getGlobalTitle().getDigits() == vplmnGtDigitsForHplmn) {
+        if (Objects.equals(requestReportBCSMEventRequest.getCAPDialog().getLocalAddress().getGlobalTitle().getDigits(), vplmnGtDigitsForHplmn)) {
           try {
             this.vplmnVlrGt_tt5 = createGlobalTitle0100(vplmnGtDigitsForHplmn, 5);
             SccpAddress rrbCallingPartyAddress = createLocalAddress(this.hplmnScpGt, stpScfPc, hplmnScpSsn);
@@ -395,16 +395,15 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
                 this.leg1SsfCallContent.getRrb().getExtensions());
             this.leg1ScfCallContent.getCapDialog().send();
             this.leg1ScfCallContent.setStep(BcsmCallStep.rrbSent);
-            logger.debug("RRB sent from VPLMN SSF to CAP Proxy SSF over dialog : " + this.leg1ScfCallContent.getCapDialog());
-            logger.debug("scfCurrentCapDialog state = " + this.leg1ScfCallContent.getCapDialog().getState());
+            logger.debug("RRB sent from VPLMN SSF to CAP Proxy SSF over dialog : {}", this.leg1ScfCallContent.getCapDialog());
+            logger.debug("scfCurrentCapDialog state = {}", this.leg1ScfCallContent.getCapDialog().getState());
           } catch (CAPException e) {
-            e.printStackTrace();
+            logger.error(e.getStackTrace());
           }
         } else {
           long invokeId = requestReportBCSMEventRequest.getInvokeId();
           this.leg1ScfCallContent.setCapDialog(requestReportBCSMEventRequest.getCAPDialog());
-          logger.debug("RRB received from VPLMN SSF on dialog: "
-              + this.leg1ScfCallContent.getCapDialog() + ", with invokeID=" + invokeId);
+          logger.debug("RRB received from VPLMN SSF on dialog: {}, with invokeID={}", this.leg1ScfCallContent.getCapDialog(), invokeId);
         }
       } else {
         // terminate CAMEL dialog
@@ -415,7 +414,6 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           }
         } catch (CAPException e) {
           logger.error("Error: ", e);
-          e.printStackTrace();
         }
       }
     }
@@ -423,7 +421,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
 
   @Override
   public void onEstablishTemporaryConnectionRequest(EstablishTemporaryConnectionRequest etc) {
-    logger.debug("CAP ETC received from HPLMN SCF : " + etc);
+    logger.debug("CAP ETC received from HPLMN SCF : {}", etc);
     if (this.leg1SsfCallContent != null) {
       if (leg1SsfCallContent.getStep() == BcsmCallStep.cueReceived
           || leg1SsfCallContent.getStep() == BcsmCallStep.rrbReceived
@@ -434,8 +432,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             && this.leg1SsfCallContent.getStep() != BcsmCallStep.disconnected) {
           this.leg1SsfCallContent.setStep(BcsmCallStep.etcReceived);
           this.leg1SsfCallContent.setEtc(etc);
-          logger.debug("CAP ETC received from HPLMN SCF : " + this.leg1SsfCallContent.getEtc()
-              + " over dialog : " + this.leg1SsfCallContent.getCapDialog());
+          logger.debug("CAP ETC received from HPLMN SCF : {} over dialog : {}", this.leg1SsfCallContent.getEtc(), this.leg1SsfCallContent.getCapDialog());
         } else {
           // terminate the CAMEL dialog
           logger.debug("CAP ETC event at VPLMN STP for null dialog or disconnected call; sending TC-Close to release resources");
@@ -446,7 +443,6 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             }
           } catch (CAPException e) {
             logger.error("Error: ", e);
-            e.printStackTrace();
           }
         }
       }
@@ -454,7 +450,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
   }
 
   protected void relayETCtoCapProxySsf(EstablishTemporaryConnectionRequest etc) {
-    logger.debug("CAP ETC to be relayed to CAP Proxy SSF : " + etc);
+    logger.debug("CAP ETC to be relayed to CAP Proxy SSF : {}", etc);
     if (this.leg1ScfCallContent != null) {
       // We need to check if the CAP dialog is neither closed nor a disconnect event has been
       // received
@@ -462,8 +458,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           && this.leg1ScfCallContent.getStep() != BcsmCallStep.disconnected) {
         this.leg1ScfCallContent.setStep(BcsmCallStep.etcReceived);
         this.leg1ScfCallContent.setEtc(etc);
-        logger.debug("CAP ETC to be relayed from HPLMN SCF to Proxy SSF on dialog: "
-            + this.leg1ScfCallContent.getCapDialog() + ", with invokeID=" + etc.getInvokeId());
+        logger.debug("CAP ETC to be relayed from HPLMN SCF to Proxy SSF on dialog: {}, with invokeID={}", this.leg1ScfCallContent.getCapDialog(), etc.getInvokeId());
         SccpAddress etcCueCallingPartyAddress = createLocalAddress(this.hplmnScpGt, stpScfPc, hplmnScpSsn);
         SccpAddress etcCueCalledPartyAddress = createRemoteAddress(this.vplmnVlrGt_tt5, proxySsfPc, proxySsn);
         this.leg1ScfCallContent.getCapDialog().setLocalAddress(etcCueCallingPartyAddress);
@@ -491,12 +486,10 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           logger.debug("CAP ETC added to SSF-SCF dialog");
           this.leg1ScfCallContent.getCapDialog().send();
           this.leg1ScfCallContent.setStep(BcsmCallStep.etcSent);
-          logger.debug("ETC-CUE sent from VPLMN SSF to CAP Proxy over dialog : "
-              + this.leg1ScfCallContent.getCapDialog());
-          logger
-              .debug("SSF Cap Dialog state = " + this.leg1ScfCallContent.getCapDialog().getState());
+          logger.debug("ETC-CUE sent from VPLMN SSF to CAP Proxy over dialog : {}", this.leg1ScfCallContent.getCapDialog());
+          logger.debug("SSF Cap Dialog state = {}", this.leg1ScfCallContent.getCapDialog().getState());
         } catch (CAPException e) {
-          e.printStackTrace();
+          logger.error(e.getStackTrace());
         }
       }
     }
@@ -505,9 +498,9 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
   @Override
   public void onConnectRequest(ConnectRequest connectRequest) {
     if (connectRequest.getCAPDialog().getRemoteAddress().getGlobalTitle().getDigits().equals(proxyGtDigits))
-      logger.debug("CAP CON event detected at VPLMN STP SSF from GT = " + proxyGtDigits);
+      logger.debug("CAP CON event detected at VPLMN STP SSF from GT = {}", proxyGtDigits);
     if (connectRequest.getCAPDialog().getRemoteAddress().getGlobalTitle().getDigits().equals(hplmnScpGtDigits))
-      logger.debug("CAP CON event detected at VPLMN STP SSF from GT = " + hplmnScpGtDigits);
+      logger.debug("CAP CON event detected at VPLMN STP SSF from GT = {}", hplmnScpGtDigits);
 
     // CAP CON received from CAP Proxy either for generating CAP IDP(#A->#C) or within "leg 2"
     // to process joint RRB
@@ -521,14 +514,10 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           if (this.leg2SsfCallContent == null) {
             setInitialDP_leg2_fromConnectRequest(this.leg1SsfCallContent.getCon());
           }
-          logger.debug("CAP CON received from Cap Proxy SCF : " + this.leg1SsfCallContent.getCon()
-              + " over dialog : " + this.leg1SsfCallContent.getCapDialog() + ", with invokeID = "
-              + connectRequest.getInvokeId());
-          return;
+          logger.debug("CAP CON received from Cap Proxy SCF : {} over dialog : {}, with invokeID = {}", this.leg1SsfCallContent.getCon(), this.leg1SsfCallContent.getCapDialog(), connectRequest.getInvokeId());
         } else if (this.leg1SsfCallContent.getStep() == BcsmCallStep.disconnected) {
           // terminate the CAMEL dialog
-          logger.debug(
-              "CAP CON event at VPLMN STP SSF for null dialog or disconnected call; sending TC-Close to release resources");
+          logger.debug("CAP CON event at VPLMN STP SSF for null dialog or disconnected call; sending TC-Close to release resources");
           try {
             if (this.leg1SsfCallContent.getCapDialog() != null) {
               this.leg1SsfCallContent.getCapDialog().close(preArrangedEnd);
@@ -536,7 +525,6 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             }
           } catch (CAPException e) {
             logger.error("Error: ", e);
-            e.printStackTrace();
           }
         }
       }
@@ -548,14 +536,10 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             && this.leg1SsfCallContent.getStep() != BcsmCallStep.disconnected) {
           this.leg1SsfCallContent.setStep(BcsmCallStep.conReceived);
           this.leg1SsfCallContent.setCon(connectRequest);
-          logger.debug("CAP CON received from HPLMN SCF : " + this.leg1SsfCallContent.getCon()
-              + " over dialog : " + this.leg1SsfCallContent.getCapDialog() + ", with invokeID="
-              + connectRequest.getInvokeId());
-          return;
+          logger.debug("CAP CON received from HPLMN SCF : {} over dialog : {}, with invokeID={}", this.leg1SsfCallContent.getCon(), this.leg1SsfCallContent.getCapDialog(), connectRequest.getInvokeId());
         } else {
           // terminate the CAMEL dialog
-          logger.debug(
-              "CAP CON event at VPLMN STP for null dialog or disconnected call; sending TC-Close to release resources");
+          logger.debug("CAP CON event at VPLMN STP for null dialog or disconnected call; sending TC-Close to release resources");
           try {
             if (this.leg1SsfCallContent.getCapDialog() != null) {
               this.leg1SsfCallContent.getCapDialog().close(preArrangedEnd);
@@ -563,7 +547,6 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             }
           } catch (CAPException e) {
             logger.error("Error: ", e);
-            e.printStackTrace();
           }
         }
       }
@@ -571,15 +554,14 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
   }
 
   private void relayCONtoCapProxySsf(ConnectRequest con) {
-    logger.debug("CAP CON to be relayed to CAP Proxy SSF : " + con);
+    logger.debug("CAP CON to be relayed to CAP Proxy SSF : {}", con);
     if (this.leg1ScfCallContent != null) {
       // We need to check if the CAP dialog is neither closed nor a disconnect event has been
       // received
       if (this.leg1ScfCallContent.getCapDialog() != null && this.leg1ScfCallContent.getStep() != BcsmCallStep.disconnected) {
         this.leg1ScfCallContent.setStep(BcsmCallStep.conReceived);
         this.leg1ScfCallContent.setCon(con);
-        logger.debug("CAP CON to be relayed from HPLMN SCF to Proxy SSF on dialog: "
-            + this.leg1ScfCallContent.getCapDialog() + ", with invokeID=" + con.getInvokeId());
+        logger.debug("CAP CON to be relayed from HPLMN SCF to Proxy SSF on dialog: {}, with invokeID={}", this.leg1ScfCallContent.getCapDialog(), con.getInvokeId());
         SccpAddress conCallingPartyAddress = createLocalAddress(this.hplmnScpGt, stpScfPc, hplmnScpSsn);
         SccpAddress conCalledPartyAddress = createRemoteAddress(this.vplmnVlrGt_tt5, proxySsfPc, proxySsn);
         this.leg1ScfCallContent.getCapDialog().setLocalAddress(conCallingPartyAddress);
@@ -602,11 +584,10 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           logger.debug("CAP CON added to SSF-SCF dialog");
           this.leg1ScfCallContent.getCapDialog().send();
           this.leg1ScfCallContent.setStep(BcsmCallStep.conSent);
-          logger.debug("CON/CUE sent from VPLMN SSF to CAP Proxy over dialog : " + this.leg1ScfCallContent.getCapDialog());
-          logger.debug("SSF Cap Dialog state = " + this.leg1ScfCallContent.getCapDialog().getState());
+          logger.debug("CON/CUE sent from VPLMN SSF to CAP Proxy over dialog : {}", this.leg1ScfCallContent.getCapDialog());
+          logger.debug("SSF Cap Dialog state = {}", this.leg1ScfCallContent.getCapDialog().getState());
         } catch (CAPException e) {
           logger.error("Error: ", e);
-          e.printStackTrace();
         }
       }
     }
@@ -621,33 +602,26 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
     for (int i = 0; i < calledPartyNumberArrayList.size(); i++) {
       calledPartyNumberCap_C_number = calledPartyNumberArrayList.get(i);
       try {
-        logger.debug("Called Party Number (#C) from CAP CON to be sent on CAP IDP = "
-            + calledPartyNumberCap_C_number.getCalledPartyNumber().getAddress());
+        logger.debug("Called Party Number (#C) from CAP CON to be sent on CAP IDP = {}", calledPartyNumberCap_C_number.getCalledPartyNumber().getAddress());
       } catch (CAPException e) {
         logger.error("Error: ", e);
-        e.printStackTrace();
       }
     }
     if (calledPartyNumberCap_C_number != null) {
       try {
         int serviceKey = 485; // from configuration
-        logger.debug("About to send CAP IDP from VPLMN to CAP Proxy with new service-key = "
-            + serviceKey + "\nCalling Party Number (#A) = "
-            + leg1ScfCallContent.getIdp().getCallingPartyNumber() + "\nCalled Party Number (#C) = "
-            + calledPartyNumberCap_C_number.getCalledPartyNumber().getAddress());
+        logger.debug("About to send CAP IDP from VPLMN to CAP Proxy with new service-key = {}\nCalling Party Number (#A) = {}\nCalled Party Number (#C) = {}", serviceKey, leg1ScfCallContent.getIdp().getCallingPartyNumber(), calledPartyNumberCap_C_number.getCalledPartyNumber().getAddress());
         this.leg2SsfCallContent.setServiceKey(serviceKey);
         this.leg2SsfCallContent.setCalledPartyNumberCap(calledPartyNumberCap_C_number);
       } catch (CAPException e) {
         logger.error("Error: ", e);
-        e.printStackTrace();
       }
     }
   }
 
   public void sendInitialDPRequestFromConnectRequest(int serviceKey, CalledPartyNumberCap calledPartyNumberCap_C_number) {
     try {
-      logger.debug("On sendInitialDPRequestFromConnectRequest(" + serviceKey + ", "
-          + calledPartyNumberCap_C_number.getCalledPartyNumber().getAddress() + ")");
+      logger.debug("On sendInitialDPRequestFromConnectRequest({}, {})", serviceKey, calledPartyNumberCap_C_number.getCalledPartyNumber().getAddress());
       GlobalTitle vplmnGt2 = createGlobalTitle0100(vplmnGtDigitsForHplmn);
       SccpAddress idpCallingPartyAddress = createLocalAddress(vplmnGt2, stpSsfPc, vplmnVlrSsn);
       idpCallingPartyAddress = createLocalAddress(vplmnGt2, stpSsfPc, 251);
@@ -657,16 +631,9 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
       CAPApplicationContext acn = CAPApplicationContext.CapV2_gsmSSF_to_gsmSCF;
       this.leg2SsfCallContent.setCapDialog(ssfCapProvider.getCAPServiceCircuitSwitchedCall()
           .createNewDialog(acn, idpCallingPartyAddress, idpCalledPartyAddress));
-      logger.debug("New SSF-SCF dialog = " + leg2SsfCallContent.getCapDialog());
-
+      logger.debug("New SSF-SCF dialog = {}", leg2SsfCallContent.getCapDialog());
       logger.debug("About to populate leg2SsfCallContent CAP dialog with IDP ****");
-      logger.debug("CAP IDP service key =" + serviceKey + ", Called Party Number = "
-          + calledPartyNumberCap_C_number + ", CgPN = "
-          + leg1ScfCallContent.getIdp().getCallingPartyNumber() + ", CgPN Category = "
-          + leg1ScfCallContent.getIdp().getCallingPartysCategory() + ", Location Number = "
-          + leg1ScfCallContent.getIdp().getLocationNumber() + ", Bearer Capability =  "
-          + leg1ScfCallContent.getIdp().getBearerCapability() + ", Event Type BCSM = "
-          + leg1ScfCallContent.getIdp().getEventTypeBCSM());
+      logger.debug("CAP IDP service key ={}, Called Party Number = {}, CgPN = {}, CgPN Category = {}, Location Number = {}, Bearer Capability =  {}, Event Type BCSM = {}", serviceKey, calledPartyNumberCap_C_number, leg1ScfCallContent.getIdp().getCallingPartyNumber(), leg1ScfCallContent.getIdp().getCallingPartysCategory(), leg1ScfCallContent.getIdp().getLocationNumber(), leg1ScfCallContent.getIdp().getBearerCapability(), leg1ScfCallContent.getIdp().getEventTypeBCSM());
       this.leg2SsfCallContent.getCapDialog().addInitialDPRequest(30000, serviceKey,
           calledPartyNumberCap_C_number, leg1ScfCallContent.getIdp().getCallingPartyNumber(),
           leg1ScfCallContent.getIdp().getCallingPartysCategory(), null, null,
@@ -675,10 +642,8 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           leg1ScfCallContent.getIdp().getEventTypeBCSM(), null, null, null, null, null, null, null,
           false, imsi, null, null, null, null, null, null, null, false, null);
       logger.debug("CAP IDP added to SSF-SCF dialog");
-      logger.debug("CAP IDP to be sent from MSC SSF to CAP Proxy SCF over new dialog : "
-          + this.leg2SsfCallContent.getCapDialog());
-      logger.debug(
-          "scfCurrentCapDialog state = " + this.leg2SsfCallContent.getCapDialog().getState());
+      logger.debug("CAP IDP to be sent from MSC SSF to CAP Proxy SCF over new dialog : {}", this.leg2SsfCallContent.getCapDialog());
+      logger.debug("scfCurrentCapDialog state = {}", this.leg2SsfCallContent.getCapDialog().getState());
       this.leg2SsfCallContent.getCapDialog().send();
       this.leg2SsfCallContent.setStep(BcsmCallStep.idpSent);
     } catch (Exception e) {
@@ -695,10 +660,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
       if (this.leg1SsfCallContent.getCapDialog() != null && this.leg1SsfCallContent.getStep() != BcsmCallStep.disconnected) {
         this.leg1SsfCallContent.setStep(BcsmCallStep.cueReceived);
         this.leg1SsfCallContent.setCue(continueRequest);
-        logger.debug("CUE received from GT : "
-            + leg1SsfCallContent.getCapDialog().getRemoteAddress().getGlobalTitle().getDigits()
-            + " on dialog: " + this.leg1SsfCallContent.getCapDialog() + ", with invokeID="
-            + continueRequest.getInvokeId() + "");
+        logger.debug("CUE received from GT : {} on dialog: {}, with invokeID={}", leg1SsfCallContent.getCapDialog().getRemoteAddress().getGlobalTitle().getDigits(), this.leg1SsfCallContent.getCapDialog(), continueRequest.getInvokeId());
         logger.info("CAP CUE processed without answer onContinueRequest at VPLMN STP SSF");
       } else {
         // terminate CAMEL dialog
@@ -709,7 +671,6 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           }
         } catch (CAPException e) {
           logger.error("Error: ", e);
-          e.printStackTrace();
         }
       }
     }
@@ -717,14 +678,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
 
   @Override
   public void onDialogDelimiter(CAPDialog capDialog) {
-    logger.info("*** onDialogDelimiter at VPLMN STP Prototype:\n\t\t*** capDialog=" + capDialog
-        + "\n\t\t*** TCAP message type = " + capDialog.getTCAPMessageType()
-        + "\n\t\t*** Local Address: GT = " + capDialog.getLocalAddress().getGlobalTitle()
-        + ", PC = " + capDialog.getLocalAddress().getSignalingPointCode() + ", SSN = "
-        + capDialog.getLocalAddress().getSubsystemNumber() + "\n\t\t*** Remote Address: GT = "
-        + capDialog.getRemoteAddress().getGlobalTitle() + ", PC = "
-        + capDialog.getRemoteAddress().getSignalingPointCode() + " SSN = "
-        + capDialog.getRemoteAddress().getSubsystemNumber() + "\n\t\t****************************");
+    logger.info("*** onDialogDelimiter at VPLMN STP Prototype:\n\t\t*** capDialog={}\n\t\t*** TCAP message type = {}\n\t\t*** Local Address: GT = {}, PC = {}, SSN = {}\n\t\t*** Remote Address: GT = {}, PC = {} SSN = {}\n\t\t****************************", capDialog, capDialog.getTCAPMessageType(), capDialog.getLocalAddress().getGlobalTitle(), capDialog.getLocalAddress().getSignalingPointCode(), capDialog.getLocalAddress().getSubsystemNumber(), capDialog.getRemoteAddress().getGlobalTitle(), capDialog.getRemoteAddress().getSignalingPointCode(), capDialog.getRemoteAddress().getSubsystemNumber());
 
     try {
       if (this.leg1ScfCallContent != null) {
@@ -775,31 +729,26 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
               break;
             case cueReceived:
               logger.info("onDialogDelimiter, CAP CUE received at VPLMN STP SSF");
-              logger.info("CAP CUE received from GT : " + this.leg1SsfCallContent.getCapDialog()
-                  .getRemoteAddress().getGlobalTitle().getDigits());
-              logger.info(
-                  "this.leg1ScfCallContent.getStep() == " + this.leg1ScfCallContent.getStep());
+              logger.info("CAP CUE received from GT : {}", this.leg1SsfCallContent.getCapDialog().getRemoteAddress().getGlobalTitle().getDigits());
+              logger.info("this.leg1ScfCallContent.getStep() == {}", this.leg1ScfCallContent.getStep());
               break;
             case conReceived:
-              logger.debug("onDialogDelimiter, CAP CON received at VPLMN STP SSF from GT : "
-                  + this.leg1SsfCallContent.getCapDialog().getRemoteAddress().getGlobalTitle()
-                      .getDigits());
+              logger.debug("onDialogDelimiter, CAP CON received at VPLMN STP SSF from GT : {}", this.leg1SsfCallContent.getCapDialog().getRemoteAddress().getGlobalTitle()
+                  .getDigits());
               if (leg2SsfCallContent != null)
-                logger.debug("CAP CON Called Party Number = " + this.leg2SsfCallContent
+                logger.debug("CAP CON Called Party Number = {}", this.leg2SsfCallContent
                     .getCalledPartyNumberCap().getCalledPartyNumber().getAddress());
               if (this.leg1ScfCallContent != null) {
                 if (this.leg1ScfCallContent.getIdp() != null)
-                  logger.debug("CAP IDP Called Party BCD Number = "
-                      + this.leg1ScfCallContent.getIdp().getCalledPartyBCDNumber().getAddress());
+                  logger.debug("CAP IDP Called Party BCD Number = {}", this.leg1ScfCallContent.getIdp().getCalledPartyBCDNumber().getAddress());
               }
               if (this.leg1SsfCallContent.getCon().getCAPDialog().getRemoteAddress()
                   .getGlobalTitle().getDigits().equals(hplmnScpGtDigits)) {
                 relayCONtoCapProxySsf(this.leg1SsfCallContent.getCon());
               }
               if (this.leg2SsfCallContent != null) {
-                if (this.leg2SsfCallContent.getCalledPartyNumberCap().getCalledPartyNumber()
-                    .getAddress() != this.leg1ScfCallContent.getIdp().getCalledPartyBCDNumber()
-                        .getAddress()
+                if (!Objects.equals(this.leg2SsfCallContent.getCalledPartyNumberCap().getCalledPartyNumber().getAddress(),
+                    this.leg1ScfCallContent.getIdp().getCalledPartyBCDNumber().getAddress())
                     && this.leg2SsfCallContent.getStep() != BcsmCallStep.rrbReceived
                     && this.leg2SsfCallContent.getStep() != BcsmCallStep.fciReceived) {
                   setInitialDP_leg2_fromConnectRequest(this.leg1SsfCallContent.getCon());
@@ -809,9 +758,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
               }
               break;
             case relReceived:
-              logger.info("onDialogDelimiter, CAP REL received at VPLMN STP SSF from GT : "
-                  + this.leg1SsfCallContent.getCapDialog().getRemoteAddress().getGlobalTitle()
-                      .getDigits());
+              logger.info("onDialogDelimiter, CAP REL received at VPLMN STP SSF from GT : {}", this.leg1SsfCallContent.getCapDialog().getRemoteAddress().getGlobalTitle().getDigits());
               relayRELtoCapProxySsf(this.leg1SsfCallContent.getRel());
               break;
             case disconnected:
@@ -826,15 +773,15 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
         switch (this.leg2SsfCallContent.getStep()) {
           case rrbReceived:
             logger.debug("onDialogDelimiter, CAP RRB received at VPLMN STP SSF on Leg 2");
-            logger.debug("CAP RRB received from GT : " + this.leg2SsfCallContent.getCapDialog()
-                .getRemoteAddress().getGlobalTitle().getDigits());
+            logger.debug("CAP RRB received from GT : {}", this.leg2SsfCallContent.getCapDialog()
+                  .getRemoteAddress().getGlobalTitle().getDigits());
             break;
           case conReceived:
             if (leg2SsfCallContent.getCalledPartyNumberCap() == leg1ScfCallContent.getIdp()
                 .getCalledPartyNumber()) {
               logger.debug("onDialogDelimiter, CAP CON received at VPLMN STP SSF on Leg 2");
-              logger.debug("CAP CON received from GT : " + this.leg2SsfCallContent.getCapDialog()
-                  .getRemoteAddress().getGlobalTitle().getDigits());
+              logger.debug("CAP CON received from GT : {}", this.leg2SsfCallContent.getCapDialog()
+                    .getRemoteAddress().getGlobalTitle().getDigits());
             }
             break;
           case fciReceived:
@@ -853,13 +800,12 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
       }
     } catch (Exception e) {
       logger.error("Error: ", e);
-      e.printStackTrace();
     }
   }
 
-  private class VPLMNTimer implements Runnable {
+  private static class VPLMNTimer implements Runnable {
 
-    private VplmnStpPrototype vplmnStpPrototype;
+    private final VplmnStpPrototype vplmnStpPrototype;
 
     public VPLMNTimer(VplmnStpPrototype vplmnStpPrototype) {
       this.vplmnStpPrototype = vplmnStpPrototype;
@@ -879,7 +825,6 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
         vplmnStpPrototype.sendEventReportBCSMRequest_oDisconnect_toProxyScf_Leg1();
       } catch (InterruptedException e) {
         logger.error("Error: ", e);
-        e.printStackTrace();
       }
     }
   }
@@ -914,13 +859,10 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           this.leg2SsfCallContent.getCapDialog().send();
           this.leg2SsfCallContent.setStep(BcsmCallStep.answerSent);
           this.leg2SsfCallContent.setEventTypeBCSM(EventTypeBCSM.oAnswer);
-          logger.debug("ERB oAnswer sent on LEG 2 from VPLMN SSF to CAP Proxy SCF over dialog : "
-              + this.leg2SsfCallContent.getCapDialog());
-          logger
-              .debug("SSF CAP Dialog state = " + this.leg2SsfCallContent.getCapDialog().getState());
+          logger.debug("ERB oAnswer sent on LEG 2 from VPLMN SSF to CAP Proxy SCF over dialog : {}", this.leg2SsfCallContent.getCapDialog());
+          logger.debug("SSF CAP Dialog state = {}", this.leg2SsfCallContent.getCapDialog().getState());
         } catch (CAPException e) {
           logger.error("Error: ", e);
-          e.printStackTrace();
         }
       }
     }
@@ -928,7 +870,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
 
   @Override
   public void onFurnishChargingInformationRequest(FurnishChargingInformationRequest fci) {
-    logger.debug("CAP FCI reached VPLMN: " + fci.toString());
+    logger.debug("CAP FCI reached VPLMN: {}", fci.toString());
     if (this.leg2SsfCallContent != null) {
       this.leg2SsfCallContent.setStep(BcsmCallStep.fciReceived);
     }
@@ -946,23 +888,18 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
         tcEndClgPartyAddress = createLocalAddress(vplmnGt2, stpSsfPc, 251);
         SccpAddress tcEndCldPartyAddress = createRemoteAddress(this.proxyScpGt, proxyScfPc, proxySsn);
         tcEndCldPartyAddress = createRemoteAddress(this.proxyScpGt, proxyScfPc, 252);
-        logger.debug("leg1SsfCallContent CAP Dialog state : "
-            + this.leg1SsfCallContent.getCapDialog().getState());
+        logger.debug("leg1SsfCallContent CAP Dialog state : {}", this.leg1SsfCallContent.getCapDialog().getState());
         this.leg2SsfCallContent.getCapDialog().setLocalAddress(tcEndClgPartyAddress);
         this.leg2SsfCallContent.getCapDialog().setRemoteAddress(tcEndCldPartyAddress);
         Thread.sleep(100);
         this.leg2SsfCallContent.getCapDialog().close(preArrangedEnd);
-        logger.debug("leg2SsfCallContent CAP Dialog state : "
-            + this.leg2SsfCallContent.getCapDialog().getState());
-        logger.debug("leg1SsfCallContent CAP Dialog state : "
-            + this.leg1SsfCallContent.getCapDialog().getState());
+        logger.debug("leg2SsfCallContent CAP Dialog state : {}", this.leg2SsfCallContent.getCapDialog().getState());
+        logger.debug("leg1SsfCallContent CAP Dialog state : {}", this.leg1SsfCallContent.getCapDialog().getState());
         this.leg2SsfCallContent = null;
       } catch (CAPException e) {
-        logger.error("Error: ", e);
-        e.printStackTrace();
+        logger.error("CAP Exception: ", e);
       } catch (InterruptedException e) {
-        logger.error("Error: ", e);
-        e.printStackTrace();
+        logger.error("InterruptedException: ", e);
       }
     }
   }
@@ -986,18 +923,16 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           MiscCallInfoDpAssignment dpAssignment = null;
           MiscCallInfo miscCallInfo = new MiscCallInfoImpl(messageType, dpAssignment);
           CAPExtensions capExtensions = null;
-          this.leg1SsfCallContent.getCapDialog().addEventReportBCSMRequest(30000,
-              EventTypeBCSM.oAnswer, eventSpecificInformationBCSM, receivingSideID, miscCallInfo,
-              capExtensions);
-          logger.debug("SSF CAP Dialog state = " + this.leg1SsfCallContent.getCapDialog().getState());
+          this.leg1SsfCallContent.getCapDialog().addEventReportBCSMRequest(30000, EventTypeBCSM.oAnswer, eventSpecificInformationBCSM,
+              receivingSideID, miscCallInfo, capExtensions);
+          logger.debug("SSF CAP Dialog state = {}", this.leg1SsfCallContent.getCapDialog().getState());
           this.leg1SsfCallContent.getCapDialog().send();
           this.leg1SsfCallContent.setStep(BcsmCallStep.answerSent);
           this.leg1SsfCallContent.setEventTypeBCSM(EventTypeBCSM.oAnswer);
-          logger.debug("ERB oAnswer sent from VPLMN SSF to HPLMN SCF over dialog : "
-              + this.leg1SsfCallContent.getCapDialog());
-          logger.debug("SSF CAP Dialog state = " + this.leg1SsfCallContent.getCapDialog().getState());
+          logger.debug("ERB oAnswer sent from VPLMN SSF to HPLMN SCF over dialog : {}", this.leg1SsfCallContent.getCapDialog());
+          logger.debug("SSF CAP Dialog state = {}", this.leg1SsfCallContent.getCapDialog().getState());
         } catch (CAPException e) {
-          e.printStackTrace();
+          logger.error(e.getStackTrace());
         }
       } else {
         // terminate CAMEL dialog
@@ -1008,7 +943,6 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           }
         } catch (CAPException e) {
           logger.error("Error: ", e);
-          e.printStackTrace();
         }
       }
     }
@@ -1040,12 +974,10 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           this.leg1SsfCallContent.getCapDialog().send();
           this.leg1SsfCallContent.setStep(BcsmCallStep.disconnectSent);
           this.leg1SsfCallContent.setEventTypeBCSM(EventTypeBCSM.oDisconnect);
-          logger.debug("ERB oDisconnect sent from VPLMN SSF to HPLMN SCF over dialog : "
-              + this.leg1SsfCallContent.getCapDialog());
-          logger
-              .debug("ssf Cap Dialog state = " + this.leg1SsfCallContent.getCapDialog().getState());
+          logger.debug("ERB oDisconnect sent from VPLMN SSF to HPLMN SCF over dialog : {}", this.leg1SsfCallContent.getCapDialog());
+          logger.debug("ssf Cap Dialog state = {}", this.leg1SsfCallContent.getCapDialog().getState());
         } catch (CAPException e) {
-          e.printStackTrace();
+          logger.error(e.getStackTrace());
         }
       } else {
         // terminate CAMEL dialog
@@ -1057,7 +989,6 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           }
         } catch (CAPException e) {
           logger.error("Error: ", e);
-          e.printStackTrace();
         }
       }
     }
@@ -1065,7 +996,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
 
   @Override
   public void onEventReportBCSMRequest(EventReportBCSMRequest erb) {
-    logger.debug("CAP ERB received at VPLMN STP SCF : " + erb);
+    logger.debug("CAP ERB received at VPLMN STP SCF : {}", erb);
     if (this.leg1ScfCallContent != null) {
       // We need to check if the CAP dialog is neither closed nor a disconnect event has been
       // received
@@ -1073,7 +1004,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           && this.leg1ScfCallContent.getStep() != BcsmCallStep.disconnected) {
         this.leg1ScfCallContent.getErbEventList().add(erb);
         this.leg1ScfCallContent.setErb(erb);
-        logger.debug("ERB type of event " + erb.getEventTypeBCSM());
+        logger.debug("ERB type of event {}", erb.getEventTypeBCSM());
         switch (erb.getEventTypeBCSM()) {
           case collectedInfo:
             this.leg1ScfCallContent.setStep(BcsmCallStep.collectedInfo);
@@ -1085,6 +1016,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             this.leg1ScfCallContent.setStep(BcsmCallStep.routeSelectFailure);
             break;
           case oNoAnswer:
+          case tNoAnswer:
             this.leg1ScfCallContent.setStep(BcsmCallStep.noAnswer);
             break;
           case oAnswer:
@@ -1092,6 +1024,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             logger.debug("ERB oAnswer event captured on VPLMN STP SCF");
             break;
           case oMidCall:
+          case tMidCall:
             this.leg1ScfCallContent.setStep(BcsmCallStep.midCall);
             break;
           case oDisconnect:
@@ -1105,15 +1038,9 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           case tBusy:
             this.leg1ScfCallContent.setStep(BcsmCallStep.busy);
             break;
-          case tNoAnswer:
-            this.leg1ScfCallContent.setStep(BcsmCallStep.noAnswer);
-            break;
           case tAnswer:
             this.leg1ScfCallContent.setStep(BcsmCallStep.answerReceived);
             logger.debug("ERB tAnswer event captured on CAP proxy");
-            break;
-          case tMidCall:
-            this.leg1ScfCallContent.setStep(BcsmCallStep.midCall);
             break;
           case tDisconnect:
             logger.debug("ERB tDisconnect event captured on VPLMN STP SCF");
@@ -1133,8 +1060,6 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             this.leg1ScfCallContent.setStep(BcsmCallStep.changeOfPosition);
             break;
           case oServiceChange:
-            this.leg1ScfCallContent.setStep(BcsmCallStep.serviceChange);
-            break;
           case tServiceChange:
             this.leg1ScfCallContent.setStep(BcsmCallStep.serviceChange);
             break;
@@ -1147,15 +1072,13 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           this.leg1ScfCallContent.getCapDialog().close(preArrangedEnd);
         } catch (CAPException e) {
           logger.error("Error: ", e);
-          e.printStackTrace();
         }
       }
     }
   }
 
   private void relayERBtoHPLMNScp(EventReportBCSMRequest eventReportBCSMRequest) {
-    logger.info("CAP ERB with event type " + eventReportBCSMRequest.getEventTypeBCSM()
-        + " to be sent to HPLMN SCF from VPLMN STP SSF *****");
+    logger.info("CAP ERB with event type {} to be sent to HPLMN SCF from VPLMN STP SSF *****", eventReportBCSMRequest.getEventTypeBCSM());
     if (hplmnCallContent != null) {
       if (hplmnCallContent.getCapDialog() != null
           && hplmnCallContent.getStep() != BcsmCallStep.disconnected) {
@@ -1180,13 +1103,10 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           if (eventTypeBCSM == EventTypeBCSM.oDisconnect) {
             this.hplmnCallContent.setStep(BcsmCallStep.disconnected);
           }
-          logger.debug("ERB sent from VPLMN STP SSF to HPLMN SCF over dialog : "
-              + this.hplmnCallContent.getCapDialog());
-          logger.debug("VPLMN STP SSF - HPLMN SCF current dialog state state = "
-              + this.hplmnCallContent.getCapDialog().getState());
+          logger.debug("ERB sent from VPLMN STP SSF to HPLMN SCF over dialog : {}", this.hplmnCallContent.getCapDialog());
+          logger.debug("VPLMN STP SSF - HPLMN SCF current dialog state state = {}", this.hplmnCallContent.getCapDialog().getState());
         } catch (CAPException e) {
           logger.error("Error: ", e);
-          e.printStackTrace();
         }
       }
     }
@@ -1202,9 +1122,8 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
       if (this.leg1SsfCallContent.getCapDialog() != null && this.leg1SsfCallContent.getStep() != BcsmCallStep.disconnected) {
         this.leg1SsfCallContent.setStep(BcsmCallStep.relReceived);
         this.leg1SsfCallContent.setRel(rel);
-        logger.debug("CAP REL received from HPLMN SCF at VPLMN STP SSF : "
-            + this.leg1SsfCallContent.getRel() + " over dialog : "
-            + this.leg1SsfCallContent.getCapDialog() + ", release cause : " + rel.getCause());
+        logger.debug("CAP REL received from HPLMN SCF at VPLMN STP SSF : {} over dialog : {}, release cause : {}",
+            this.leg1SsfCallContent.getRel(), this.leg1SsfCallContent.getCapDialog(), rel.getCause());
         relayRELtoCapProxySsf(this.leg1SsfCallContent.getRel());
       } else {
         // terminate CAMEL dialog
@@ -1217,7 +1136,6 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           }
         } catch (CAPException e) {
           logger.error("Error: ", e);
-          e.printStackTrace();
         }
       }
     } else if (leg1ScfCallContent != null) {
@@ -1226,30 +1144,26 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
         // been received
         this.leg1SsfCallContent.setStep(BcsmCallStep.disconnected);
         this.leg1SsfCallContent.setRel(rel);
-        logger.debug("CAP REL received from HPLMN SCF at VPLMN STP SSF : "
-            + this.leg1SsfCallContent.getRel() + " over dialog : "
-            + this.leg1SsfCallContent.getCapDialog() + ", release cause : " + rel.getCause());
+        logger.debug("CAP REL received from HPLMN SCF at VPLMN STP SSF : {} over dialog : {}, release cause : {}", this.leg1SsfCallContent.getRel(), this.leg1SsfCallContent.getCapDialog(), rel.getCause());
         try {
           logger.debug("CAP REL event at VPLMN STP from CAP Proxy; sending TC-Close to VPLMN release resources");
           this.leg1SsfCallContent.getCapDialog().close(preArrangedEnd);
         } catch (CAPException e) {
           logger.error("Error: ", e);
-          e.printStackTrace();
         }
       }
     }
   }
 
   protected void relayRELtoCapProxySsf(ReleaseCallRequest rel) {
-    logger.debug("CAP REL to be relayed to CAP Proxy SSF : " + rel);
+    logger.debug("CAP REL to be relayed to CAP Proxy SSF : {}", rel);
     if (this.leg1ScfCallContent != null) {
       // We need to check if the CAP dialog is neither closed nor a disconnect event has been received
       if (this.leg1ScfCallContent.getCapDialog() != null
           && this.leg1ScfCallContent.getStep() != BcsmCallStep.disconnected) {
         this.leg1ScfCallContent.setStep(BcsmCallStep.relReceived);
         this.leg1ScfCallContent.setRel(rel);
-        logger.debug("CAP REL to be relayed from VPLMN SCF to Proxy SSF on dialog: "
-            + this.leg1ScfCallContent.getCapDialog() + ", with invokeID=" + rel.getInvokeId());
+        logger.debug("CAP REL to be relayed from VPLMN SCF to Proxy SSF on dialog: {}, with invokeID={}", this.leg1ScfCallContent.getCapDialog(), rel.getInvokeId());
         SccpAddress relCallingPartyAddress = createLocalAddress(this.hplmnScpGt, stpScfPc, hplmnScpSsn);
         SccpAddress relCalledPartyAddress = createRemoteAddress(this.vplmnVlrGt_tt5, proxySsfPc, proxySsn);
         this.leg1ScfCallContent.getCapDialog().setLocalAddress(relCallingPartyAddress);
@@ -1260,12 +1174,10 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           logger.debug("CAP REL added to SSF-SCF dialog");
           this.leg1ScfCallContent.getCapDialog().close(preArrangedEnd);
           this.leg1ScfCallContent.setStep(BcsmCallStep.relSent);
-          logger.debug("CAP REL sent from VPLMN SSF to CAP Proxy over dialog : "
-              + this.leg1ScfCallContent.getCapDialog());
-          logger.debug("SSF Cap Dialog state = " + this.leg1ScfCallContent.getCapDialog().getState());
+          logger.debug("CAP REL sent from VPLMN SSF to CAP Proxy over dialog : {}", this.leg1ScfCallContent.getCapDialog());
+          logger.debug("SSF Cap Dialog state = {}", this.leg1ScfCallContent.getCapDialog().getState());
         } catch (CAPException e) {
           logger.error("Error: ", e);
-          e.printStackTrace();
         }
       }
     }
@@ -1283,7 +1195,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
 
   @Override
   public void onDialogUserAbort(CAPDialog capDialog, CAPGeneralAbortReason capGeneralAbortReason,
-      CAPUserAbortReason capUserAbortReason) {
+                                CAPUserAbortReason capUserAbortReason) {
 
   }
 

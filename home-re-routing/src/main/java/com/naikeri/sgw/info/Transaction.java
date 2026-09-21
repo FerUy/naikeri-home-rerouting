@@ -7,19 +7,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * TransactionMap
  */
 public class Transaction {
-  private static final Logger logger = LoggerFactory.getLogger(Transaction.class);
 
-  private int initialCapacity = 5000;
+  private static final Logger logger = LogManager.getLogger(Transaction.class);
+
+  private final int initialCapacity = 5000;
   private int maxTransactions = 10000;
-  private ConcurrentHashMap<Long, DataElement> dialogMap;
-  private ConcurrentHashMap<String, DataElement> dataMap;
+  private final ConcurrentHashMap<Long, DataElement> dialogMap;
+  private final ConcurrentHashMap<String, DataElement> dataMap;
 
   static Transaction sInstance = null;
 
@@ -55,14 +56,13 @@ public class Transaction {
     return dataMap.get(id);
   }
 
-  public Boolean setDialogData(Long newDialogId, Long invokeId, DataElement originalRequestObj) {
+  public void setDialogData(Long newDialogId, Long invokeId, DataElement originalRequestObj) {
     if (dataMap.size() >= this.maxTransactions) {
       logger.error("The dialog map size is reached. Storing incoming request will be rejected");
-      return false;
+      return;
     }
     String id = generateTransId(newDialogId, invokeId);
     dataMap.put(id, originalRequestObj);
-    return true;
   }
 
   private String generateTransId(Long dialogId, Long invokeId) {
@@ -70,7 +70,7 @@ public class Transaction {
   }
 
   // =================== dialog id only ==========
-  public Boolean setDialogId(Long newDialogId, DataElement originalRequestObj) {
+  public void setDialogId(Long newDialogId, DataElement originalRequestObj) {
     if (dataMap.size() >= this.maxTransactions) {
       logger.error("The dialog map size is reached. Storing incoming request will be rejected");
       Optional<Long> firstKeyOption = dialogMap.keySet().stream().findFirst();
@@ -79,7 +79,6 @@ public class Transaction {
       }
     }
     dialogMap.put(newDialogId, originalRequestObj);
-    return true;
   }
 
   public List<DataElement> removeAllDialogs(Long dialogId) {
@@ -90,7 +89,7 @@ public class Transaction {
     if (dataElement != null) {
       tempMap.put(dialogId, dataElement);
     } else {
-      for (Long i = 0L; i < 10; i++) {
+      for (long i = 0L; i < 10; i++) {
         String id = generateTransId(dialogId, i);
         DataElement nElement = dataMap.get(id);
         if (nElement != null) {

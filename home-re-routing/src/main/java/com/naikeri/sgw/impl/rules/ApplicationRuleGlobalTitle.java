@@ -12,7 +12,6 @@ public class ApplicationRuleGlobalTitle {
   private Integer translationType;
   private String regexPattern;
   private PatternSccpAddress sccpAddressParam;
-  
 
   public ApplicationRuleGlobalTitle(String gtValue, Integer encodingScheme, Integer numberingPlan,
       String natureOfAddress, Integer translationType, String regexPattern, PatternSccpAddress sccpAddrParam) {

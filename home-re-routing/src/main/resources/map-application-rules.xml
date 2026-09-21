@@ -155,7 +155,7 @@
     </Replace>
   </Rule>
   <Rule name="SendAuthenticationInfo">
-    <Match Imsi="7160652952503786" primitives="MAP-UPDATE-LOCATION,SAI" />
+    <Match Imsi="7160652952503786" primitives="updateLocation_Request,sendAuthenticationInfo_Request" />
     <Replace>
       <Imsi value="5150656952503777" />
     </Replace>
@@ -210,7 +210,7 @@
 
 
   <Rule name="7-InsertSubscriberDataRequest">
-    <Match CldGT="383" Imsi="4251004" primitives="InsertSubscriberData_Request" />
+    <Match CldGT="383" Imsi="4251004" primitives="insertSubscriberData_Request" />
     <Replace>
       <ClgGt value="97254160047" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
       <Imsi value="4251004" />

@@ -14,15 +14,15 @@ import com.naikeri.sgw.network.layers.SctpLayer;
 import com.naikeri.sgw.network.layers.TcapLayer;
 import com.naikeri.prototype.camel.HplmnScpPrototype;
 import com.naikeri.prototype.camel.VplmnStpPrototype;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * CapSimulator
  */
 public class CapSimulator {
 
-  private static final Logger logger = LoggerFactory.getLogger(CapSimulator.class);
+  private static final Logger logger = LogManager.getLogger(CapSimulator.class);
   private XmlConfiguration configuration;
 
   private CapLayer getCapLayer(int index) {
@@ -69,16 +69,17 @@ public class CapSimulator {
 
       // get the transport layer name.
       // VPLMN
+      assert caplayers[0] != null;
       VplmnStpPrototype vplmnStpPrototype = new VplmnStpPrototype(caplayers[0].getCapProvider(),
           caplayers[0].getCapProvider().getCAPParameterFactory(), caplayers[1].getCapProvider(),
           caplayers[1].getCapProvider().getCAPParameterFactory(), caplayers[2].getCapProvider(),
           caplayers[2].getCapProvider().getCAPParameterFactory());
-      logger.info("VPLMN started" + vplmnStpPrototype.toString());
+      logger.info("VPLMN started{}", vplmnStpPrototype);
 
       // HPLMN
       HplmnScpPrototype hplmnScpPrototype = new HplmnScpPrototype(caplayers[3].getCapProvider(),
           caplayers[3].getCapProvider().getCAPParameterFactory());
-      logger.info("HPLMN started" + hplmnScpPrototype.toString());
+      logger.info("HPLMN started{}", hplmnScpPrototype);
       Thread.sleep(5000);
 
       for (int i = 0; i < 120; i++) {
@@ -86,7 +87,7 @@ public class CapSimulator {
           Thread.sleep(8000);
           vplmnStpPrototype.sendInitialDPRequest();
         } catch (Exception e) {
-          e.printStackTrace();
+          logger.error(e.getStackTrace());
         }
       }
       logger.info("DONE");
@@ -114,7 +115,7 @@ public class CapSimulator {
 
   public static void main(String[] args) {
     CapSimulator vplmn = new CapSimulator();
-    vplmn.initialize();;
+    vplmn.initialize();
   }
 
 }

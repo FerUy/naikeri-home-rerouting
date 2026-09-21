@@ -2,6 +2,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestCDRGeneration {
+
  @BeforeClass
  public static void loadConfiguration(){
 

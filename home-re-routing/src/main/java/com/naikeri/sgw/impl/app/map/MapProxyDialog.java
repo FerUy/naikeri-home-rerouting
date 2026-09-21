@@ -9,6 +9,9 @@ import org.restcomm.protocols.ss7.map.api.service.supplementary.MAPDialogSupplem
 import org.restcomm.protocols.ss7.map.primitives.IMSIImpl;
 import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
 
+/**
+ * MapProxyDialog
+ */
 public class MapProxyDialog {
   private MAPDialogMobility mapDialogMobility;
   private MAPDialogCallHandling mapDialogCallHandling;
@@ -17,11 +20,11 @@ public class MapProxyDialog {
   private IMSI updatedImsi;
   private MAPDialogOam mapDialogOam;
   private MAPDialogSupplementary mapDialogSupplementary;
-  private SccpAddress callingAddress;
-  private SccpAddress calledAddress;
+  private final SccpAddress callingAddress;
+  private final SccpAddress calledAddress;
   private SccpAddress newCallingAddress;
   private SccpAddress newCalledAddress;
-  private String origImsi;
+  private final String origImsi;
   private String ruleName;
   private String newImsi;
   private String newCallingGt;

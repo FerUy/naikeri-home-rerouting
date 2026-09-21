@@ -14,8 +14,8 @@ import com.naikeri.sgw.impl.rules.PatternSccpAddress;
 import com.naikeri.sgw.impl.rules.ReplacedValues;
 import com.naikeri.sgw.info.CapTransaction;
 import com.naikeri.sgw.info.ServiceKeys;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPApplicationContext;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.CAPStack;
@@ -38,11 +38,11 @@ import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
  */
 public class CapProxyInitialDPRequest {
 
-  private static final Logger logger = LoggerFactory.getLogger(CapProxyInitialDPRequest.class);
-  private CAPStack capStack;
-  private CAPStack capStackOut;
-  private String channelTransId;
-  private InitialDPRequest request;
+  private static final Logger logger = LogManager.getLogger(CapProxyInitialDPRequest.class);
+  private final CAPStack capStack;
+  private final CAPStack capStackOut;
+  private final String channelTransId;
+  private final InitialDPRequest request;
 
   public CapProxyInitialDPRequest(InitialDPRequest request, CAPStack capStack, CAPStack capStackOut,
       String channelTransId) {
@@ -60,12 +60,11 @@ public class CapProxyInitialDPRequest {
         return firstLegIDP(request);
       }
     } catch (CAPException capEx) {
-      logger.error("Processing CAP IDP Request failed  for " + channelTransId + ". Details: ",
-          capEx);
+        logger.error("Processing CAP IDP Request failed  for {}. Details: ", channelTransId, capEx);
       return CapProxyHelperUtils.discardReason(CapDialogType.CircuitSwitchedCallControl,
           capEx.getMessage(), request.getMessageType().toString(), channelTransId);
     } catch (Exception e) {
-      logger.error("Exception caught for " + channelTransId + ". Details: ", e);
+        logger.error("Exception caught for {}. Details: ", channelTransId, e);
       return CapProxyHelperUtils.discardReason(CapDialogType.CircuitSwitchedCallControl,
           e.getMessage(), request.getMessageType().toString(), channelTransId);
     }
@@ -75,10 +74,8 @@ public class CapProxyInitialDPRequest {
     Long dialogId = request.getCAPDialog().getLocalDialogId();
     String messageType = request.getMessageType().toString();
 
-    logger.debug(String.format(
-        "[CAP::REQUEST<%s>] LEG1: Local DialogId = '%d', Remote dialogId = '%d', invokeId = '%d' ServiceKey = '%d', %s",
-        messageType, dialogId, request.getCAPDialog().getRemoteDialogId(), request.getInvokeId(),
-        request.getServiceKey(), this.channelTransId));
+    logger.debug("[CAP::REQUEST<{}>] LEG1: Local DialogId = '{}', Remote dialogId = '{}', invokeId = '{}' ServiceKey = '{}', {}",
+        messageType, dialogId, request.getCAPDialog().getRemoteDialogId(), request.getInvokeId(), request.getServiceKey(), this.channelTransId);
     CapDialogOut capDialogOut =
         new CapDialogOut(CapDialogType.CircuitSwitchedCallControl, channelTransId);
     capDialogOut.setLocalDialogId(dialogId);
@@ -126,16 +123,13 @@ public class CapProxyInitialDPRequest {
             .flatMap(PatternSccpAddress::getSubSystemNumber)
             .orElse(calledAddress.getSubsystemNumber());
 
-        logger.trace(String.format("Called Address dpc = %d, ssn = %d, RI = %s, %s", dpc, ssn,
-            ri.toString(), this.channelTransId));
+        logger.trace("Called Address dpc = {}, ssn = {}, RI = {}, {}", dpc, ssn, ri.toString(), this.channelTransId);
         calledAddress = new SccpAddressImpl(ri, gt, dpc, ssn);
-        logger.info(String.format("<%s, %s> calledGT Changed: SccpAddress = '%s', New GT = '%s'",
-            messageType, this.channelTransId, calledAddress.toString(), gt.toString()));
+        logger.info("<{}, {}> calledGT Changed: SccpAddress = '{}', New GT = '{}'", messageType, this.channelTransId, calledAddress, gt.toString());
       } else {
         // reset the point code to 0 thus use configuration rules for routing
-        logger.trace(String.format("Changing pc = 0 for %s", calledAddress.getGlobalTitle()));
-        calledAddress =
-            new SccpAddressImpl(calledAddress.getAddressIndicator().getRoutingIndicator(),
+        logger.trace("Changing pc = 0 for {}", calledAddress.getGlobalTitle());
+        calledAddress = new SccpAddressImpl(calledAddress.getAddressIndicator().getRoutingIndicator(),
                 calledAddress.getGlobalTitle(), 0, calledAddress.getSubsystemNumber());
       }
       // add the new or original called sccp address
@@ -152,12 +146,10 @@ public class CapProxyInitialDPRequest {
             .flatMap(PatternSccpAddress::getSubSystemNumber)
             .orElse(callingAddress.getSubsystemNumber());
 
-        logger.trace(String.format("Calling Address pc = %d, ssn = %d, RI = %s, %s", dpc, ssn,
-            ri.toString(), this.channelTransId));
+        logger.trace("Calling Address pc = {}, ssn = {}, RI = {}, {}", dpc, ssn, ri.toString(), this.channelTransId);
         callingAddress = new SccpAddressImpl(ri, gt, dpc, ssn);
-        logger.debug(String.format("<%s, %s> callingGT Changed: SccpAddress = '%s', New GT = '%s'",
-            request.getMessageType().toString(), this.channelTransId, callingAddress.toString(),
-            gt.toString()));
+        logger.debug("<{}, {}> callingGT Changed: SccpAddress = '{}', New GT = '{}'",
+            request.getMessageType().toString(), this.channelTransId, callingAddress, gt.toString());
       }
       capDialogOut.setNewCallingSccpAddress(callingAddress);
       IMSI idpNewImsi = new IMSIImpl(replacedValues.getImsi());
@@ -181,8 +173,7 @@ public class CapProxyInitialDPRequest {
           request.getMscAddress(), request.getCalledPartyBCDNumber(), request.getTimeAndTimezone(),
           request.getCallForwardingSSPending(), request.getInitialDPArgExtension());
       bcsmCallContent.setSsfCapDialog(idpDialogOut);
-      logger.trace(String.format("Storing transaction with dialogId = %d for IDP",
-          idpDialogOut.getLocalDialogId()));
+      logger.trace("Storing transaction with dialogId = {} for IDP", idpDialogOut.getLocalDialogId());
       CapTransaction.instance().setSCFSSFBcsmCallContent(dialogId, idpDialogOut.getLocalDialogId(),
           bcsmCallContent);
       capDialogOut.setTransDialogId(idpDialogOut.getLocalDialogId());
@@ -191,7 +182,7 @@ public class CapProxyInitialDPRequest {
       return capDialogOut;
 
     } else {
-      logger.info("Rule not found for " + request + ", " + this.channelTransId);
+      logger.info("Rule not found for {}, {}", request, this.channelTransId);
       // Rule not found. Close the dialog
       return CapProxyHelperUtils.closeDialog(request.getCAPDialog(), null, channelTransId, true);
     }
@@ -226,13 +217,10 @@ public class CapProxyInitialDPRequest {
     capDialogOut.setLocalDialogId(dialogId);
     capDialogOut.setRemoteDialogId(request.getCAPDialog().getRemoteDialogId());
     capDialogOut.setFirstLegCall(false);
-    logger.debug(String.format(
-        "[CAP::LEG2::REQUEST<%s>] Local DialogId = '%d', Remote dialogId = '%d', invokeId = '%d' ServiceKey = '%d', %s",
-        messageType, dialogId, request.getCAPDialog().getRemoteDialogId(), request.getInvokeId(),
-        request.getServiceKey(), this.channelTransId));
+    logger.debug("[CAP::LEG2::REQUEST<{}>] Local DialogId = '{}', Remote dialogId = '{}', invokeId = '{}' ServiceKey = '{}', {}",
+        messageType, dialogId, request.getCAPDialog().getRemoteDialogId(), request.getInvokeId(), request.getServiceKey(), this.channelTransId);
 
-    logger.trace("LEG2: CAP IDP is generated after a CAP CON (#A->#C), being #C a MSRN, "
-        + this.channelTransId);
+    logger.trace("LEG2: CAP IDP is generated after a CAP CON (#A->#C), being #C a MSRN, {}", this.channelTransId);
     // CAP IDP is generated after a CAP CON (#A->#C), being #C a MSRN
     // About to send CAP CON (#A->#B), being #B the MSISDN called first in the other "leg"
 
@@ -240,13 +228,11 @@ public class CapProxyInitialDPRequest {
     String callingPartyNumber =
         request.getCallingPartyNumber().getCallingPartyNumber().getAddress();
     String msrnNumber = request.getCalledPartyNumber().getCalledPartyNumber().getAddress();
-    logger.debug(String.format("Searching #A->#C: Calling(#A) = '%s', MSRN(#C) = '%s', %s",
-        callingPartyNumber, msrnNumber, channelTransId));
+    logger.debug("Searching #A->#C: Calling(#A) = '{}', MSRN(#C) = '{}', {}", callingPartyNumber, msrnNumber, channelTransId);
     BcsmCallContent callContent =
         CapTransaction.instance().getMsrnMapping(callingPartyNumber, msrnNumber, true);
     if (callContent == null) {
-      logger.trace("LEG2: Previous store information not found for dialogid = " + dialogId + ", "
-          + channelTransId);
+      logger.trace("LEG2: Previous store information not found for dialogid = {}, {}", dialogId, channelTransId);
       return CapProxyHelperUtils.closeDialog(request.getCAPDialog(), null, channelTransId, true);
     }
     BcsmCallContent leg2CallContent = new BcsmCallContent();
@@ -292,7 +278,7 @@ public class CapProxyInitialDPRequest {
     CapApplicationRulesResult result = ApplyCapApplicationRules.apply(callingSccpAddress,
         calledSccpAddress, imsi, messageType, this.channelTransId, true);
     if (result != null) {
-      logger.trace("Applying Second Leg application rules. Rule name: " + result.getRuleName());
+      logger.trace("Applying Second Leg application rules. Rule name: {}", result.getRuleName());
       ReplacedValues replacedValues = result.getReplacedValues();
       capDialogOut.setRuleName(result.getRuleName());
       if (replacedValues != null) {
@@ -307,7 +293,7 @@ public class CapProxyInitialDPRequest {
               .flatMap(PatternSccpAddress::getSubSystemNumber)
               .orElse(calledSccpAddress.getSubsystemNumber());
           calledSccpAddress = new SccpAddressImpl(ri, gt, dpc, ssn);
-          logger.info("LEG2: Called SccpAddress: routingIndicator=" + ri + "," + calledSccpAddress.toString() + ", " + channelTransId);
+          logger.info("LEG2: Called SccpAddress: routingIndicator={},{}, {}", ri, calledSccpAddress, channelTransId);
           idpDialogOut.setRemoteAddress(calledSccpAddress); // change the called address
         }
 
@@ -322,7 +308,7 @@ public class CapProxyInitialDPRequest {
               .orElse(callingSccpAddress.getSubsystemNumber());
           GlobalTitle gt = replacedValues.getCallingGlobalTitle();
           callingSccpAddress = new SccpAddressImpl(ri, gt, dpc, ssn);
-          logger.info("LEG2: Calling SccpAddress: routingIndicator=" + ri + "," + callingSccpAddress.toString() + ", " + channelTransId);
+          logger.info("LEG2: Calling SccpAddress: routingIndicator={},{}, {}", ri, callingSccpAddress, channelTransId);
           idpDialogOut.setLocalAddress(callingSccpAddress);
         }
       }
@@ -330,20 +316,18 @@ public class CapProxyInitialDPRequest {
 
     capDialogOut.setNewCalledSccpAddress(calledSccpAddress);
     capDialogOut.setNewCallingSccpAddress(callingSccpAddress);
-    Long invokeId =
-        idpDialogOut.addConnectRequest(destinationRoutingAddressLeg2, null, null, null, null, null,
-            null, null, null, null, null, null, null, false, false, false, null, false, false);
-    logger.debug("LEG2: CAP CON for leg 2 to be sent on CAP proxy to VPLMN over dialog: "
-        + idpDialogOut + "; Calling Party Address=" + idpDialogOut.getLocalAddress()
-        + "; Called Party Address=" + idpDialogOut.getRemoteAddress() + "; InvokeId = " + invokeId
-        + "; DestinationAddress=" + destinationRoutingAddressLeg2 + "; " + channelTransId);
+    Long invokeId = idpDialogOut.addConnectRequest(destinationRoutingAddressLeg2,
+        null, null, null, null, null,
+        null, null, null, null, null,
+        null, null, false, false, false, null, false, false);
+    logger.debug("LEG2: CAP CON for leg 2 to be sent on CAP proxy to VPLMN over dialog: {}; Calling Party Address={}; Called Party Address={}; InvokeId = {}; DestinationAddress={}; {}",
+        idpDialogOut, idpDialogOut.getLocalAddress(), idpDialogOut.getRemoteAddress(), invokeId, destinationRoutingAddressLeg2, channelTransId);
 
     RequestReportBCSMEventRequest rrb = callContent.getRrb();
     leg2CallContent.setRrb(rrb);
     Long invokeId2 = idpDialogOut.addRequestReportBCSMEventRequest(rrb.getBCSMEventList(), null);
-    logger.debug("CAP RRB for leg 2 to be sent on CAP proxy to VPLMN over dialog: " + idpDialogOut
-        + "; Calling Party Address=" + idpDialogOut.getLocalAddress() + "; Called Party Address="
-        + idpDialogOut.getRemoteAddress() + "; InvokeId = " + invokeId2 + "; " + channelTransId);
+    logger.debug("CAP RRB for leg 2 to be sent on CAP proxy to VPLMN over dialog: {}; Calling Party Address={}; Called Party Address={}; InvokeId = {}; {}",
+        idpDialogOut, idpDialogOut.getLocalAddress(), idpDialogOut.getRemoteAddress(), invokeId2, channelTransId);
     leg2CallContent.setStep(BcsmCallStep.conSent);
     // store the dialogid from the idp request
     CapTransaction.instance().setLeg2BcsmCallContent(idpDialogOut.getLocalDialogId(),

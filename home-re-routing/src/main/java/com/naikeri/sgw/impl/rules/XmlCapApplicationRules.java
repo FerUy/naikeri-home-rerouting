@@ -9,8 +9,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import com.naikeri.sgw.helpers.SgwResource;
 import com.naikeri.sgw.info.ServiceKeys;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPMessageType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -22,9 +22,9 @@ import org.w3c.dom.NodeList;
  */
 public class XmlCapApplicationRules {
 
-  private Logger logger = LoggerFactory.getLogger(XmlCapApplicationRules.class);
-  private String filename;
-  private Pattern pattern = Pattern.compile("^\\d+$");
+  private final Logger logger = LogManager.getLogger(XmlCapApplicationRules.class);
+  private final String filename;
+  private final Pattern pattern = Pattern.compile("^\\d+$");
   private static final String PRIMITIVE = "primitives";
   private static final String VALUE = "value";
 
@@ -68,14 +68,14 @@ public class XmlCapApplicationRules {
   }
 
   private ApplicationRulesSetting getXmlRules(String name, Element element, boolean enableRegex,
-      boolean isLeg2) {
+                                              boolean isLeg2) {
     ApplicationRulesSetting.Builder builder = new ApplicationRulesSetting.Builder();
     builder.setName(name);
     builder.setIsLeg2(isLeg2);
     try {
       // read the match
       NodeList matchList = element.getElementsByTagName("Match");
-      if (matchList == null || matchList.getLength() <= 0) {
+      if (matchList.getLength() <= 0) {
         return null;
       }
       Element matchElement = (Element) matchList.item(0);
@@ -96,7 +96,7 @@ public class XmlCapApplicationRules {
         validateReExpression(cldGtStr, cldErr);
       }
 
-      String messageTypes = null;
+      String messageTypes;
       if (matchElement.hasAttribute("messagetypes")) {
         messageTypes = matchElement.getAttribute("messagetypes");
       } else {
@@ -120,7 +120,7 @@ public class XmlCapApplicationRules {
   }
 
   private boolean readReplaceTag(Element element, ApplicationRulesSetting.Builder builder,
-      String name, boolean enableRegex) {
+                                 String name, boolean enableRegex) {
     boolean isReplaceOrComponent = false;
     NodeList replaceList = element.getElementsByTagName("Replace");
     for (int i = 0; i < replaceList.getLength(); i++) {
@@ -138,7 +138,7 @@ public class XmlCapApplicationRules {
     }
     // read the component tags
     NodeList componentTag = element.getElementsByTagName("Component");
-    if (componentTag != null && componentTag.getLength() > 0) {
+    if (componentTag.getLength() > 0) {
       Element componentElement = (Element) componentTag.item(0);
       CapRuleComponent capComponent = getComponentElements(componentElement, name);
       if (capComponent != null) {
@@ -159,8 +159,8 @@ public class XmlCapApplicationRules {
         Node removeNode = removeNodelist.item(0);
         Element removeElement = (Element) removeNode;
         String primitive = removeElement.getAttribute(PRIMITIVE);
-        CapRuleComponent.Remove removeComponent = ruleComponent.new Remove();
-        if (primitive != null && !primitive.isEmpty()) {
+        CapRuleComponent.Remove removeComponent = new CapRuleComponent.Remove();
+        if (!primitive.isEmpty()) {
           removeComponent.setPrimitives(primitive.replaceAll("\\s+", ""));
         }
         ruleComponent.setRemove(removeComponent);
@@ -173,11 +173,11 @@ public class XmlCapApplicationRules {
         if (replaceNode.getNodeType() == Node.ELEMENT_NODE) {
           Element replaceElement = (Element) replaceNode;
           String primitives = replaceElement.getAttribute(PRIMITIVE);
-          Boolean apply = false;
+          boolean apply = false;
           if (replaceElement.hasAttribute("apply")) {
             apply = replaceElement.getAttribute("apply").equalsIgnoreCase("true");
           }
-          CapRuleComponent.Replace replaceComponent = ruleComponent.new Replace();
+          CapRuleComponent.Replace replaceComponent = new CapRuleComponent.Replace();
           replaceComponent.setApply(apply);
           replaceComponent.setPrimitive(primitives);
           // read the Arguments tag
@@ -192,7 +192,7 @@ public class XmlCapApplicationRules {
             String npi = argElement.getAttribute("npi");
             String inni = argElement.getAttribute("inni");
             CapRuleComponent.Replace.ReplaceArguments replaceArguments =
-                replaceComponent.new ReplaceArguments();
+                new CapRuleComponent.Replace.ReplaceArguments();
             replaceArguments.setInni(inni);
             replaceArguments.setNai(nai);
             replaceArguments.setPrimitives(argPrimitives);
@@ -208,22 +208,17 @@ public class XmlCapApplicationRules {
       }
       return ruleComponent;
     } catch (Exception ex) {
-      logger.error(String
-          .format("Exception reading Component tag of for the Rule = '%s'. Error: %s", name, ex));
+      logger.error("Exception reading Component tag of for the Rule = '{}'. Error: {}", name, ex);
     }
     return null;
   }
 
   private String[] getImsiValue(Element element, String name, boolean enableRegex) {
     NodeList imsiTag = element.getElementsByTagName("Imsi");
-    if (imsiTag != null && imsiTag.getLength() > 0) {
+    if (imsiTag.getLength() > 0) {
       Element elTag = (Element) imsiTag.item(0);
       String imsiValue = elTag.getAttribute(VALUE);
       String patternStr = elTag.getAttribute("pattern");
-      if (enableRegex && patternStr == null) {
-        throw new IllegalStateException(
-            String.format("The pattern for IMSI replace is required for '%s'", name));
-      }
       try {
         if (enableRegex) {
           // validate the regular expression
@@ -241,21 +236,21 @@ public class XmlCapApplicationRules {
   }
 
   private ApplicationRuleGlobalTitle getGlobalTitleValues(Element element, String name,
-      String nodeName, boolean enableRegex) {
+                                                          String nodeName, boolean enableRegex) {
     NodeList callingNodeList = element.getElementsByTagName(nodeName);
-    if (callingNodeList == null || callingNodeList.getLength() <= 0) {
+    if (callingNodeList.getLength() <= 0) {
       return null;
     }
     // get only the first item in the list
     Element cTag = (Element) callingNodeList.item(0);
-    int translationType = -1;
+    int translationType;
     if (cTag.hasAttribute("translationType")) {
       translationType = Integer.parseInt(cTag.getAttribute("translationType"));
     } else {
       throw new IllegalStateException(
           String.format("Invalid Translation Type for Rule = '%s'", name));
     }
-    Integer encodingScheme = null;
+    int encodingScheme;
     if (cTag.hasAttribute("encodingScheme")) {
       encodingScheme = Integer.parseInt(cTag.getAttribute("encodingScheme"));
     } else {
@@ -263,7 +258,7 @@ public class XmlCapApplicationRules {
           String.format("Invalid Encoding Scheme for Rule = '%s'", name));
     }
 
-    Integer numberingPlan = null;
+    int numberingPlan;
     if (cTag.hasAttribute("numberingPlan")) {
       numberingPlan = Integer.parseInt(cTag.getAttribute("numberingPlan"));
     } else {
@@ -271,7 +266,7 @@ public class XmlCapApplicationRules {
           String.format("Invalid Numbering Plan for Rule = '%s'", name));
     }
 
-    String natureOfAddress = null;
+    String natureOfAddress;
     if (cTag.hasAttribute("natureOfAddress")) {
       natureOfAddress = cTag.getAttribute("natureOfAddress");
     } else {
@@ -281,10 +276,6 @@ public class XmlCapApplicationRules {
     }
     String gtValue = cTag.getAttribute(VALUE);
     String regexPattern = cTag.getAttribute("pattern");
-    if (enableRegex && regexPattern == null) {
-      throw new IllegalStateException(
-          String.format("Invalid pattern for '%s' for Rule name '%s'", nodeName, name));
-    }
     try {
       if (enableRegex) {
         Pattern.compile(regexPattern);
@@ -327,14 +318,14 @@ public class XmlCapApplicationRules {
       ApplicationRuleGlobalTitle calledGt = getGlobalTitleValues(element, name, "CldGt", enableRegex);
 
       if ((imsiStr == null && callingGt == null && calledGt == null)) {
-        logger.error("The 'Replace node' is not defined properly for '" + name + "'");
+        logger.error("The 'Replace node' is not defined properly for '{}'", name);
         return null;
       }
       return new ApplicationReplaceRule.Builder().setIMSI(imsiStr).setCallingGt(callingGt)
           .setCalledGt(calledGt).setRegexEnabled(enableRegex).setRegexImsiPattern(imsiPattern)
           .build();
     } catch (Exception e) {
-      logger.error("Rules Exception caught: Error: " + e + "Rule Name: " + name);
+      logger.error("Rules Exception caught: Error: {}Rule Name: {}", e, name);
       return null;
     }
   }
@@ -342,10 +333,10 @@ public class XmlCapApplicationRules {
   public List<ApplicationRulesSetting> getApplicationRules() {
     List<ApplicationRulesSetting> apprules = new ArrayList<>();
     if (this.filename == null || this.filename.isEmpty()) {
-      logger.error("Invalid filename '" + this.filename + "' for the Application rules");
+      logger.error("Invalid filename '{}' for the Application rules", this.filename);
       return apprules;
     }
-    logger.debug("Reading Application Rules. Filename: " + this.filename);
+    logger.debug("Reading Application Rules. Filename: {}", this.filename);
     try {
       InputStream is = new SgwResource(this.filename).getAsStream();
       // Get document builder
@@ -372,13 +363,12 @@ public class XmlCapApplicationRules {
           }
         }
       }
-      logger.info(String.format("Total '%d' Application rules found", apprules.size()));
+      logger.info("Total '{}' Application rules found", apprules.size());
 
       readServiceKeyConfiguration(document);
 
     } catch (Exception e) {
-      logger.error("Exception caught for loading application rules. Filename = '" + this.filename
-          + "', Error: " + e);
+      logger.error("Exception caught for loading application rules. Filename = '{}', Error: {}", this.filename, e);
     }
     return apprules;
   }
@@ -391,14 +381,14 @@ public class XmlCapApplicationRules {
         Element srvElement = (Element) srvKeyNode;
         if (srvElement.getParentNode().getNodeName().equalsIgnoreCase("ServiceKeys")) {
           String primitive = srvElement.getAttribute("primitive");
-          Integer serviceKeyValue = -1;
+          int serviceKeyValue = -1;
           if (srvElement.hasAttribute(VALUE)) {
             serviceKeyValue = Integer.parseInt(srvElement.getAttribute(VALUE));
           }
           if (serviceKeyValue > -1) {
             ServiceKeys.getInstance().addServiceKey(primitive, serviceKeyValue);
           } else {
-            logger.error("Invalid Service Key Value for " + primitive);
+            logger.error("Invalid Service Key Value for {}", primitive);
           }
         }
       }

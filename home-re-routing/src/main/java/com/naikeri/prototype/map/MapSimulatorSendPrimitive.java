@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 import com.google.common.util.concurrent.RateLimiter;
 import com.naikeri.sgw.impl.settings.sccp.SccpSettings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.restcomm.protocols.ss7.map.MAPStackImpl;
 import org.restcomm.protocols.ss7.map.api.MAPApplicationContext;
@@ -17,6 +17,7 @@ import org.restcomm.protocols.ss7.map.api.MAPParameterFactory;
 import org.restcomm.protocols.ss7.map.api.MAPProvider;
 import org.restcomm.protocols.ss7.map.api.primitives.AddressNature;
 import org.restcomm.protocols.ss7.map.api.primitives.AddressString;
+import org.restcomm.protocols.ss7.map.api.primitives.DiameterIdentity;
 import org.restcomm.protocols.ss7.map.api.primitives.ExternalSignalInfo;
 import org.restcomm.protocols.ss7.map.api.primitives.GSNAddress;
 import org.restcomm.protocols.ss7.map.api.primitives.IMEI;
@@ -26,6 +27,7 @@ import org.restcomm.protocols.ss7.map.api.primitives.LMSI;
 import org.restcomm.protocols.ss7.map.api.primitives.MAPExtensionContainer;
 import org.restcomm.protocols.ss7.map.api.primitives.MAPPrivateExtension;
 import org.restcomm.protocols.ss7.map.api.primitives.NumberingPlan;
+import org.restcomm.protocols.ss7.map.api.primitives.PlmnId;
 import org.restcomm.protocols.ss7.map.api.primitives.ProtocolId;
 import org.restcomm.protocols.ss7.map.api.primitives.SignalInfo;
 import org.restcomm.protocols.ss7.map.api.service.callhandling.MAPDialogCallHandling;
@@ -33,8 +35,12 @@ import org.restcomm.protocols.ss7.map.api.service.mobility.MAPDialogMobility;
 import org.restcomm.protocols.ss7.map.api.service.mobility.authentication.RequestingNodeType;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.ADDInfo;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.EPSInfo;
+import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.ExtSupportedFeatures;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.LocationArea;
+import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.NetworkNodeDiameterAddress;
+import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.PagingArea;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SGSNCapability;
+import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SMSRegisterRequest;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SuperChargerInfo;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SupportedFeatures;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SupportedLCSCapabilitySets;
@@ -86,13 +92,13 @@ import org.restcomm.protocols.ss7.sccp.NetworkIdState;
 
 public class MapSimulatorSendPrimitive {
 
-  private RateLimiter rateLimiterObj = null;
-  private static final Logger logger = LoggerFactory.getLogger(MapSimulatorSendPrimitive.class);
+  private RateLimiter rateLimiterObj;
+  private static final Logger logger = LogManager.getLogger(MapSimulatorSendPrimitive.class.getName());
 
-  private SccpSettings sccpClientSettings;
-  private SccpSettings sccpServerSettings;
-  private MAPStackImpl mapClient;
-  private MAPParameterFactory mapParameterFactory; 
+  private final SccpSettings sccpClientSettings;
+  private final SccpSettings sccpServerSettings;
+  private final MAPStackImpl mapClient;
+  private MAPParameterFactory mapParameterFactory;
 
   public MapSimulatorSendPrimitive(MAPStackImpl map, SccpSettings sccpClientSettings,
       SccpSettings sccpServerSettings) {
@@ -112,14 +118,13 @@ public class MapSimulatorSendPrimitive {
       if (!(networkIdState == null
           || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn(
-            "Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
         Thread.sleep(3000);
       }
 
       this.rateLimiterObj.acquire();
 
-      MAPApplicationContext appCnt = null;
+      MAPApplicationContext appCnt;
       appCnt = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgMTRelayContext,
           MAPApplicationContextVersion.version3);
       AddressString orgiReference = this.mapParameterFactory.createAddressString(
@@ -138,7 +143,8 @@ public class MapSimulatorSendPrimitive {
           .createAddressString(AddressNature.international_number, NumberingPlan.ISDN, "111222333");
       SM_RP_OA smRPOA = this.mapParameterFactory.createSM_RP_OA_ServiceCentreAddressOA(msisdn1);
       SmsSignalInfo smRPUI = new SmsSignalInfoImpl(new byte[] {21, 22, 23, 24, 25}, null);
-      clientDialogSms.addMtForwardShortMessageRequest(smRPDA, smRPOA, smRPUI, true, null);
+      clientDialogSms.addMtForwardShortMessageRequest(smRPDA, smRPOA, smRPUI, true, null,
+          null, null, false, null, null, null, null);
 
       clientDialogSms.send();
       logger.debug("Message sent successfully");
@@ -155,13 +161,12 @@ public class MapSimulatorSendPrimitive {
       if (!(networkIdState == null
           || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn(
-            "Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
         Thread.sleep(3000);
       }
 
       this.rateLimiterObj.acquire();
-      MAPApplicationContext appCnt = null;
+      MAPApplicationContext appCnt;
 
       appCnt = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgMORelayContext,
           MAPApplicationContextVersion.version3);
@@ -194,8 +199,7 @@ public class MapSimulatorSendPrimitive {
 
       IMSI imsi2 = this.mapParameterFactory.createIMSI(Optional.ofNullable(imsi2String).orElse("25007123456789"));
 
-      clientDialogSms.addMoForwardShortMessageRequest(smRPDA, smRPOA, smRPUI, null, imsi2);
-
+      clientDialogSms.addMoForwardShortMessageRequest(smRPDA, smRPOA, smRPUI, null, imsi2, null, null);
 
       clientDialogSms.send();
     } catch (Exception e) {
@@ -214,8 +218,7 @@ public class MapSimulatorSendPrimitive {
       if (!(networkIdState == null
           || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn(
-            "Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
         Thread.sleep(3000);
       }
 
@@ -247,8 +250,7 @@ public class MapSimulatorSendPrimitive {
           new SupportedCamelPhasesImpl(true, true, true, false);
       OfferedCamel4CSIs offeredCamel4CSIs = null;
       boolean smsCallBarringSupportIndicator = true;
-      SupportedRATTypes supportedRATTypesIndicator =
-          new SupportedRATTypesImpl(true, true, false, false, true);
+      SupportedRATTypes supportedRATTypesIndicator = new SupportedRATTypesImpl(true, true, false, false, true, false);
       boolean lcsCapabilitySetRelease9899 = true;
       boolean lcsCapabilitySetRelease4 = true;
       boolean lcsCapabilitySetRelease5 = true;
@@ -260,11 +262,18 @@ public class MapSimulatorSendPrimitive {
       SupportedFeatures supportedFeatures = null;
       boolean tAdsDataRetrieval = true;
       Boolean homogeneousSupportOfIMSVoiceOverPSSessions = null;
+      boolean cancellationTypeInitialAttach = false;
+      boolean misdnlessOperationSupported = false;
+      boolean updateOfHomogeneousSupportOfIMSVoiceOverPSSessions = false;
+      boolean resetIdsSupported = false;
+      ExtSupportedFeatures extSupportedFeatures = null;
       SGSNCapability sgsnCapability = new SGSNCapabilityImpl(solsaSupportIndicator,
           extensionContainer, superChargerSupportedInServingNetworkEntity,
           gprsEnhancementsSupportIndicator, supportedCamelPhases, supportedLCSCapabilitySets,
           offeredCamel4CSIs, smsCallBarringSupportIndicator, supportedRATTypesIndicator,
-          supportedFeatures, tAdsDataRetrieval, homogeneousSupportOfIMSVoiceOverPSSessions);
+          supportedFeatures, tAdsDataRetrieval, homogeneousSupportOfIMSVoiceOverPSSessions,
+          cancellationTypeInitialAttach, misdnlessOperationSupported,
+          updateOfHomogeneousSupportOfIMSVoiceOverPSSessions, resetIdsSupported, extSupportedFeatures);
       boolean informPreviousNetworkEntity = false;
       boolean psLCSNotSupportedByUE = false;
       byte[] visitedGmlcAddress = new BigInteger("112233445500", 16).toByteArray();
@@ -281,17 +290,27 @@ public class MapSimulatorSendPrimitive {
       boolean ueReachableIndicator = false;
       boolean epsSubscriptionDataNotNeeded = true;
       UESRVCCCapability uesrvccCapability = UESRVCCCapability.ueSrvccSupported;
+      ArrayList<PlmnId> ePLMNList = null;
+      ISDNAddressString mmeNumberForMTSMS = null;
+      SMSRegisterRequest smsRegisterRequest = null;
+      boolean smsOnly = false;
+      DiameterIdentity sgsnName = null;
+      DiameterIdentity sgsnRealm = null;
+      boolean lgdSupportIndicator = false;
+      boolean removalOfMMERegistrationForSMS = false;
+      ArrayList<PlmnId> adjacentPLMNList = null;
 
       Long invokeId = mapDialogMobility.addUpdateGprsLocationRequest(imsi, sgsnNumber, sgsnAddress,
           extensionContainer, sgsnCapability, informPreviousNetworkEntity, psLCSNotSupportedByUE,
           vGmlcAddress, addInfo, epsInfo, servingNodeTypeIndicator, skipSubscriberDataUpdate,
           usedRATType, gprsSubscriptionDataNotNeeded, nodeTypeIndicator, areaRestricted,
-          ueReachableIndicator, epsSubscriptionDataNotNeeded, uesrvccCapability);
-      logger.info(String.format("InvokeId = %d", invokeId));
+          ueReachableIndicator, epsSubscriptionDataNotNeeded, uesrvccCapability, ePLMNList,
+          mmeNumberForMTSMS, smsRegisterRequest, smsOnly, sgsnName, sgsnRealm, lgdSupportIndicator,
+          removalOfMMERegistrationForSMS, adjacentPLMNList);
+      logger.info("InvokeId = {}", invokeId);
       mapDialogMobility.send(); // issue?????
     } catch (Exception e) {
-      logger.error("Error while sending MAP ATI:" + e);
-      e.printStackTrace();
+      logger.error("Error while sending MAP ATI:{}", String.valueOf(e));
     }
   }
 
@@ -305,8 +324,7 @@ public class MapSimulatorSendPrimitive {
       if (!(networkIdState == null
           || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn(
-            "Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
 
         Thread.sleep(3000);
 
@@ -316,7 +334,7 @@ public class MapSimulatorSendPrimitive {
       clientMapProvider.getMAPServiceMobility().activate();
       this.mapParameterFactory = clientMapProvider.getMAPParameterFactory();
 
-      MAPApplicationContext appCnt = null;
+      MAPApplicationContext appCnt;
 
       appCnt = MAPApplicationContext.getInstance(MAPApplicationContextName.networkLocUpContext,
           MAPApplicationContextVersion.version3);
@@ -334,13 +352,18 @@ public class MapSimulatorSendPrimitive {
       LMSI lmsi = this.mapParameterFactory.createLMSI(new byte[] {1, 2, 3, 4});
       IMEI imeisv = this.mapParameterFactory.createIMEI("987654321098765");
       ADDInfo addInfo = this.mapParameterFactory.createADDInfo(imeisv, false);
+      PagingArea pagingArea = null;
+      boolean skipSubscriberDataUpdate = false;
+      boolean restorationIndicator = false;
+      ArrayList<PlmnId> ePLMNList = null;
+      NetworkNodeDiameterAddress mmeDiameterAddress = null;
       clientDialogMobility.addUpdateLocationRequest(imsi, mscNumber, null, vlrNumber, lmsi, null,
-          null, true, false, null, addInfo, null, false, true);
+          null, true, false, null, addInfo, pagingArea, skipSubscriberDataUpdate,
+          restorationIndicator, ePLMNList, mmeDiameterAddress);
 
-      clientDialogMobility.send(); 
+      clientDialogMobility.send();
     } catch (Exception e) {
       logger.error("Unable to process update location request. " , e);
-      e.printStackTrace(); 
     }
   }
 
@@ -355,8 +378,7 @@ public class MapSimulatorSendPrimitive {
       if (!(networkIdState == null
           || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn(
-            "Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
         Thread.sleep(3000);
       }
 
@@ -364,7 +386,7 @@ public class MapSimulatorSendPrimitive {
       clientMapProvider.getMAPServiceMobility().activate();
       this.mapParameterFactory = clientMapProvider.getMAPParameterFactory();
 
-      MAPApplicationContext appCnt = null;
+      MAPApplicationContext appCnt;
 
       appCnt = MAPApplicationContext.getInstance(MAPApplicationContextName.infoRetrievalContext,
           MAPApplicationContextVersion.version3);
@@ -376,7 +398,7 @@ public class MapSimulatorSendPrimitive {
 
       IMSI imsi = this.mapParameterFactory.createIMSI(imsiString);
       clientDialogMobility.addSendAuthenticationInfoRequest(imsi, 3, true, true, null, null,
-          RequestingNodeType.sgsn, null, 5, false);
+          RequestingNodeType.sgsn, null, 5, false, false);
       clientDialogMobility.send();
 
     } catch (Exception e) {
@@ -393,8 +415,7 @@ public class MapSimulatorSendPrimitive {
       if (!(networkIdState == null
           || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn(
-            "Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
 
         Thread.sleep(3000);
 
@@ -409,7 +430,7 @@ public class MapSimulatorSendPrimitive {
 
 
       clientMapProvider.getMAPServiceCallHandling().activate();
-      MAPApplicationContext appCnt = null;
+      MAPApplicationContext appCnt;
 
       appCnt =
           MAPApplicationContext.getInstance(MAPApplicationContextName.roamingNumberEnquiryContext,
@@ -481,8 +502,7 @@ public class MapSimulatorSendPrimitive {
       if (!(networkIdState == null
           || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn(
-            "Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
         Thread.sleep(3000);
 
       }
@@ -491,7 +511,7 @@ public class MapSimulatorSendPrimitive {
       clientMapProvider.getMAPServiceMobility().activate();
       this.mapParameterFactory = clientMapProvider.getMAPParameterFactory();
 
-      MAPApplicationContext appCnt = null;
+      MAPApplicationContext appCnt;
 
       appCnt =
           MAPApplicationContext.getInstance(MAPApplicationContextName.subscriberDataMngtContext,

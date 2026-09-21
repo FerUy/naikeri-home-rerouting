@@ -1,8 +1,8 @@
 package com.naikeri.sgw.info;
 
 import java.util.concurrent.ConcurrentHashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.naikeri.sgw.impl.app.cap.BcsmCallContent;
 
 /**
@@ -10,21 +10,21 @@ import com.naikeri.sgw.impl.app.cap.BcsmCallContent;
  */
 public class CapTransaction {
 
-  private static final Logger logger = LoggerFactory.getLogger(CapTransaction.class);
-  private int initialCapacity = 1000;
-  private int maxTransaction = 10000;
+  private static final Logger logger = LogManager.getLogger(CapTransaction.class);
+    private int maxTransaction = 10000;
 
-  private ConcurrentHashMap<Long, BcsmCallContent> scftransaction;
-  private ConcurrentHashMap<Long, BcsmCallContent> ssftransaction;
-  private ConcurrentHashMap<String, BcsmCallContent> msrnMapping;
-  private ConcurrentHashMap<Long, BcsmCallContent> leg2Transaction;
+  private final ConcurrentHashMap<Long, BcsmCallContent> scftransaction;
+  private final ConcurrentHashMap<Long, BcsmCallContent> ssftransaction;
+  private final ConcurrentHashMap<String, BcsmCallContent> msrnMapping;
+  private final ConcurrentHashMap<Long, BcsmCallContent> leg2Transaction;
   private static CapTransaction sInstance;
 
   public CapTransaction() {
-    scftransaction = new ConcurrentHashMap<>(this.initialCapacity);
-    ssftransaction = new ConcurrentHashMap<>(this.initialCapacity);
-    leg2Transaction = new ConcurrentHashMap<>(this.initialCapacity);
-    msrnMapping = new ConcurrentHashMap<>(this.initialCapacity);
+      int initialCapacity = 1000;
+      scftransaction = new ConcurrentHashMap<>(initialCapacity);
+    ssftransaction = new ConcurrentHashMap<>(initialCapacity);
+    leg2Transaction = new ConcurrentHashMap<>(initialCapacity);
+    msrnMapping = new ConcurrentHashMap<>(initialCapacity);
 
   }
 
@@ -41,7 +41,7 @@ public class CapTransaction {
   }
 
   public synchronized void setSCFSSFBcsmCallContent(Long scfdialogId, Long ssfDialogId,
-      BcsmCallContent callContent) {
+                                                    BcsmCallContent callContent) {
     if (scfdialogId == null || ssfDialogId == null)
       return;
     this.scftransaction.put(scfdialogId, callContent);
@@ -87,7 +87,7 @@ public class CapTransaction {
   }
 
   public synchronized void setMsrnTransaction(String callingPartyNumber, String msrnNumber,
-      BcsmCallContent callcontent) {
+                                              BcsmCallContent callcontent) {
     String key = "";
     if (callingPartyNumber != null && !callingPartyNumber.isEmpty()) {
       key = callingPartyNumber;
@@ -100,10 +100,8 @@ public class CapTransaction {
     this.msrnMapping.put(key, callcontent);
   }
 
-  public synchronized BcsmCallContent getMsrnMapping(String callingPartyNumber, String msrnNumber,
-      Boolean isRemove) {
-    logger.trace("CallingNumber = " + callingPartyNumber + ", MSRN = " + msrnNumber + ", Remove = "
-        + isRemove);
+  public synchronized BcsmCallContent getMsrnMapping(String callingPartyNumber, String msrnNumber, Boolean isRemove) {
+    logger.trace("CallingNumber = {}, MSRN = {}, Remove = {}", callingPartyNumber, msrnNumber, isRemove);
     String key = "";
     if (callingPartyNumber != null && !callingPartyNumber.isEmpty()) {
       key = callingPartyNumber;
@@ -134,7 +132,7 @@ public class CapTransaction {
   }
 
   public synchronized BcsmCallContent getLeg2BcsmCall(Long dialogId, Boolean isRemove) {
-    logger.trace("DialogId = " + dialogId + ", Remove = " + isRemove);
+    logger.trace("DialogId = {}, Remove = {}", dialogId, isRemove);
     if (dialogId == null)
       return null;
     if (Boolean.TRUE.equals(isRemove)) {

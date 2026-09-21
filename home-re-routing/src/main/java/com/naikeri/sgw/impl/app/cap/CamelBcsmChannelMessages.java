@@ -20,14 +20,13 @@ import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.RequestRep
 
 public class CamelBcsmChannelMessages {
 
-  private Object capOperationObject;
+  private final Object capOperationObject;
   CapProcessingNode capProcessingNode;
-  private CAPStack capStack;
-  private CAPStack capStackOut;
-  private String channelTransId;
+  private final CAPStack capStack;
+  private final CAPStack capStackOut;
+  private final String channelTransId;
 
-  public CamelBcsmChannelMessages(CapLayer capLayerIn, CapLayer capLayerOut, Object requestObject,
-      String transactionid) {
+  public CamelBcsmChannelMessages(CapLayer capLayerIn, CapLayer capLayerOut, Object requestObject, String transactionid) {
     this.capOperationObject = requestObject;
     this.capStack = capLayerIn.getCapStack();
     this.capStackOut = capLayerOut.getCapStack();
@@ -36,8 +35,7 @@ public class CamelBcsmChannelMessages {
 
   public CapDialogOut initialDP_Request() {
     InitialDPRequest request = (InitialDPRequest) this.capOperationObject;
-    CapProxyInitialDPRequest iDpRequest =
-        new CapProxyInitialDPRequest(request, capStack, capStackOut, channelTransId);
+    CapProxyInitialDPRequest iDpRequest = new CapProxyInitialDPRequest(request, capStack, capStackOut, channelTransId);
     return iDpRequest.process();
   }
 
@@ -50,29 +48,25 @@ public class CamelBcsmChannelMessages {
 
   public CapDialogOut continue_Request() {
     ContinueRequest request = (ContinueRequest) this.capOperationObject;
-    CapProxyContinueRequest cueRequest =
-        new CapProxyContinueRequest(request, channelTransId, capStack);
+    CapProxyContinueRequest cueRequest = new CapProxyContinueRequest(request, channelTransId, capStack);
     return cueRequest.process();
   }
 
   public CapDialogOut establishTemporaryConnection_Request() {
-    EstablishTemporaryConnectionRequest request =
-        (EstablishTemporaryConnectionRequest) this.capOperationObject;
+    EstablishTemporaryConnectionRequest request = (EstablishTemporaryConnectionRequest) this.capOperationObject;
     CapProxyETCRequest etcRequest = new CapProxyETCRequest(request, channelTransId, capStack);
     return etcRequest.process();
   }
 
   public CapDialogOut connect_Request() {
     ConnectRequest request = (ConnectRequest) this.capOperationObject;
-    CapProxyConnectRequest connectRequest =
-        new CapProxyConnectRequest(request, channelTransId, capStack);
+    CapProxyConnectRequest connectRequest = new CapProxyConnectRequest(request, channelTransId, capStack);
     return connectRequest.process();
   }
 
   public CapDialogOut eventReportBCSM_Request() {
     EventReportBCSMRequest request = (EventReportBCSMRequest) this.capOperationObject;
-    CapProxyEventReportBCSMRequest erbRequest =
-        new CapProxyEventReportBCSMRequest(request, channelTransId);
+    CapProxyEventReportBCSMRequest erbRequest = new CapProxyEventReportBCSMRequest(request, channelTransId);
     return erbRequest.process();
   }
 

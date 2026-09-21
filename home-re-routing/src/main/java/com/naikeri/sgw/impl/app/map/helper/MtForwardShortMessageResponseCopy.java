@@ -9,9 +9,9 @@ import org.restcomm.protocols.ss7.map.api.service.sms.SmsSignalInfo;
  */
 public class MtForwardShortMessageResponseCopy {
 
-  private SmsSignalInfo sM_RP_UI;
+  private final SmsSignalInfo sM_RP_UI;
 
-  private MAPExtensionContainer extensionContainer;
+  private final MAPExtensionContainer extensionContainer;
 
   public MtForwardShortMessageResponseCopy(MtForwardShortMessageResponse response) {
     this.sM_RP_UI = response.getSM_RP_UI();

@@ -9,7 +9,7 @@ import java.util.Map;
 public class ServiceKeys {
 
   private static ServiceKeys sInstance = null;
-  private Map<String, Integer> serviceKeysMap = null;
+  private final Map<String, Integer> serviceKeysMap;
   public static ServiceKeys getInstance() {
     if (sInstance == null) {
       sInstance = new ServiceKeys();

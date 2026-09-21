@@ -16,5 +16,5 @@ public enum BcsmCallStep {
     closed,
     collectedInfo, answerReceived, answerSent, disconnectSent, disconnectReceived, disconnected, calledPartyBusy,
     noAnswer, midCall, busy, abandoned, termAttemptAuthorized, callAccepted, termSeized, changeOfPosition,
-    serviceChange, analizedInformation, routeSelectFailure;
+    serviceChange, analizedInformation, routeSelectFailure
 }

@@ -1,14 +1,15 @@
 package com.naikeri.sgw.impl.app.cap;
 
 import com.naikeri.sgw.info.CapTransaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * CapDialogCloseHandler
  */
 public class CapDialogCloseHandler {
-  private static final Logger logger = LoggerFactory.getLogger(CapDialogCloseHandler.class);
+
+  private static final Logger logger = LogManager.getLogger(CapDialogCloseHandler.class);
 
   public static CapDialogOut closeCapDialog(Long dialogId) {
     if (dialogId == null) return null;
@@ -17,10 +18,10 @@ public class CapDialogCloseHandler {
       if (callContent == null){
         callContent = CapTransaction.instance().getScfBcsmCallContent(dialogId, true);
         if (callContent != null){
-          logger.debug("Closing the dialog for leg1. DialogId = "+ dialogId);
+          logger.debug("Closing the dialog for leg1. DialogId = {}", dialogId);
         }    
       }else {
-        logger.debug("Closing the dialog for Leg2. DialogId = "+ dialogId);
+        logger.debug("Closing the dialog for Leg2. DialogId = {}", dialogId);
       }
       if (callContent == null){
         return null;
@@ -30,7 +31,7 @@ public class CapDialogCloseHandler {
       dialogOut.setCapDialogCircuitSwitchedCall(callContent.getCapDialog());
       return dialogOut;
     } catch (Exception e) {
-      logger.error("Exception caught for DialogId = " + dialogId + ". Details: ", e);
+      logger.error("Exception caught for DialogId = {}. Details: ", dialogId, e);
       logger.error(e.getMessage());
     }
     return null;

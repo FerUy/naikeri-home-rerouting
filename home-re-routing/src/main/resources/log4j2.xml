@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logging for Naikeri HRR. The application and jSS7 call the Log4j 2 API directly; the Signaling
+  Gateway library logs through SLF4J, which log4j-slf4j2-impl routes here. One file configures both.
+  Converted from the log4j 1.x log4j.xml: same appenders, patterns, levels and rotation.
+-->
+<Configuration status="warn">
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout charset="UTF-8" noConsoleNoAnsi="true"
+                           pattern="%d{yyyy-MM-dd HH:mm:ss} %-5level %c{1}:%L - %msg%n"/>
+        </Console>
+
+        <!-- TRACE..INFO only: errors go to errorfile.log instead -->
+        <RollingFile name="debugfiles" fileName="./logs/debugfile.log"
+                     filePattern="./logs/debugfile.log.%i">
+            <PatternLayout charset="UTF-8" pattern="%d{yyyy-MM-dd HH:mm:ss} %-5level %c{1}:%L - %msg%n"/>
+            <LevelRangeFilter minLevel="TRACE" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5" fileIndex="min"/>
+        </RollingFile>
+
+        <!-- CDRs: the message only, no timestamp or level -->
+        <RollingFile name="cdrlogger" fileName="./logs/cdrlogger.log"
+                     filePattern="./logs/cdrlogger.log.%i">
+            <PatternLayout charset="UTF-8" pattern="%msg%n"/>
+            <LevelRangeFilter minLevel="TRACE" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5" fileIndex="min"/>
+        </RollingFile>
+
+        <RollingFile name="capCdrLogger" fileName="./logs/cap_cdrlogger.log"
+                     filePattern="./logs/cap_cdrlogger.log.%i">
+            <PatternLayout charset="UTF-8" pattern="%msg%n"/>
+            <LevelRangeFilter minLevel="TRACE" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="5" fileIndex="min"/>
+        </RollingFile>
+
+        <!-- ERROR and above. The log4j 1.x appender had no size policy, so this one does not roll either. -->
+        <File name="errorfiles" fileName="./logs/errorfile.log">
+            <PatternLayout charset="UTF-8" pattern="%d{yyyy-MM-dd HH:mm:ss} %-5level %c{1}:%L - %msg%n"/>
+            <LevelRangeFilter minLevel="ERROR" maxLevel="FATAL" onMatch="ACCEPT" onMismatch="DENY"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <!-- Stack chatter kept down to errors -->
+        <Logger name="org.mobicents.protocols.sctp.netty" level="error"/>
+        <Logger name="org.restcomm.protocols.ss7.m3ua" level="error"/>
+        <Logger name="org.restcomm.protocols.ss7.sccpext.impl.router" level="error"/>
+        <Logger name="org.restcomm.protocols.ss7.sccpext.impl" level="error"/>
+        <Logger name="org.restcomm.protocols.ss7.sccp.impl" level="error"/>
+        <Logger name="org.restcomm.protocols.ss7.cap" level="error"/>
+        <Logger name="org.restcomm.protocols.ss7.isup" level="error"/>
+
+        <!-- CDR writers: their own files, and additivity="false" keeps them out of the root appenders,
+             which log4j 1.x did not do: CDRs also went to console and debugfile.log there. -->
+        <Logger name="cdrlogger" level="info" additivity="false">
+            <AppenderRef ref="cdrlogger"/>
+        </Logger>
+        <Logger name="capCdrLogger" level="info" additivity="false">
+            <AppenderRef ref="capCdrLogger"/>
+        </Logger>
+
+        <Root level="all">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="debugfiles"/>
+            <AppenderRef ref="errorfiles"/>
+        </Root>
+    </Loggers>
+</Configuration>

@@ -13,8 +13,8 @@ import com.naikeri.sgw.impl.rules.MSRNNumbers;
 import com.naikeri.sgw.impl.rules.PatternSccpAddress;
 import com.naikeri.sgw.impl.rules.ReplacedValues;
 import com.naikeri.sgw.info.CapTransaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.CAPStack;
 import org.restcomm.protocols.ss7.cap.api.isup.CalledPartyNumberCap;
@@ -32,10 +32,10 @@ import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
  */
 public class CapProxyContinueRequest {
 
-  private static final Logger logger = LoggerFactory.getLogger(CapProxyContinueRequest.class);
-  private ContinueRequest request;
-  private String channelTransId;
-  private CAPStack capStack;
+  private static final Logger logger = LogManager.getLogger(CapProxyContinueRequest.class);
+  private final ContinueRequest request;
+  private final String channelTransId;
+  private final CAPStack capStack;
 
   public CapProxyContinueRequest(ContinueRequest request, String channelTransId,
       CAPStack capStack) {
@@ -46,18 +46,14 @@ public class CapProxyContinueRequest {
 
   public CapDialogOut process() {
     try {
-      logger.debug(String.format("[CAP::REQUEST<%s>] dialogId '%d', invokeId '%d'",
-          request.getMessageType().toString(), request.getCAPDialog().getLocalDialogId(),
-          request.getInvokeId()));
+      logger.debug("[CAP::REQUEST<{}>] dialogId '{}', invokeId '{}'", request.getMessageType().toString(), request.getCAPDialog().getLocalDialogId(), request.getInvokeId());
       Long dialogId = request.getCAPDialog().getLocalDialogId();
 
-      BcsmCallContent callContent =
-          CapTransaction.instance().getSSFBcsmCallContent(dialogId, false);
+      BcsmCallContent callContent = CapTransaction.instance().getSSFBcsmCallContent(dialogId, false);
       if (callContent == null) {
         // call not found
-        logger.trace("Previous store information not found for dialogid = " + dialogId);
-        return CapProxyHelperUtils.closeDialog(request.getCAPDialog(), dialogId, channelTransId,
-            false);
+        logger.trace("Previous store information not found for dialogid = {}", dialogId);
+        return CapProxyHelperUtils.closeDialog(request.getCAPDialog(), dialogId, channelTransId, false);
       }
       callContent.setCue(request);
       callContent.setStep(BcsmCallStep.cueReceived);
@@ -72,7 +68,7 @@ public class CapProxyContinueRequest {
       CapApplicationRulesResult result = ApplyCapApplicationRules.apply(callingSccpAddress,
           calledSccpAddress, imsi, request.getMessageType().toString(), this.channelTransId);
       if (result == null) {
-        logger.trace("Rule not found for CUE: " + request + ". " + this.channelTransId);
+        logger.trace("Rule not found for CUE: {}. {}", request, this.channelTransId);
       } else {
         capDialogOut.setRuleName(result.getRuleName());
         updateSccpAddresses(callingSccpAddress, calledSccpAddress, cueDialogOut, result);
@@ -85,11 +81,10 @@ public class CapProxyContinueRequest {
           if (replaceComponent != null && replaceComponent.getApply()) {
             // apply the argument
             CapRuleComponent.Replace.ReplaceArguments replArgs = replaceComponent.getArgument();
-            String callingPartyNumberAddress =
-                callContent.getCallingPartyNumberCap().getCallingPartyNumber().getAddress();
+            String callingPartyNumberAddress = callContent.getCallingPartyNumberCap().getCallingPartyNumber().getAddress();
             String msrnNumber = MSRNNumbers.instance().getMSRNAddress(result.getRuleName(),
                 replArgs.getCdPN(), replArgs.getRange(), dialogId, callingPartyNumberAddress);
-            logger.info("MSRN Number = " + msrnNumber);
+            logger.info("MSRN Number = {}", msrnNumber);
             capDialogOut.setMSRN(msrnNumber);
             ArrayList<CalledPartyNumberCap> calledPartyNumber = new ArrayList<>();
             CalledPartyNumber cpn =
@@ -109,17 +104,12 @@ public class CapProxyContinueRequest {
 
             helper.setDestinationRoutingAddress(destinationRoutingAddress);
             helper.replaceComponent(cueDialogOut, replaceComponent.getPrimitive(), removeComponent);
-            logger
-                .debug("CAP CUE removed and CAP CON to be sent on CAP proxy to VPLMN over dialog: "
-                    + cueDialogOut + "; Calling Party Address=" + cueDialogOut.getLocalAddress()
-                    + "; Called Party Address=" + cueDialogOut.getRemoteAddress());
-            CapTransaction.instance().setMsrnTransaction(callingPartyNumberAddress, msrnNumber,
-                callContent);
+            logger.debug("CAP CUE removed and CAP CON to be sent on CAP proxy to VPLMN over dialog: {}; Calling Party Address={}; Called Party Address={}",
+                cueDialogOut, cueDialogOut.getLocalAddress(), cueDialogOut.getRemoteAddress());
+            CapTransaction.instance().setMsrnTransaction(callingPartyNumberAddress, msrnNumber, callContent);
           }
         }
       }
-
-
 
       capDialogOut.setWriteCDR(CapDialogOut.WriteLogState.ADDMORE);
       capDialogOut.setCapDialogCircuitSwitchedCall(cueDialogOut);
@@ -127,11 +117,11 @@ public class CapProxyContinueRequest {
       CapTransaction.instance().updateSSFBcsmCallContent(dialogId, callContent);
       return capDialogOut;
     } catch (CAPException capEx) {
-      logger.error("Processing CAP RRB Request failed for " + channelTransId, capEx);
+      logger.error("Processing CAP RRB Request failed for {}", channelTransId, capEx);
       return CapProxyHelperUtils.discardReason(CapDialogType.CircuitSwitchedCallControl,
           capEx.getMessage(), request.getMessageType().toString(), channelTransId);
     } catch (Exception e) {
-      logger.error("Exception caught for " + channelTransId + ". Details: ", e);
+      logger.error("Exception caught for {}. Details: ", channelTransId, e);
       return CapProxyHelperUtils.discardReason(CapDialogType.CircuitSwitchedCallControl,
           e.getMessage(), request.getMessageType().toString(), channelTransId);
     }
@@ -152,7 +142,7 @@ public class CapProxyContinueRequest {
             .flatMap(PatternSccpAddress::getSubSystemNumber)
             .orElse(calledSccpAddress.getSubsystemNumber());
         calledSccpAddress = new SccpAddressImpl(ri, gt, dpc, ssn);
-        logger.info("SccpAddress: " + calledSccpAddress.toString());
+        logger.info("SccpAddress: {}", calledSccpAddress);
       }
       cueDialogOut.setRemoteAddress(calledSccpAddress); // change the called address
       if (replacedValues.getCallingGlobalTitle() != null) {

@@ -30,7 +30,7 @@
         <slf4j.version>2.0.17</slf4j.version>
         <junit.version>4.13.2</junit.version>
         <commons-cli.version>1.11.0</commons-cli.version>
-        <naikeri-signaling-gateway-core.version>2.2.0-106</naikeri-signaling-gateway-core.version>
+        <naikeri-signaling-gateway-core.version>2.2.0-107</naikeri-signaling-gateway-core.version>
     </properties>
 
     <developers>
@@ -87,6 +87,13 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <!-- The Signaling Gateway library logs through SLF4J; without this binding those calls are
+                 discarded, which is most of the MAP and CAP layer logging. -->
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
             <version>${log4j.version}</version>
         </dependency>
         <dependency>

@@ -4,15 +4,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * MapApplicationRules
  */
 public class MapProxyApplicationRules {
-  private static final Logger logger = LoggerFactory.getLogger(MapProxyApplicationRules.class);
-  private CopyOnWriteArrayList<ApplicationRulesSetting> mapApplicationRules;
+
+  private static final Logger logger = LogManager.getLogger(MapProxyApplicationRules.class);
+  private final CopyOnWriteArrayList<ApplicationRulesSetting> mapApplicationRules;
   static MapProxyApplicationRules sInstance = null;
 
   public static MapProxyApplicationRules getInstance() {
@@ -34,7 +35,7 @@ public class MapProxyApplicationRules {
       XmlApplicationRules xmlApplicationRules = new XmlApplicationRules(filename);
       mapApplicationRules.addAll(xmlApplicationRules.getApplicationRules());
     } catch (Exception e) {
-      logger.error("Exception caught:" + e);
+      logger.error("Exception caught:{}", String.valueOf(e));
     }
   }
 
@@ -43,12 +44,12 @@ public class MapProxyApplicationRules {
       XmlCapApplicationRules xmlCapAppRules = new XmlCapApplicationRules(filename);
       mapApplicationRules.addAll(xmlCapAppRules.getApplicationRules());
     } catch (Exception e) {
-      logger.error("Exception caught reading CAP Application Rule xml file. Exception: " + e);
+      logger.error("Exception caught reading CAP Application Rule xml file. Exception: {}", String.valueOf(e));
     }
   }
 
   public ApplicationRulesSetting findMAPApplicationRule(String callingGT, String calledGT,
-      String imsiStr, String messageType) {
+                                                        String imsiStr, String messageType) {
     Optional<ApplicationRulesSetting> appRulesSetting =
         this.mapApplicationRules.stream().filter(ruleSetting -> searchApplicationRules(ruleSetting,
             callingGT, calledGT, imsiStr, messageType)).findFirst();
@@ -59,7 +60,7 @@ public class MapProxyApplicationRules {
   }
 
   private boolean searchApplicationRules(ApplicationRulesSetting ruleSetting, String callingGT,
-      String calledGT, String imsiStr, String messageType) {
+                                         String calledGT, String imsiStr, String messageType) {
     // ensure there is match rules
     ApplicationMatchRule matchRule = ruleSetting.getMatchRule();
     if (matchRule == null) {

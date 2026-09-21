@@ -20,9 +20,8 @@ public final class ApplicationRulesSetting {
     private CapRuleComponent component;
     private Boolean isLeg2 = false;
 
-    public Builder setIsLeg2(Boolean isLeg2){
+    public void setIsLeg2(Boolean isLeg2) {
       this.isLeg2 = isLeg2;
-      return this;
     }
     public Builder setName(String name) {
       this.name = name;
@@ -50,19 +49,16 @@ public final class ApplicationRulesSetting {
       return this;
     }
 
-    public Builder setReplaceRule(ApplicationReplaceRule replacerule) {
+    public void setReplaceRule(ApplicationReplaceRule replacerule) {
       this.replaceRule = replacerule;
-      return this;
     }
 
-    public Builder setRegexEnabled(Boolean regexEnabled){
+    public void setRegexEnabled(Boolean regexEnabled) {
       this.regexEnabled = regexEnabled;
-      return this;
     }
 
-    public Builder setComponent(CapRuleComponent component){
+    public void setComponent(CapRuleComponent component) {
       this.component = component;
-      return this;
     }
 
     public ApplicationRulesSetting build() {
@@ -83,7 +79,7 @@ public final class ApplicationRulesSetting {
     }
   }
 
-  private String name;
+  private final String name;
   private ApplicationMatchRule matchRule;
   private ApplicationReplaceRule replaceRule;
   private CapRuleComponent component;
@@ -105,7 +101,7 @@ public final class ApplicationRulesSetting {
   public ApplicationMatchRule getMatchRule() {
     return matchRule;
   }
-  public Optional<ApplicationMatchRule> getMatchRuleOpt(){
+  public Optional<ApplicationMatchRule> getMatchRuleOpt() {
     return Optional.ofNullable(this.matchRule);
   }
   public void setMatchRule(ApplicationMatchRule matchRule) {

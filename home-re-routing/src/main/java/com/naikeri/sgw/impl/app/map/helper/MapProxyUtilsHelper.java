@@ -1,11 +1,11 @@
 package com.naikeri.sgw.impl.app.map.helper;
 
 import com.naikeri.sgw.impl.app.map.MapDialogOut;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class MapProxyUtilsHelper {
-  private static final Logger logger = LoggerFactory.getLogger(MapProxyUtilsHelper.class);
+  private static final Logger logger = LogManager.getLogger(MapProxyUtilsHelper.class);
   private static String cdrName;
   private static boolean cdrIsEnabled = false;
 
@@ -26,10 +26,9 @@ public class MapProxyUtilsHelper {
   }
 
   public static MapDialogOut discardReason(String message, String messageType,
-      String transactionId) {
+                                           String transactionId) {
     MapDialogOut builder = new MapDialogOut();
-    logger.debug(String.format("Discard for <%s>. TransactionId = %s, Reason = %s", messageType,
-        transactionId, message));
+    logger.debug("Discard for <{}>. TransactionId = {}, Reason = {}", messageType, transactionId, message);
     builder.setDiscardReason(message);
     return builder;
   }

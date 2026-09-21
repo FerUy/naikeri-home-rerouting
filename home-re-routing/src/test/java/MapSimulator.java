@@ -1,5 +1,4 @@
 import java.io.InputStream;
-import java.util.Random;
 import com.naikeri.sgw.helpers.SgwResource;
 import com.naikeri.sgw.impl.settings.XmlConfiguration;
 import com.naikeri.sgw.impl.settings.m3ua.M3uaSettings;
@@ -16,13 +15,14 @@ import com.naikeri.prototype.map.MapProtoTypeSMSListener;
 import com.naikeri.prototype.map.MapPrototypeListener;
 import com.naikeri.prototype.map.MapPrototypeMobility;
 import com.naikeri.prototype.map.MapSimulatorSendPrimitive;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.MAPStackImpl;
 
 
 public class MapSimulator {
-  private static final Logger logger = LoggerFactory.getLogger(MapSimulator.class);
+
+  private static final Logger logger = LogManager.getLogger(MapSimulator.class);
   String imsiString = "425100402000108";
   String sgsn_address = "112233445500";
   String sgsn_number = "112233445501";
@@ -97,11 +97,11 @@ public class MapSimulator {
           .addMAPServiceListener(new MapPrototypeMobility(mapClient.getMAPProvider().getMAPParameterFactory()));
       map.getMapProvider().getMAPServiceSms().addMAPServiceListener(new MapProtoTypeSMSListener());
       map.getMapProvider().getMAPServiceMobility().activate();
-      
+
       simul = new MapSimulatorSendPrimitive(mapClient, sccpClientSettings, sccpServerSettings);
       this.simulate();
-    } catch (Exception ex) {
-      ex.printStackTrace();
+    } catch (Exception e) {
+      logger.error(e.getStackTrace());
     }
   }
 

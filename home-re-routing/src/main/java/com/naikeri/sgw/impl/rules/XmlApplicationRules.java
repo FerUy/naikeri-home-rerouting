@@ -12,8 +12,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.api.MAPMessageType;
 
 /**
@@ -21,9 +21,9 @@ import org.restcomm.protocols.ss7.map.api.MAPMessageType;
  */
 public class XmlApplicationRules {
 
-  private Logger logger = LoggerFactory.getLogger(XmlApplicationRules.class);
-  private String filename;
-  private Pattern pattern = Pattern.compile("^\\d+$");
+  private final Logger logger = LogManager.getLogger(XmlApplicationRules.class);
+  private final String filename;
+  private final Pattern pattern = Pattern.compile("^\\d+$");
 
   public XmlApplicationRules(String filename) {
     this.filename = filename;
@@ -77,7 +77,7 @@ public class XmlApplicationRules {
     builder.setName(name);
     // read the match
     NodeList matchList = element.getElementsByTagName("Match");
-    if (matchList != null && matchList.getLength() > 0) {
+    if (matchList.getLength() > 0) {
       Element matchElement = (Element) matchList.item(0);
       String clgGtStr = matchElement.getAttribute("ClgGt");
       String cldGtStr = matchElement.getAttribute("CldGt");
@@ -96,7 +96,7 @@ public class XmlApplicationRules {
         validateReExpression(cldGtStr, cldErr);
       }
 
-      String messageTypes = null;
+      String messageTypes;
       if (matchElement.hasAttribute("messagetypes")) {
         messageTypes = matchElement.getAttribute("messagetypes");
       } else {
@@ -112,7 +112,7 @@ public class XmlApplicationRules {
 
     // read the replace
     NodeList replaceList = element.getElementsByTagName("Replace");
-    if (replaceList != null && replaceList.getLength() > 0) {
+    if (replaceList.getLength() > 0) {
       Element replaceElement = (Element) replaceList.item(0);
       ApplicationReplaceRule replacerule = getReplaceTags(replaceElement, name, enableRegex);
       if (replacerule != null) {
@@ -120,21 +120,17 @@ public class XmlApplicationRules {
         return builder.build();
       }
     } else {
-      logger.info(String.format("No Replace tag found for rule '%s'", name));
+      logger.info("No Replace tag found for rule '{}'", name);
     }
     return null;
   }
 
   private String[] getImsiValue(Element element, String name, boolean enableRegex) {
     NodeList imsiTag = element.getElementsByTagName("Imsi");
-    if (imsiTag != null && imsiTag.getLength() > 0) {
+    if (imsiTag.getLength() > 0) {
       Element elTag = (Element) imsiTag.item(0);
       String imsiValue = elTag.getAttribute("value");
       String patternStr = elTag.getAttribute("pattern");
-      if (enableRegex && patternStr == null) {
-        throw new IllegalArgumentException(
-            String.format("The pattern for IMSI replace is required for '%s'", name));
-      }
       try {
         if (enableRegex) {
           // validate the regular expression
@@ -152,21 +148,21 @@ public class XmlApplicationRules {
   }
 
   private ApplicationRuleGlobalTitle getGlobalTitleValues(Element element, String name,
-      String nodeName, boolean enableRegex) {
+                                                          String nodeName, boolean enableRegex) {
     NodeList callingNodeList = element.getElementsByTagName(nodeName);
-    if (callingNodeList == null || callingNodeList.getLength() <= 0) {
+    if (callingNodeList.getLength() <= 0) {
       return null;
     }
     // get only the first item in the list
     Element cTag = (Element) callingNodeList.item(0);
-    int translationType = -1;
+    int translationType;
     if (cTag.hasAttribute("translationType")) {
       translationType = Integer.parseInt(cTag.getAttribute("translationType"));
     } else {
       throw new IllegalArgumentException(
           String.format("Invalid Translation Type for Rule = '%s'", name));
     }
-    Integer encodingScheme = null;
+    int encodingScheme;
     if (cTag.hasAttribute("encodingScheme")) {
       encodingScheme = Integer.parseInt(cTag.getAttribute("encodingScheme"));
     } else {
@@ -174,7 +170,7 @@ public class XmlApplicationRules {
           String.format("Invalid Encoding Scheme for Rule = '%s'", name));
     }
 
-    Integer numberingPlan = null;
+    int numberingPlan;
     if (cTag.hasAttribute("numberingPlan")) {
       numberingPlan = Integer.parseInt(cTag.getAttribute("numberingPlan"));
     } else {
@@ -182,7 +178,7 @@ public class XmlApplicationRules {
           String.format("Invalid Numbering Plan for Rule = '%s'", name));
     }
 
-    String natureOfAddress = null;
+    String natureOfAddress;
     if (cTag.hasAttribute("natureOfAddress")) {
       natureOfAddress = cTag.getAttribute("natureOfAddress");
     } else {
@@ -192,10 +188,6 @@ public class XmlApplicationRules {
     }
     String gtValue = cTag.getAttribute("value");
     String regexPattern = cTag.getAttribute("pattern");
-    if (enableRegex && regexPattern == null) {
-      throw new IllegalArgumentException(
-          String.format("Invalid pattern for '%s' for Rule name '%s'", nodeName, name));
-    }
     try {
       if (enableRegex) {
         Pattern.compile(regexPattern);
@@ -243,14 +235,14 @@ public class XmlApplicationRules {
           getGlobalTitleValues(element, name, "CldGt", enableRegex);
 
       if ((imsiStr == null && callingGt == null && calledGt == null)) {
-        logger.error("The 'Replace node' is not defined properly for '" + name + "'");
+        logger.error("The 'Replace node' is not defined properly for '{}'", name);
         return null;
       }
       return new ApplicationReplaceRule.Builder().setIMSI(imsiStr).setCallingGt(callingGt)
           .setCalledGt(calledGt).setRegexEnabled(enableRegex).setRegexImsiPattern(imsiPattern)
           .build();
     } catch (Exception e) {
-      logger.error("Rules Exception caught: Error: " + e + "Rule Name: " + name);
+      logger.error("Rules Exception caught: Error: {}Rule Name: {}", e, name);
       return null;
     }
   }
@@ -258,10 +250,10 @@ public class XmlApplicationRules {
   public List<ApplicationRulesSetting> getApplicationRules() {
     List<ApplicationRulesSetting> apprules = new ArrayList<>();
     if (this.filename == null || this.filename.isEmpty()) {
-      logger.error("Invalid filename '" + this.filename + "' for the Application rules");
+      logger.error("Invalid filename '{}' for the Application rules", this.filename);
       return apprules;
     }
-    logger.debug("Reading Application Rules. Filename: " + this.filename);
+    logger.debug("Reading Application Rules. Filename: {}", this.filename);
     try {
       InputStream is = new SgwResource(this.filename).getAsStream();
       // Get document builder
@@ -283,17 +275,16 @@ public class XmlApplicationRules {
           readApplicationXmlRules(apprules, eElement, name, enableRegex);
         }
       }
-      logger.info(String.format("Total '%d' Application rules found", apprules.size()));
+      logger.info("Total '{}' Application rules found", apprules.size());
 
     } catch (Exception e) {
-      logger.error("Exception caught for loading application rules. Filename = '" + this.filename
-          + "', Error: " + e);
+      logger.error("Exception caught for loading application rules. Filename = '{}', Error: {}", this.filename, e);
     }
     return apprules;
   }
 
   private void readApplicationXmlRules(List<ApplicationRulesSetting> apprules, Element eElement,
-      String name, boolean enableRegex) {
+                                       String name, boolean enableRegex) {
     try {
       ApplicationRulesSetting mrule = getXmlRules(name, eElement, enableRegex);
       if (mrule != null) {

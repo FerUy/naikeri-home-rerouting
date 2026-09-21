@@ -1,6 +1,8 @@
 package com.naikeri.prototype;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+
 import com.google.common.util.concurrent.RateLimiter;
 import com.naikeri.sgw.api.chn.ChannelMessage;
 import com.naikeri.sgw.api.network.LayerInterface;
@@ -16,8 +18,8 @@ import com.naikeri.sgw.network.layers.SctpLayer;
 import com.naikeri.sgw.network.layers.TcapLayer;
 // import com.naikeri.sgw.network.listeners.map.MapDialogListener;
 // import com.naikeri.sgw.network.listeners.map.MapServiceLsmListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.MAPStackImpl;
 import org.restcomm.protocols.ss7.map.api.MAPApplicationContext;
 import org.restcomm.protocols.ss7.map.api.MAPApplicationContextName;
@@ -26,16 +28,20 @@ import org.restcomm.protocols.ss7.map.api.MAPException;
 import org.restcomm.protocols.ss7.map.api.MAPProvider;
 import org.restcomm.protocols.ss7.map.api.primitives.AddressNature;
 import org.restcomm.protocols.ss7.map.api.primitives.AddressString;
+import org.restcomm.protocols.ss7.map.api.primitives.DiameterIdentity;
 import org.restcomm.protocols.ss7.map.api.primitives.GSNAddress;
 import org.restcomm.protocols.ss7.map.api.primitives.IMEI;
 import org.restcomm.protocols.ss7.map.api.primitives.IMSI;
 import org.restcomm.protocols.ss7.map.api.primitives.ISDNAddressString;
 import org.restcomm.protocols.ss7.map.api.primitives.MAPExtensionContainer;
 import org.restcomm.protocols.ss7.map.api.primitives.NumberingPlan;
+import org.restcomm.protocols.ss7.map.api.primitives.PlmnId;
 import org.restcomm.protocols.ss7.map.api.service.mobility.MAPDialogMobility;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.ADDInfo;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.EPSInfo;
+import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.ExtSupportedFeatures;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SGSNCapability;
+import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SMSRegisterRequest;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SuperChargerInfo;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SupportedFeatures;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SupportedLCSCapabilitySets;
@@ -55,7 +61,7 @@ import org.restcomm.protocols.ss7.map.service.mobility.locationManagement.Suppor
 import org.restcomm.protocols.ss7.map.service.mobility.subscriberManagement.SupportedCamelPhasesImpl;
 import org.restcomm.protocols.ss7.sccp.NetworkIdState;
 
-/*
+/**
  * MAP Prototype
  *
  */
@@ -66,8 +72,6 @@ public class MapPrototype extends ChannelHandler {
     private SccpLayer sccpServer;
     private SccpSettings sccpServerSettings;
     private TcapLayer tcapServer;
-    private MAPStackImpl mapServer;
-    private MAPProvider mapServerProvider;
 
     private SctpLayer sctpServer;
     private M3uaLayer m3uaClient;
@@ -77,10 +81,7 @@ public class MapPrototype extends ChannelHandler {
     private MAPStackImpl mapClient;
     private MAPProvider mapClientProvider;
 
-    private NetworkIdState networkIdState;
-    private RateLimiter rateLimiterObj = null;
-
-    private static Logger logger = LoggerFactory.getLogger(MapPrototype.class);
+    private static final Logger logger = LogManager.getLogger(MapPrototype.class.getName());
 
     public MapPrototype(ChannelSettings channelSettings) {
         super(channelSettings);
@@ -97,12 +98,12 @@ public class MapPrototype extends ChannelHandler {
             SctpSettings sctpServerSettings = new SctpSettings("sctpServer", true, 1000, true);
             sctpServerSettings.addServer("testsrv", "127.0.0.1:8122", false, false, 10, null);
             sctpServerSettings.addServerAssociation("testsrv", "server_assoc_0", "127.0.0.1:8111",
-                    false, null);
+                false, null);
             sctpServer = new SctpLayer(sctpServerSettings);
 
             SctpSettings sctpClientSettings = new SctpSettings("sctpClient", true, 1000, true);
             sctpClientSettings.addAssociation("assoc_0", "127.0.0.1:8111", "127.0.0.1:8122", false,
-                    null);
+                null);
             sctpClient = new SctpLayer(sctpClientSettings);
         } catch (Exception e) {
             logger.error(e.getStackTrace());
@@ -139,7 +140,7 @@ public class MapPrototype extends ChannelHandler {
             sccpServerSettings.addRemoteSpc("1001", 1, 1001, 0, 0);
             sccpServerSettings.addRemoteSsn("8", 1, 1001, 8, 0, false);
             sccpServerSettings.addMtp3ServiceAccessPoint("SAPServer", 1, 1, 1000, 2, 0,
-                    "50373700000");
+                "50373700000");
             sccpServerSettings.addMtp3Destination("SAPServer", 1, 1, 1001, 1001, 0, 255, 255);
             // sccpServerSettings.addRoutingAddress("localRoutingServer",1,"ROUTING_BASED_ON_GLOBAL_TITLE","50373700000",1000,6);
             // sccpServerSettings.addRoutingAddress("remoteRoutingServer",2,"ROUTING_BASED_ON_GLOBAL_TITLE","50373700001",1001,8);
@@ -154,7 +155,7 @@ public class MapPrototype extends ChannelHandler {
             sccpClientSettings.addRemoteSpc("1000", 1, 1000, 0, 0);
             sccpClientSettings.addRemoteSsn("6", 1, 1000, 6, 0, false);
             sccpClientSettings.addMtp3ServiceAccessPoint("SAPClient", 1, 1, 1001, 2, 0,
-                    "50373700001");
+                "50373700001");
             sccpClientSettings.addMtp3Destination("SAPClient", 1, 1, 1000, 1000, 0, 255, 255);
             // sccpClientSettings.addRoutingAddress("localRoutingClient",1,"ROUTING_BASED_ON_GLOBAL_TITLE","50373700001",1001,8);
             // sccpClientSettings.addRoutingAddress("remoteRoutingClient",2,"ROUTING_BASED_ON_GLOBAL_TITLE","50373700000",1000,6);
@@ -192,8 +193,8 @@ public class MapPrototype extends ChannelHandler {
         try {
             logger.info("MAP layer starting...");
 
-            mapServer = new MAPStackImpl("mapServer", tcapServer.getTcapProvider());
-            mapServerProvider = mapServer.getMAPProvider();
+            MAPStackImpl mapServer = new MAPStackImpl("mapServer", tcapServer.getTcapProvider());
+            MAPProvider mapServerProvider = mapServer.getMAPProvider();
             // mapServerProvider.addMAPDialogListener(new MapDialogListener(mapServer));
             // mapServerProvider.getMAPServiceMobility().addMAPServiceListener(new
             // MapServiceMobilityListener(mapServer, this));
@@ -219,45 +220,43 @@ public class MapPrototype extends ChannelHandler {
     }
 
     public void initiateUpdateGprsLocation(String IMSI, String sgsn_address, String sgsn_number)
-            throws MAPException {
+        throws MAPException {
         try {
             logger.info("Sending MAP message...");
-            this.rateLimiterObj = RateLimiter.create(5000);
-            this.networkIdState = this.mapClient.getMAPProvider().getNetworkIdState(0);
-            if (!(this.networkIdState == null || this.networkIdState.isAvailable()
-                    && this.networkIdState.getCongLevel() == 0)) {
+            RateLimiter rateLimiterObj = RateLimiter.create(5000);
+            NetworkIdState networkIdState = this.mapClient.getMAPProvider().getNetworkIdState(0);
+            if (!(networkIdState == null || networkIdState.isAvailable()
+                && networkIdState.getCongLevel() == 0)) {
                 // congestion or unavailable
-                logger.warn("Outgoing congestion control: MAP load test client: networkIdState="
-                        + this.networkIdState);
+                logger.warn("Outgoing congestion control: MAP load test client: networkIdState={}", networkIdState);
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e) {
-
-                    e.printStackTrace();
+                    logger.error(e.getStackTrace());
                 }
             }
 
-            this.rateLimiterObj.acquire();
+            rateLimiterObj.acquire();
 
 
             AddressString origRef =
-                    this.mapClientProvider.getMAPParameterFactory().createAddressString(
-                            AddressNature.international_number, NumberingPlan.ISDN, "12345");
+                this.mapClientProvider.getMAPParameterFactory().createAddressString(
+                    AddressNature.international_number, NumberingPlan.ISDN, "12345");
             AddressString destRef =
-                    this.mapClientProvider.getMAPParameterFactory().createAddressString(
-                            AddressNature.international_number, NumberingPlan.ISDN, "67890");
+                this.mapClientProvider.getMAPParameterFactory().createAddressString(
+                    AddressNature.international_number, NumberingPlan.ISDN, "67890");
             MAPDialogMobility mapDialogMobility =
-                    this.mapClientProvider.getMAPServiceMobility().createNewDialog(
-                            MAPApplicationContext.getInstance(
-                                    MAPApplicationContextName.gprsLocationUpdateContext,
-                                    MAPApplicationContextVersion.version3),
-                            this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(),
-                            origRef,
-                            this.sccpServerSettings.getRoutingAddresses().get(1).getSccpAddress(),
-                            destRef);
+                this.mapClientProvider.getMAPServiceMobility().createNewDialog(
+                    MAPApplicationContext.getInstance(
+                        MAPApplicationContextName.gprsLocationUpdateContext,
+                        MAPApplicationContextVersion.version3),
+                    this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(),
+                    origRef,
+                    this.sccpServerSettings.getRoutingAddresses().get(1).getSccpAddress(),
+                    destRef);
 
             ISDNAddressString sgsnNumber = new ISDNAddressStringImpl(
-                    AddressNature.international_number, NumberingPlan.ISDN, sgsn_number);
+                AddressNature.international_number, NumberingPlan.ISDN, sgsn_number);
             // ISDNAddressString gsmSCFAddress = new
             // ISDNAddressStringImpl(AddressNature.international_number,
             // NumberingPlan.ISDN, sgsn_address);
@@ -269,29 +268,35 @@ public class MapPrototype extends ChannelHandler {
             SuperChargerInfo superChargerSupportedInServingNetworkEntity = null;
             boolean gprsEnhancementsSupportIndicator = false;
             SupportedCamelPhases supportedCamelPhases =
-                    new SupportedCamelPhasesImpl(true, true, true, false);
+                new SupportedCamelPhasesImpl(true, true, true, false);
             OfferedCamel4CSIs offeredCamel4CSIs = null;
             boolean smsCallBarringSupportIndicator = true;
             SupportedRATTypes supportedRATTypesIndicator =
-                    new SupportedRATTypesImpl(true, true, false, false, true);
+                new SupportedRATTypesImpl(true, true, false, false, true, false);
             boolean lcsCapabilitySetRelease98_99 = true;
             boolean lcsCapabilitySetRelease4 = true;
             boolean lcsCapabilitySetRelease5 = true;
             boolean lcsCapabilitySetRelease6 = true;
             boolean lcsCapabilitySetRelease7 = false;
             SupportedLCSCapabilitySets supportedLCSCapabilitySets =
-                    new SupportedLCSCapabilitySetsImpl(lcsCapabilitySetRelease98_99,
-                            lcsCapabilitySetRelease4, lcsCapabilitySetRelease5,
-                            lcsCapabilitySetRelease6, lcsCapabilitySetRelease7);
+                new SupportedLCSCapabilitySetsImpl(lcsCapabilitySetRelease98_99,
+                    lcsCapabilitySetRelease4, lcsCapabilitySetRelease5,
+                    lcsCapabilitySetRelease6, lcsCapabilitySetRelease7);
             SupportedFeatures supportedFeatures = null;
             boolean tAdsDataRetrieval = true;
             Boolean homogeneousSupportOfIMSVoiceOverPSSessions = null;
+            boolean cancellationTypeInitialAttach = false;
+            boolean misdnlessOperationSupported = false;
+            boolean updateOfHomogeneousSupportOfIMSVoiceOverPSSessions = false;
+            boolean resetIdsSupported = false;
+            ExtSupportedFeatures extSupportedFeatures = null;
             SGSNCapability sgsnCapability = new SGSNCapabilityImpl(solsaSupportIndicator,
-                    extensionContainer, superChargerSupportedInServingNetworkEntity,
-                    gprsEnhancementsSupportIndicator, supportedCamelPhases,
-                    supportedLCSCapabilitySets, offeredCamel4CSIs, smsCallBarringSupportIndicator,
-                    supportedRATTypesIndicator, supportedFeatures, tAdsDataRetrieval,
-                    homogeneousSupportOfIMSVoiceOverPSSessions);
+                extensionContainer, superChargerSupportedInServingNetworkEntity,
+                gprsEnhancementsSupportIndicator, supportedCamelPhases, supportedLCSCapabilitySets,
+                offeredCamel4CSIs, smsCallBarringSupportIndicator, supportedRATTypesIndicator,
+                supportedFeatures, tAdsDataRetrieval, homogeneousSupportOfIMSVoiceOverPSSessions,
+                cancellationTypeInitialAttach, misdnlessOperationSupported,
+                updateOfHomogeneousSupportOfIMSVoiceOverPSSessions, resetIdsSupported, extSupportedFeatures);
             boolean informPreviousNetworkEntity = false;
             boolean psLCSNotSupportedByUE = false;
             byte[] visitedGmlcAddress = new BigInteger("112233445500", 16).toByteArray();
@@ -308,16 +313,27 @@ public class MapPrototype extends ChannelHandler {
             boolean ueReachableIndicator = false;
             boolean epsSubscriptionDataNotNeeded = true;
             UESRVCCCapability uesrvccCapability = UESRVCCCapability.ueSrvccSupported;
+            ArrayList<PlmnId> ePLMNList = null;
+            ISDNAddressString mmeNumberForMTSMS = null;
+            SMSRegisterRequest smsRegisterRequest = null;
+            boolean smsOnly = false;
+            DiameterIdentity sgsnName = null;
+            DiameterIdentity sgsnRealm = null;
+            boolean lgdSupportIndicator = false;
+            boolean removalOfMMERegistrationForSMS = false;
+            ArrayList<PlmnId> adjacentPLMNList = null;
 
             mapDialogMobility.addUpdateGprsLocationRequest(imsi, sgsnNumber, sgsnAddress,
-                    extensionContainer, sgsnCapability, informPreviousNetworkEntity,
-                    psLCSNotSupportedByUE, vGmlcAddress, addInfo, epsInfo, servingNodeTypeIndicator,
-                    skipSubscriberDataUpdate, usedRATType, gprsSubscriptionDataNotNeeded,
-                    nodeTypeIndicator, areaRestricted, ueReachableIndicator,
-                    epsSubscriptionDataNotNeeded, uesrvccCapability);
+                extensionContainer, sgsnCapability, informPreviousNetworkEntity,
+                psLCSNotSupportedByUE, vGmlcAddress, addInfo, epsInfo, servingNodeTypeIndicator,
+                skipSubscriberDataUpdate, usedRATType, gprsSubscriptionDataNotNeeded,
+                nodeTypeIndicator, areaRestricted, ueReachableIndicator,
+                epsSubscriptionDataNotNeeded, uesrvccCapability, ePLMNList,
+                mmeNumberForMTSMS, smsRegisterRequest, smsOnly, sgsnName, sgsnRealm, lgdSupportIndicator,
+                removalOfMMERegistrationForSMS, adjacentPLMNList);
             mapDialogMobility.send();
         } catch (MAPException e) {
-            logger.error("Error while sending MAP ATI:" + e);
+            logger.error("Error while sending MAP ATI:{}", String.valueOf(e));
         }
     }
 
@@ -335,7 +351,7 @@ public class MapPrototype extends ChannelHandler {
     public static void main(String[] args) {
         // pass the parameters for MAP configuration
         ChannelSettings channelSettings =
-                new ChannelSettings("MapChannelProto", "MapPrototype", null, "map");
+            new ChannelSettings("MapChannelProto", "MapPrototype", null, "map");
 
         // create the instance for MAP channel to connect to ESG
         try {
@@ -351,9 +367,8 @@ public class MapPrototype extends ChannelHandler {
                 mapPrototype.initiateUpdateGprsLocation(IMSI, sgsn_address, sgsn_number);
             }
 
-
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getStackTrace());
         }
 
     }

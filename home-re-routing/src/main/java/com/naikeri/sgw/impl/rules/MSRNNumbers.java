@@ -3,8 +3,8 @@ package com.naikeri.sgw.impl.rules;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * MSRNNumbers
@@ -14,7 +14,7 @@ public class MSRNNumbers {
   /**
    * InnerMSRNNumbers
    */
-  public class MSRNNumberWithIndex {
+  public static class MSRNNumberWithIndex {
 
     private long nextNumber;
     private int currentIndex;
@@ -42,9 +42,9 @@ public class MSRNNumbers {
 
   }
 
-  private static final Logger logger = LoggerFactory.getLogger(MSRNNumbers.class);
+  private static final Logger logger = LogManager.getLogger(MSRNNumbers.class);
   // store the rule name in the hash map and the last active number
-  private ConcurrentMap<String, MSRNNumberWithIndex> msrnNumbers;
+  private final ConcurrentMap<String, MSRNNumberWithIndex> msrnNumbers;
   // keep track of the dialogid, the msrn number and the callingparty number
   // [0] => calling party number
   // [1] => generated msrn number
@@ -66,7 +66,7 @@ public class MSRNNumbers {
   // 4. return the available number along side if the previous call needs to be disconnected
   // 5. if all numbers are consumed, the the first in the list should be used.
   public synchronized String getMSRNAddress(String ruleName, String cdPN, String range, Long dialogId,
-      String callingPartyNumber) {
+                                            String callingPartyNumber) {
     MSRNNumberWithIndex tempNum = this.msrnNumbers.get(ruleName);
     String[] cdpns = Arrays.stream(cdPN.split(",")).map(String::trim).toArray(String[]::new);
     String[] ranges = Arrays.stream(range.split(",")).map(String::trim).toArray(String[]::new);
@@ -99,7 +99,7 @@ public class MSRNNumbers {
     } else {
       this.msrnNumbers.put(ruleName, new MSRNNumberWithIndex(currentNumber + 1, 0));
     }
-    logger.trace(String.format("#A (%s) -> #MSRN(%s)", callingPartyNumber, cdpns[0]));
+    logger.trace("#A ({}) -> #MSRN({})", callingPartyNumber, cdpns[0]);
     return cdpns[0];
   }
 }

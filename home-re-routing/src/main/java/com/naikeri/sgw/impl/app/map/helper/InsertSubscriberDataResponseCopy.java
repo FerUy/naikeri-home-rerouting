@@ -2,6 +2,7 @@ package com.naikeri.sgw.impl.app.map.helper;
 
 import java.util.ArrayList;
 import org.restcomm.protocols.ss7.map.api.primitives.MAPExtensionContainer;
+import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.ExtSupportedFeatures;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.SupportedFeatures;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberManagement.ExtBearerServiceCode;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberManagement.ExtTeleserviceCode;
@@ -35,7 +36,9 @@ public class InsertSubscriberDataResponseCopy {
 
   private SupportedFeatures supportedFeatures;
 
-  public InsertSubscriberDataResponseCopy(InsertSubscriberDataResponse response){
+  private ExtSupportedFeatures extSupportedFeatures;
+
+  public InsertSubscriberDataResponseCopy(InsertSubscriberDataResponse response) {
     this.teleserviceList = response.getTeleserviceList();
     this.bearerServiceList = response.getBearerServiceList();
     this.sSList = response.getSSList();
@@ -45,6 +48,7 @@ public class InsertSubscriberDataResponseCopy {
     this.extensionContainer = response.getExtensionContainer();
     this.offeredCamel4CSIs = response.getOfferedCamel4CSIs();
     this.supportedFeatures = response.getSupportedFeatures();
+    this.extSupportedFeatures = response.getExtSupportedFeatures();
   }
 
   public ArrayList<ExtTeleserviceCode> getTeleserviceList() {
@@ -120,4 +124,9 @@ public class InsertSubscriberDataResponseCopy {
     this.supportedFeatures = supportedFeatures;
   }
 
+  public ExtSupportedFeatures getExtSupportedFeatures() { return extSupportedFeatures; }
+
+  public void setExtSupportedFeatures(ExtSupportedFeatures extSupportedFeatures) {
+    this.extSupportedFeatures = extSupportedFeatures;
+  }
 }

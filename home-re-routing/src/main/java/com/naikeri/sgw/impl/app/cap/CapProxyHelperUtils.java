@@ -6,8 +6,8 @@ import com.naikeri.sgw.impl.rules.PatternSccpAddress;
 import com.naikeri.sgw.impl.rules.ReplacedValues;
 import com.naikeri.sgw.impl.rules.CapRuleComponent.Remove;
 import com.naikeri.sgw.info.CapTransaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.CAPDialogCircuitSwitchedCall;
 import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.primitive.DestinationRoutingAddress;
@@ -21,7 +21,7 @@ import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
  */
 public class CapProxyHelperUtils {
   private DestinationRoutingAddress destinationRoutingAddress;
-  private static final Logger logger = LoggerFactory.getLogger(CapProxyHelperUtils.class);
+  private static final Logger logger = LogManager.getLogger(CapProxyHelperUtils.class);
   private static String cdrName = "";
   private static boolean cdrIsEnabled = false;
 
@@ -66,15 +66,14 @@ public class CapProxyHelperUtils {
       String channelTransId, Boolean iSScf) {
     if (dialogId != null) {
       // remove data from memory
-      logger.trace(
-          "Remove data from the CAP Transaction. DialogId " + dialogId + "; " + channelTransId);
-      if (iSScf.booleanValue()) {
+      logger.trace("Remove data from the CAP Transaction. DialogId {}; {}", dialogId, channelTransId);
+      if (iSScf) {
         CapTransaction.instance().removSCFCallContent(dialogId);
       } else {
         CapTransaction.instance().getSSFBcsmCallContent(dialogId, true);
       }
     }
-    logger.debug(String.format("Closing dialog. Dialog Id = '%s', %s", dialogId, channelTransId));
+    logger.debug("Closing dialog. Dialog Id = '{}', {}", dialogId, channelTransId);
     CapDialogOut capDialogOut =
         new CapDialogOut(CapDialogType.CircuitSwitchedCallControl, channelTransId);
     capDialogOut.setCapDialogCircuitSwitchedCall(outDialog);
@@ -114,8 +113,7 @@ public class CapProxyHelperUtils {
               .orElse(calledSccpAddress.getSubsystemNumber());
 
           calledSccpAddress = new SccpAddressImpl(ri, gt, dpc, ssn);
-          logger
-              .debug("Called SccpAddress: " + calledSccpAddress.toString() + "; " + channelTransId);
+          logger.debug("Called SccpAddress: {}; {}", calledSccpAddress.toString(), channelTransId);
         }
         dialogOut.setRemoteAddress(calledSccpAddress); // change the called address
 
@@ -130,8 +128,7 @@ public class CapProxyHelperUtils {
               .flatMap(PatternSccpAddress::getSubSystemNumber)
               .orElse(callingSccpAddress.getSubsystemNumber());
           callingSccpAddress = new SccpAddressImpl(ri, gt, dpc, ssn);
-          logger.debug(
-              "Calling SccpAddress: " + callingSccpAddress.toString() + "; " + channelTransId);
+          logger.debug("Calling SccpAddress: {}; {}", callingSccpAddress.toString(), channelTransId);
         }
         dialogOut.setLocalAddress(callingSccpAddress);
       }
@@ -142,8 +139,7 @@ public class CapProxyHelperUtils {
   public static CapDialogOut discardReason(CapDialogType capDialogType, String message,
       String messageType, String transactionId) {
     CapDialogOut capDialogOut = new CapDialogOut(capDialogType, transactionId);
-    logger.debug(String.format("Discard for <%s>. TransactionId = %s, Reason = %s", messageType,
-        transactionId, message));
+    logger.debug("Discard for <{}>. TransactionId = {}, Reason = {}", messageType, transactionId, message);
     capDialogOut.setDiscardReason(message);
     return capDialogOut;
   }

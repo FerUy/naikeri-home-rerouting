@@ -7,8 +7,8 @@ import static com.naikeri.sgw.impl.settings.sccp.SccpHelpers.createRemoteAddress
 import java.util.ArrayList;
 import com.naikeri.sgw.impl.app.cap.BcsmCallContent;
 import com.naikeri.sgw.impl.app.cap.BcsmCallStep;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPApplicationContext;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.CAPParameterFactory;
@@ -68,34 +68,34 @@ public class CamelProxyPrototype {
 
   protected CAPProvider scfCapProvider, ssfCapProvider;
   protected CAPParameterFactory scfCapParameterFactory, ssfCapParameterFactory;
-  private CAPApplicationContext acn = CAPApplicationContext.CapV2_gsmSSF_to_gsmSCF;
+  private final CAPApplicationContext acn = CAPApplicationContext.CapV2_gsmSSF_to_gsmSCF;
   private GlobalTitle vplmnVlrGt, hplmnScpGt, proxyScpGt, partnerMscGt;
   private BcsmCallContent leg1ScfCallContent, ssfCallContent, leg2ScfCallContent;
   private BcsmCallStep leg1ScfCallStep, leg2ScfCallStep, ssfCallStep;
-  private Boolean preArrangedEnd = false;
+  private final Boolean preArrangedEnd = false;
   private int msrnIndex = 0;
   // private static XmlConfiguration configuration;
-  private static Logger logger = LoggerFactory.getLogger(CamelProxyPrototype.class);
+  private static final Logger logger = LogManager.getLogger(CamelProxyPrototype.class);
   // these should be retrieved from configuration
   // VPLMN - STP
-  private static int stpScfPc = 1050;
-  private static int stpSsfPc = 82;
-  private static int stpScfSsn = 146;
-  private static int vplmnVlrSsn = 7;
+  private static final int stpScfPc = 1050;
+  private static final int stpSsfPc = 82;
+  private static final int stpScfSsn = 146;
+  private static final int vplmnVlrSsn = 7;
   // CAP Proxy
-  private static int proxyScfPc = 947;
-  private static int proxySsfPc = 948;
-  private static int proxyScpSsn = 146;
+  private static final int proxyScfPc = 947;
+  private static final int proxySsfPc = 948;
+  private static final int proxyScpSsn = 146;
   // HPLMN SCP
-  private static String hplmnScpGtDigits = "97254121030";
+  private static final String hplmnScpGtDigits = "97254121030";
   // MSC (leg2)
-  private static int partnerMscPc = 1001;
-  private static int partnerMscSsn = 8;
-  private static String partnerMscGtDigits = "97254121021";
+  private static final int partnerMscPc = 1001;
+  private static final int partnerMscSsn = 8;
+  private static final String partnerMscGtDigits = "97254121021";
   private static String[] msrnArray = new String[200];
 
   public CamelProxyPrototype(CAPProvider scfCapProvider, CAPParameterFactory scfCapParameterFactory,
-      CAPProvider ssfCapProvider, CAPParameterFactory ssfCapParameterFactory) {
+                             CAPProvider ssfCapProvider, CAPParameterFactory ssfCapParameterFactory) {
     // CAP Proxy SCF - VPLMN STP SSF
     this.scfCapProvider = scfCapProvider;
     this.scfCapParameterFactory = scfCapParameterFactory;
@@ -126,7 +126,7 @@ public class CamelProxyPrototype {
   }
 
   protected BcsmCallStep getCapProxyCallStep(boolean leg1ScfCallStep, boolean ssfCallStep,
-      boolean leg2ScfCallStep) {
+                                             boolean leg2ScfCallStep) {
     if (leg1ScfCallStep && this.leg1ScfCallContent != null)
       return this.leg1ScfCallContent.getStep();
     else if (ssfCallStep && this.ssfCallContent != null)
@@ -138,8 +138,7 @@ public class CamelProxyPrototype {
   }
 
   protected void onInitialDPRequestFromVPLMN_leg1(InitialDPRequest idp) {
-    logger.debug("CAP IDP from VPLMN VLR received on CAP proxy: " + idp + ", over CAP dialog: "
-        + idp.getCAPDialog());
+    logger.debug("CAP IDP from VPLMN VLR received on CAP proxy: {}, over CAP dialog: {}", idp, idp.getCAPDialog());
     this.leg1ScfCallContent = new BcsmCallContent();
     this.leg1ScfCallContent.setCapDialog(idp.getCAPDialog());
     this.leg1ScfCallContent.setIdp(idp);
@@ -217,18 +216,15 @@ public class CamelProxyPrototype {
         extBasicServiceCode, callReferenceNumber, mscAddress, calledPartyBCDNumber, timeAndTimezone,
         callForwardingSSPending, initialDPArgExtension);
 
-    logger.debug("CAP IDP sent from CAP Proxy SSF back to VPLMN STP SCF on dialog: "
-        + this.ssfCallContent.getCapDialog() + "" + ", with Calling Party Address="
-        + idpCallingPartyAddress + ", Called Party Address=" + idpCalledPartyAddress);
-    logger.debug("CAP IDP new IMSI:" + this.ssfCallContent.getNewImsi());
+    logger.debug("CAP IDP sent from CAP Proxy SSF back to VPLMN STP SCF on dialog: {}, with Calling Party Address={}, Called Party Address={}", this.ssfCallContent.getCapDialog(), idpCallingPartyAddress, idpCalledPartyAddress);
+    logger.debug("CAP IDP new IMSI:{}", this.ssfCallContent.getNewImsi());
     this.ssfCallContent.getCapDialog().send();
     this.ssfCallContent.setStep(BcsmCallStep.idpSent);
     this.ssfCallStep = this.ssfCallContent.getStep();
   }
 
-  public void onRequestReportBCSMEventRequest(RequestReportBCSMEventRequest rrb)
-      throws CAPException {
-    logger.debug("CAP RRB event captured on CAP proxy: " + rrb);
+  public void onRequestReportBCSMEventRequest(RequestReportBCSMEventRequest rrb) throws CAPException {
+    logger.debug("CAP RRB event captured on CAP proxy: {}", rrb);
     if (this.leg1ScfCallContent != null) {
       // this would only come from HPLMN SCP, thus we need to check if neither the VPLMN CAP
       // dialog is already closed nor a disconnect event has been received
@@ -252,15 +248,12 @@ public class CamelProxyPrototype {
           this.leg1ScfCallContent.getCapDialog().send();
           this.leg1ScfCallContent.setStep(BcsmCallStep.rrbSent);
           this.leg1ScfCallStep = this.leg1ScfCallContent.getStep();
-          logger.debug("RRB sent on CAP proxy to VPLMN STP SSF over dialog: "
-              + this.leg1ScfCallContent.getCapDialog() + "; RRB Calling Party Address : "
-              + rrbCallingPartyAddress + ", RRB Called Party Address : " + rrbCalledPartyAddress);
+          logger.debug("RRB sent on CAP proxy to VPLMN STP SSF over dialog: {}; RRB Calling Party Address : {}, RRB Called Party Address : {}", this.leg1ScfCallContent.getCapDialog(), rrbCallingPartyAddress, rrbCalledPartyAddress);
         } else {
-          logger.debug("RRB received from HPLMN SCF via VPLMN STP SCF on dialog : "
-              + this.leg1ScfCallContent.getCapDialog());
+          logger.debug("RRB received from HPLMN SCF via VPLMN STP SCF on dialog : {}", this.leg1ScfCallContent.getCapDialog());
         }
       } else {
-        // close the HPLMN HPLMN CAP dialog via a TC-Close
+        // close the HPLMN CAP dialog via a TC-Close
         this.leg1ScfCallContent.getCapDialog().close(preArrangedEnd);
         this.leg1ScfCallContent.getCapDialog().send();
         this.leg1ScfCallContent.setStep(BcsmCallStep.disconnected);
@@ -304,7 +297,7 @@ public class CamelProxyPrototype {
           cpn.setAddress(msrnAddress);
           this.msrnIndex = msrnIndex + 1;
         }
-        logger.debug("MSRN = " + msrnAddress);
+        logger.debug("MSRN = {}", msrnAddress);
         cpn.setNatureOfAddresIndicator(NAINumber._NAI_INTERNATIONAL_NUMBER);
         cpn.setNumberingPlanIndicator(CalledPartyNumber._NPI_ISDN);
         cpn.setInternalNetworkNumberIndicator(CalledPartyNumber._INN_ROUTING_ALLOWED);
@@ -317,10 +310,7 @@ public class CamelProxyPrototype {
         this.leg1ScfCallContent.getCapDialog().addConnectRequest(30000, destinationRoutingAddress,
             null, null, null, null, null, null, null, null, null, null, null, null, false, false,
             false, null, false, false);
-        logger.debug("CAP ETC removed and CAP CON to be sent on CAP proxy to VPLMN over dialog: "
-            + this.leg1ScfCallContent.getCapDialog() + "; Calling Party Address="
-            + this.leg1ScfCallContent.getCapDialog().getLocalAddress() + "; Called Party Address="
-            + this.leg1ScfCallContent.getCapDialog().getRemoteAddress());
+        logger.debug("CAP ETC removed and CAP CON to be sent on CAP proxy to VPLMN over dialog: {}; Calling Party Address={}; Called Party Address={}", this.leg1ScfCallContent.getCapDialog(), this.leg1ScfCallContent.getCapDialog().getLocalAddress(), this.leg1ScfCallContent.getCapDialog().getRemoteAddress());
         this.leg1ScfCallContent.getCapDialog().send();
         this.leg1ScfCallContent.setStep(BcsmCallStep.conSent);
         this.leg1ScfCallStep = this.leg1ScfCallContent.getStep();
@@ -330,15 +320,13 @@ public class CamelProxyPrototype {
         this.leg1ScfCallContent.getCapDialog().close(preArrangedEnd);
       }
     } else {
-      this.leg1ScfCallContent.getCapDialog().close(preArrangedEnd);
-      logger.debug(
-          "onEstablishTemporaryConnectionRequest event, HPLMN CAP dialog closed via a TC-Close due to a previous event from the VPLMN");
+      logger.debug("onEstablishTemporaryConnectionRequest event, HPLMN CAP dialog closed via a TC-Close due to a previous event from the VPLMN");
     }
   }
 
   protected void onConnectRequest(ConnectRequest con) throws CAPException {
     logger.debug("CAP CON event captured on CAP proxy");
-    logger.debug("Leg 1 SCF step:" + leg1ScfCallStep + ", Leg 2 SCF step:" + leg2ScfCallStep + ", SSF call step" + ssfCallStep);
+    logger.debug("Leg 1 SCF step:{}, Leg 2 SCF step:{}, SSF call step{}", leg1ScfCallStep, leg2ScfCallStep, ssfCallStep);
     if (this.leg1ScfCallContent != null) {
       if (this.leg1ScfCallContent.getCapDialog() != null
           && this.leg1ScfCallContent.getStep() != BcsmCallStep.disconnected) {
@@ -383,13 +371,7 @@ public class CamelProxyPrototype {
         this.leg1ScfCallContent.getCapDialog().addConnectRequest(30000, destinationRoutingAddress,
             null, null, null, null, null, null, null, null, null, null, null, null, false, false,
             false, null, false, false);
-        logger.debug(
-            "Incoming CAP CON removed and new CAP CON to be sent on CAP proxy to VPLMN over dialog: "
-                + this.leg1ScfCallContent.getCapDialog() + "; Calling Party Address="
-                + this.leg1ScfCallContent.getCapDialog().getLocalAddress()
-                + "; Called Party Address="
-                + this.leg1ScfCallContent.getCapDialog().getRemoteAddress() + "MSRN = "
-                + msrnAddress);
+        logger.debug("Incoming CAP CON removed and new CAP CON to be sent on CAP proxy to VPLMN over dialog: {}; Calling Party Address={}; Called Party Address={}MSRN = {}", this.leg1ScfCallContent.getCapDialog(), this.leg1ScfCallContent.getCapDialog().getLocalAddress(), this.leg1ScfCallContent.getCapDialog().getRemoteAddress(), msrnAddress);
         this.leg1ScfCallContent.getCapDialog().send();
         this.leg1ScfCallContent.setStep(BcsmCallStep.conSent);
         this.leg1ScfCallStep = this.leg1ScfCallContent.getStep();
@@ -399,15 +381,12 @@ public class CamelProxyPrototype {
         this.leg1ScfCallContent.getCapDialog().close(preArrangedEnd);
       }
     } else {
-      this.leg1ScfCallContent.getCapDialog().close(preArrangedEnd);
-      logger.debug(
-          "onConnectRequest event, HPLMN CAP dialog closed via a TC-Close due to a previous event from the VPLMN");
+      logger.debug("onConnectRequest event, HPLMN CAP dialog closed via a TC-Close due to a previous event from the VPLMN");
     }
   }
 
   protected void onInitialDPRequestFromVPLMN_leg2(InitialDPRequest idp) {
-    logger.debug("CAP IDP from VPLMN VLR received on CAP proxy for leg 2: " + idp
-        + ", over CAP dialog: " + idp.getCAPDialog());
+    logger.debug("CAP IDP from VPLMN VLR received on CAP proxy for leg 2: {}, over CAP dialog: {}", idp, idp.getCAPDialog());
     this.leg2ScfCallContent = new BcsmCallContent();
     this.leg2ScfCallContent.setCapDialog(idp.getCAPDialog());
     this.leg2ScfCallContent.setIdp(idp);
@@ -431,32 +410,23 @@ public class CamelProxyPrototype {
       this.leg2ScfCallContent.getCapDialog().addConnectRequest(30000,
           destinationRoutingAddress_leg2, null, null, null, null, null, null, null, null, null,
           null, null, null, false, false, false, null, false, false);
-      logger.debug("CAP CON for leg 2 to be sent on CAP proxy to VPLMN over dialog: "
-          + this.leg2ScfCallContent.getCapDialog() + "; Calling Party Address="
-          + this.leg2ScfCallContent.getCapDialog().getLocalAddress() + "; Called Party Address="
-          + this.leg1ScfCallContent.getCapDialog().getRemoteAddress());
+      logger.debug("CAP CON for leg 2 to be sent on CAP proxy to VPLMN over dialog: {}; Calling Party Address={}; Called Party Address={}", this.leg2ScfCallContent.getCapDialog(), this.leg2ScfCallContent.getCapDialog().getLocalAddress(), this.leg1ScfCallContent.getCapDialog().getRemoteAddress());
 
       RequestReportBCSMEventRequest rrb = this.leg1ScfCallContent.getRrb();
       this.leg2ScfCallContent.setRrb(rrb);
-      this.leg2ScfCallContent.getCapDialog().addRequestReportBCSMEventRequest(30000,
-          rrb.getBCSMEventList(), rrb.getExtensions());
-      logger.debug("CAP RRB for leg 2 to be sent on CAP proxy to VPLMN over dialog: "
-          + this.leg2ScfCallContent.getCapDialog() + "; Calling Party Address="
-          + this.leg2ScfCallContent.getCapDialog().getLocalAddress() + "; Called Party Address="
-          + this.leg1ScfCallContent.getCapDialog().getRemoteAddress());
+      this.leg2ScfCallContent.getCapDialog().addRequestReportBCSMEventRequest(30000, rrb.getBCSMEventList(), rrb.getExtensions());
+      logger.debug("CAP RRB for leg 2 to be sent on CAP proxy to VPLMN over dialog: {}; Calling Party Address={}; Called Party Address={}", this.leg2ScfCallContent.getCapDialog(), this.leg2ScfCallContent.getCapDialog().getLocalAddress(), this.leg1ScfCallContent.getCapDialog().getRemoteAddress());
 
       this.leg2ScfCallContent.getCapDialog().send();
       this.leg2ScfCallContent.setStep(BcsmCallStep.conSent);
       this.leg2ScfCallStep = this.leg2ScfCallContent.getStep();
     } catch (CAPException e) {
       logger.error("Error: ", e);
-      e.printStackTrace();
     }
   }
 
-  protected void onEventReportBCSMRequest(EventReportBCSMRequest eventReportBCSMRequest)
-      throws CAPException {
-    logger.debug("ERB event captured on CAP proxy: " + eventReportBCSMRequest);
+  protected void onEventReportBCSMRequest(EventReportBCSMRequest eventReportBCSMRequest) throws CAPException {
+    logger.debug("ERB event captured on CAP proxy: {}", eventReportBCSMRequest);
     if (this.leg2ScfCallContent != null) {
       // We need to check if the CAP dialog is neither closed nor a disconnect event has been
       // received
@@ -475,20 +445,20 @@ public class CamelProxyPrototype {
             this.leg2ScfCallContent.setStep(BcsmCallStep.routeSelectFailure);
             break;
           case oNoAnswer:
+          case tNoAnswer:
             this.leg2ScfCallContent.setStep(BcsmCallStep.noAnswer);
             break;
           case oAnswer:
-            logger.debug("ERB " + eventReportBCSMRequest.getEventTypeBCSM()
-                + " event type captured on CAP proxy");
+            logger.debug("ERB {} event type captured on CAP proxy", eventReportBCSMRequest.getEventTypeBCSM());
             this.leg2ScfCallContent.setStep(BcsmCallStep.answerReceived);
             break;
           case oMidCall:
+          case tMidCall:
             this.leg2ScfCallContent.setStep(BcsmCallStep.midCall);
             break;
           case oDisconnect:
             this.leg2ScfCallContent.setStep(BcsmCallStep.disconnected);
-            logger.debug("ERB " + eventReportBCSMRequest.getEventTypeBCSM()
-                + " event type captured on CAP proxy");
+            logger.debug("ERB {} event type captured on CAP proxy", eventReportBCSMRequest.getEventTypeBCSM());
             break;
           case oAbandon:
             this.leg2ScfCallContent.setStep(BcsmCallStep.abandoned);
@@ -497,15 +467,9 @@ public class CamelProxyPrototype {
           case tBusy:
             this.leg2ScfCallContent.setStep(BcsmCallStep.busy);
             break;
-          case tNoAnswer:
-            this.leg2ScfCallContent.setStep(BcsmCallStep.noAnswer);
-            break;
           case tAnswer:
             this.leg2ScfCallContent.setStep(BcsmCallStep.answerReceived);
             logger.debug("ERB tAnswer event captured on CAP proxy");
-            break;
-          case tMidCall:
-            this.leg2ScfCallContent.setStep(BcsmCallStep.midCall);
             break;
           case tDisconnect:
             this.leg2ScfCallContent.setStep(BcsmCallStep.disconnected);
@@ -525,8 +489,6 @@ public class CamelProxyPrototype {
             this.leg2ScfCallContent.setStep(BcsmCallStep.changeOfPosition);
             break;
           case oServiceChange:
-            this.leg2ScfCallContent.setStep(BcsmCallStep.serviceChange);
-            break;
           case tServiceChange:
             this.leg2ScfCallContent.setStep(BcsmCallStep.serviceChange);
             break;
@@ -557,20 +519,20 @@ public class CamelProxyPrototype {
             this.leg1ScfCallContent.setStep(BcsmCallStep.routeSelectFailure);
             break;
           case oNoAnswer:
+          case tNoAnswer:
             this.leg1ScfCallContent.setStep(BcsmCallStep.noAnswer);
             break;
           case oAnswer:
-            logger.debug("ERB " + eventReportBCSMRequest.getEventTypeBCSM()
-                + " event type captured on CAP proxy");
+            logger.debug("ERB {} event type captured on CAP proxy", eventReportBCSMRequest.getEventTypeBCSM());
             this.leg1ScfCallContent.setStep(BcsmCallStep.answerReceived);
             break;
           case oMidCall:
+          case tMidCall:
             this.leg1ScfCallContent.setStep(BcsmCallStep.midCall);
             break;
           case oDisconnect:
             this.leg1ScfCallContent.setStep(BcsmCallStep.disconnectReceived);
-            logger.debug("ERB " + eventReportBCSMRequest.getEventTypeBCSM()
-                + " event type captured on CAP proxy");
+            logger.debug("ERB {} event type captured on CAP proxy", eventReportBCSMRequest.getEventTypeBCSM());
             break;
           case oAbandon:
             this.leg1ScfCallContent.setStep(BcsmCallStep.abandoned);
@@ -579,15 +541,9 @@ public class CamelProxyPrototype {
           case tBusy:
             this.leg1ScfCallContent.setStep(BcsmCallStep.busy);
             break;
-          case tNoAnswer:
-            this.leg1ScfCallContent.setStep(BcsmCallStep.noAnswer);
-            break;
           case tAnswer:
             this.leg1ScfCallContent.setStep(BcsmCallStep.answerReceived);
             logger.debug("ERB tAnswer event captured on CAP proxy");
-            break;
-          case tMidCall:
-            this.leg1ScfCallContent.setStep(BcsmCallStep.midCall);
             break;
           case tDisconnect:
             this.leg1ScfCallContent.setStep(BcsmCallStep.disconnected);
@@ -607,8 +563,6 @@ public class CamelProxyPrototype {
             this.leg1ScfCallContent.setStep(BcsmCallStep.changeOfPosition);
             break;
           case oServiceChange:
-            this.leg1ScfCallContent.setStep(BcsmCallStep.serviceChange);
-            break;
           case tServiceChange:
             this.leg1ScfCallContent.setStep(BcsmCallStep.serviceChange);
             break;
@@ -644,7 +598,6 @@ public class CamelProxyPrototype {
           leg2ScfCallStep = this.leg2ScfCallContent.getStep();
         } catch (CAPException e) {
           logger.error("Error: ", e);
-          e.printStackTrace();
         }
       }
     }
@@ -652,8 +605,7 @@ public class CamelProxyPrototype {
 
   protected void relayERBtoSCPViaSTP(EventReportBCSMRequest eventReportBCSMRequest)
       throws CAPException {
-    logger.debug("CAP Proxy about to relay ERB with event type "
-        + eventReportBCSMRequest.getEventTypeBCSM() + " to HPLMN SCF via VPLMN STP SSF");
+    logger.debug("CAP Proxy about to relay ERB with event type {} to HPLMN SCF via VPLMN STP SSF", eventReportBCSMRequest.getEventTypeBCSM());
     if (this.ssfCallContent != null) {
       if (this.ssfCallContent.getCapDialog() != null
           && this.ssfCallContent.getStep() != BcsmCallStep.disconnected) {
@@ -675,10 +627,7 @@ public class CamelProxyPrototype {
         this.ssfCallContent.getCapDialog().addEventReportBCSMRequest(30000, eventTypeBCSM,
             eventSpecificInformationBCSM, receivingSideID, miscCallInfo, capExtensions);
         this.ssfCallContent.getCapDialog().send();
-        logger.debug("CAP ERB sent to HPLMN SCF from CAP Proxy via VPLMN STP SSF over dialog: "
-            + this.ssfCallContent.getCapDialog() + "; Calling Party Address="
-            + this.ssfCallContent.getCapDialog().getLocalAddress() + "; Called Party Address="
-            + this.ssfCallContent.getCapDialog().getRemoteAddress());
+        logger.debug("CAP ERB sent to HPLMN SCF from CAP Proxy via VPLMN STP SSF over dialog: {}; Calling Party Address={}; Called Party Address={}", this.ssfCallContent.getCapDialog(), this.ssfCallContent.getCapDialog().getLocalAddress(), this.ssfCallContent.getCapDialog().getRemoteAddress());
         if (eventReportBCSMRequest.getEventTypeBCSM().name().equalsIgnoreCase("oAnswer")) {
           this.ssfCallContent.setStep(BcsmCallStep.answerSent);
           this.ssfCallStep = this.ssfCallContent.getStep();
@@ -688,14 +637,11 @@ public class CamelProxyPrototype {
           this.ssfCallStep = this.ssfCallContent.getStep();
         }
       } else {
-        logger.debug(
-            "When sending ERB oAnswer to VPLMN SCF, CAP dialog closed via a TC-Close due to a previous event (call disconnected)");
+        logger.debug("When sending ERB oAnswer to VPLMN SCF, CAP dialog closed via a TC-Close due to a previous event (call disconnected)");
         this.ssfCallContent.getCapDialog().close(preArrangedEnd);
       }
     } else {
-      this.ssfCallContent.getCapDialog().close(preArrangedEnd);
-      logger.debug(
-          "When sending ERB oAnswer to VPLMN SCF, CAP dialog closed via a TC-Close due to a previous event (call disconnected)");
+      logger.debug("When sending ERB oAnswer to VPLMN SCF, CAP dialog closed via a TC-Close due to a previous event (call disconnected)");
     }
   }
 
@@ -718,22 +664,16 @@ public class CamelProxyPrototype {
         CauseCap causeCap = rel.getCause();
 
         this.leg1ScfCallContent.getCapDialog().addReleaseCallRequest(30000, causeCap);
-        logger.debug("CAP REL to be sent on CAP proxy to VPLMN over dialog: "
-            + this.leg1ScfCallContent.getCapDialog() + "; Calling Party Address="
-            + this.leg1ScfCallContent.getCapDialog().getLocalAddress() + "; Called Party Address="
-            + this.leg1ScfCallContent.getCapDialog().getRemoteAddress());
+        logger.debug("CAP REL to be sent on CAP proxy to VPLMN over dialog: {}; Calling Party Address={}; Called Party Address={}", this.leg1ScfCallContent.getCapDialog(), this.leg1ScfCallContent.getCapDialog().getLocalAddress(), this.leg1ScfCallContent.getCapDialog().getRemoteAddress());
         this.leg1ScfCallContent.getCapDialog().close(preArrangedEnd);
         this.leg1ScfCallContent.setStep(BcsmCallStep.relSent);
         this.leg1ScfCallStep = this.leg1ScfCallContent.getStep();
       } else {
-        logger.debug(
-            "onReleaseCallRequest event, HPLMN CAP dialog closed via a TC-Close due to a previous event from the VPLMN (call disconnected)");
+        logger.debug("onReleaseCallRequest event, HPLMN CAP dialog closed via a TC-Close due to a previous event from the VPLMN (call disconnected)");
         this.leg1ScfCallContent.getCapDialog().close(preArrangedEnd);
       }
     } else {
-      this.leg1ScfCallContent.getCapDialog().close(preArrangedEnd);
-      logger.debug(
-          "onReleaseCallRequest event, HPLMN CAP dialog closed via a TC-Close due to a previous event from the VPLMN");
+      logger.debug("onReleaseCallRequest event, HPLMN CAP dialog closed via a TC-Close due to a previous event from the VPLMN");
     }
   }
 

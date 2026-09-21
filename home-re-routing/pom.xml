@@ -20,23 +20,28 @@
             <groupId>com.naikeri</groupId>
             <artifactId>naikeri-signaling-gateway-core</artifactId>
             <version>${naikeri-signaling-gateway-core.version}</version>
+            <exclusions>
+                <!-- sctp-impl declares TestNG at compile scope, which puts it in this jar's lib/ and makes
+                     surefire pick the TestNG provider for a module that has no tests. -->
+                <exclusion>
+                    <groupId>org.testng</groupId>
+                    <artifactId>testng</artifactId>
+                </exclusion>
+                <!-- jSS7's map-impl ships a JAXB API and a second JAXB provider; both belong to the
+                     application, not to a protocol library. -->
+                <exclusion>
+                    <groupId>sun-jaxb</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-impl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <build>
         <plugins>
-            <plugin>
-                <!-- com/naikeri/prototype is the MAP and CAMEL test rig, still written against jSS7 8.5:
-                     removed constructors and changed add*Request signatures. Excluded until it is brought
-                     up to jSS7 9, which is its own job; nothing in the proxy engine depends on it. -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler.plugin.version}</version>
-                <configuration>
-                    <excludes>
-                        <exclude>com/naikeri/prototype/**</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -71,10 +76,9 @@
                         </manifest>
                     </archive>
                     <excludes>
-                        <exclude>log4j.xml</exclude>
-                        <exclude>naikeri-signaling-gateway.xml</exclude>
-                        <exclude>map-application-rules.xml</exclude>
-                        <exclude>map-configuration-layers.xml</exclude>
+                        <!-- Everything in src/main/resources is deployment configuration: it belongs
+                             beside the jar, where an operator can edit it, not inside it. -->
+                        <exclude>*.xml</exclude>
                     </excludes>
                 </configuration>
             </plugin>

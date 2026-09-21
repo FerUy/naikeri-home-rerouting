@@ -40,7 +40,7 @@ public class TestMSRNGeneration {
     // this will test the whole numbers in the range and return the last one.
     // note the cdpn numbers are inclusive
     String ruleName = "TestTheWholeRangeOfNumbers";
-    Integer rangeNumber = Integer.parseInt(range);
+    int rangeNumber = Integer.parseInt(range);
     int counter = 0;
     do {
       MSRNNumbers.instance().getMSRNAddress(ruleName, cdPN, range, dialogId, callingParty);
@@ -57,7 +57,7 @@ public class TestMSRNGeneration {
     // are used up
     String ruleName = "TestWholeRangeAndResetToInitial";
     int counter = 0;
-    Integer rNumber = Integer.parseInt(range);
+    int rNumber = Integer.parseInt(range);
     do {
       MSRNNumbers.instance().getMSRNAddress(ruleName, cdPN, range, dialogId, callingParty);
       counter++;

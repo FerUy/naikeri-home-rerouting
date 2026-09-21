@@ -17,8 +17,8 @@ import com.naikeri.sgw.network.layers.M3uaLayer;
 import com.naikeri.sgw.network.layers.SccpLayer;
 import com.naikeri.sgw.network.layers.SctpLayer;
 import com.naikeri.sgw.network.layers.TcapLayer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.cap.api.CAPDialog;
 import org.restcomm.protocols.ss7.cap.api.CAPException;
 import org.restcomm.protocols.ss7.cap.api.CAPMessage;
@@ -31,17 +31,17 @@ import org.restcomm.protocols.ss7.cap.api.service.circuitSwitchedCall.RequestRep
 
 import java.io.InputStream;
 
-/*
+/**
  * CAP Prototype
  *
  */
 public class CapPrototype extends ChannelHandler {
 
-  private static Logger logger = LoggerFactory.getLogger(CapPrototype.class);
+  private static final Logger logger = LogManager.getLogger(CapPrototype.class);
   // private static XmlConfiguration configuration;
 
   private static final int numberOfTestLayers = 6;
-  private static CapLayer[] cap = new CapLayer[numberOfTestLayers];
+  private static final CapLayer[] cap = new CapLayer[numberOfTestLayers];
 
   private VplmnStpPrototype vplmnStpPrototype;
   private CamelProxyPrototype proxyPrototype;
@@ -79,29 +79,19 @@ public class CapPrototype extends ChannelHandler {
               : capDialog.getApplicationContext().toString();
           Integer applicationContextCode = capDialog.getApplicationContext() == null ? -1
               : capDialog.getApplicationContext().getCode();
-          logger.debug(String.format(
-              "[CAP::SIGNAL<%s>] dialogId '%d'\n appCtx<%s, %d>\nTCAP message type: %s\nService: %s"
-                  + "\nLocal Address: %s\nRemote Address: %s",
-              channelMessage.getParameter("dialog"), capDialog.getLocalDialogId(),
-              applicationContext, applicationContextCode, capDialog.getTCAPMessageType(),
-              capDialog.getService(), capDialog.getLocalAddress(), capDialog.getRemoteAddress()));
+          logger.debug("[CAP::SIGNAL<{}>] dialogId '{}'\n appCtx<{}, {}>\nTCAP message type: {}\nService: {}"
+              + "\nLocal Address: {}\nRemote Address: {}", channelMessage.getParameter("dialog"), capDialog.getLocalDialogId(), applicationContext, applicationContextCode, capDialog.getTCAPMessageType(), capDialog.getService(), capDialog.getLocalAddress(), capDialog.getRemoteAddress());
         } else {
           Object object = channelMessage.getParameter("dialog");
-          logger.debug("channelMessage.getParameter(\"dialog\") = " + object);
+          logger.debug("channelMessage.getParameter(\"dialog\") = {}", object);
         }
       } else {
-        logger.debug(
-            "capMessage is not NULL, message type = " + capMessage.getMessageType().toString());
+        logger.debug("capMessage is not NULL, message type = {}", capMessage.getMessageType().toString());
         if (capMessage.getMessageType().toString().endsWith("Request")) {
-          logger.debug(String.format("[CAP::REQUEST<%s>] dialogId '%d', invokeId '%d'",
-              capMessage.getMessageType().toString(), capMessage.getCAPDialog().getLocalDialogId(),
-              capMessage.getInvokeId()));
-          logger.debug("CAP Proxy SCF (Leg1) call step = "
-              + proxyPrototype.getCapProxyCallStep(true, false, false));
-          logger.debug("CAP Proxy SSF call step = "
-              + proxyPrototype.getCapProxyCallStep(false, true, false));
-          logger.debug("CAP Proxy SCF (Leg2) call step = "
-              + proxyPrototype.getCapProxyCallStep(false, false, true));
+          logger.debug("[CAP::REQUEST<{}>] dialogId '{}', invokeId '{}'", capMessage.getMessageType().toString(), capMessage.getCAPDialog().getLocalDialogId(), capMessage.getInvokeId());
+          logger.debug("CAP Proxy SCF (Leg1) call step = {}", proxyPrototype.getCapProxyCallStep(true, false, false));
+          logger.debug("CAP Proxy SSF call step = {}", proxyPrototype.getCapProxyCallStep(false, true, false));
+          logger.debug("CAP Proxy SCF (Leg2) call step = {}", proxyPrototype.getCapProxyCallStep(false, false, true));
           // *** IDP Request ***
           if (capMessage.getMessageType().toString().equals("initialDP_Request")) {
             try {
@@ -109,13 +99,11 @@ public class CapPrototype extends ChannelHandler {
                 proxyPrototype.onInitialDPRequestFromVPLMN_leg1((InitialDPRequest) capMessage);
                 proxyPrototype.relayInitialDPRequestToHPLMNviaSTP((InitialDPRequest) capMessage);
               } else {
-                logger.debug(
-                    "Received second initialDP_Request on dialog:" + capMessage.getCAPDialog());
+                logger.debug("Received second initialDP_Request on dialog:{}", capMessage.getCAPDialog());
                 proxyPrototype.onInitialDPRequestFromVPLMN_leg2((InitialDPRequest) capMessage);
               }
             } catch (CAPException e) {
               logger.error("Error: ", e);
-              e.printStackTrace();
             }
           }
           // *** RRB Request ***
@@ -131,7 +119,7 @@ public class CapPrototype extends ChannelHandler {
           }
           // *** CUE Request ***
           if (capMessage.getMessageType().toString().equals("continue_Request")) {
-            // logger.debug("continue_Request reached CAP Prototype");
+            logger.debug("continue_Request reached CAP Prototype");
           }
           // *** CON Request ***
           if (capMessage.getMessageType().toString().equals("connect_Request")) {
@@ -160,9 +148,7 @@ public class CapPrototype extends ChannelHandler {
           }
 
         } else if (capMessage.getMessageType().toString().endsWith("Response")) {
-          logger.debug(String.format("[CAP::RESPONSE<%s>] dialogId '%d', invokeId '%d'",
-              capMessage.getMessageType().toString(), capMessage.getCAPDialog().getLocalDialogId(),
-              capMessage.getInvokeId()));
+          logger.debug("[CAP::RESPONSE<{}>] dialogId '{}', invokeId '{}'", capMessage.getMessageType().toString(), capMessage.getCAPDialog().getLocalDialogId(), capMessage.getInvokeId());
         }
       }
     } catch (Exception e) {
@@ -178,7 +164,7 @@ public class CapPrototype extends ChannelHandler {
   public static void main(String[] args) throws Exception {
     // read configuration
     InputStream inputStream =
-        new SgwResource("naikeri-signaling-gateway-cap-prototype.xml").getAsStream();
+        new SgwResource("extended-signaling-gateway-cap-prototype.xml").getAsStream();
     XmlConfiguration configuration = new XmlConfiguration(inputStream);
 
     // initialize jss7 stack
@@ -190,23 +176,23 @@ public class CapPrototype extends ChannelHandler {
     try {
       for (int i = 0; i < numberOfTestLayers; i++) {
 
-        logger.info("Initializing SCTP" + i + " layer...");
+        logger.info("Initializing SCTP{} layer...", i);
         SctpSettings sctpSettings = (SctpSettings) configuration.getLayerSettings("sctp" + i);
         sctp[i] = new SctpLayer(sctpSettings);
 
-        logger.info("Initializing M3UA" + i + " layer...");
+        logger.info("Initializing M3UA{} layer...", i);
         M3uaSettings m3uaSettings = (M3uaSettings) configuration.getLayerSettings("m3ua" + i);
         m3ua[i] = new M3uaLayer(m3uaSettings, sctp[i]);
 
-        logger.info("Initializing SCCP" + i + " layer...");
+        logger.info("Initializing SCCP{} layer...", i);
         SccpSettings sccpSettings = (SccpSettings) configuration.getLayerSettings("sccp" + i);
         sccp[i] = new SccpLayer(sccpSettings, m3ua[i]);
 
-        logger.info("Initializing TCAP" + i + " layer...");
+        logger.info("Initializing TCAP{} layer...", i);
         TcapSettings tcapSettings = (TcapSettings) configuration.getLayerSettings("tcap" + i);
         tcap[i] = new TcapLayer(tcapSettings, sccp[i]);
 
-        logger.info("Initializing CAP" + i + " layer...");
+        logger.info("Initializing CAP{} layer...", i);
         CapSettings capSettings = (CapSettings) configuration.getLayerSettings("cap" + i);
         cap[i] = new CapLayer(capSettings, tcap[i]);
       }
@@ -237,7 +223,6 @@ public class CapPrototype extends ChannelHandler {
       }
     } catch (Exception e) {
       logger.error("Error: ", e);
-      e.printStackTrace();
     }
   }
 

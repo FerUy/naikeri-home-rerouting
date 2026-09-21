@@ -4,8 +4,8 @@ import com.naikeri.sgw.impl.app.map.MapDialogOut;
 import com.naikeri.sgw.impl.app.map.MapProxyDialog;
 import com.naikeri.sgw.info.DataElement;
 import com.naikeri.sgw.info.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.api.MAPException;
 import org.restcomm.protocols.ss7.map.api.service.supplementary.MAPDialogSupplementary;
 import org.restcomm.protocols.ss7.map.api.service.supplementary.ProcessUnstructuredSSRequest;
@@ -17,7 +17,7 @@ import org.restcomm.protocols.ss7.tcap.api.MessageType;
  */
 public class MapProxyProcessUnstructuredSSRequest {
 
-  private static final Logger logger = LoggerFactory.getLogger(MapProxyProcessUnstructuredSSRequest.class);
+  private static final Logger logger = LogManager.getLogger(MapProxyProcessUnstructuredSSRequest.class);
 
   private MapProxyProcessUnstructuredSSRequest() {
   }
@@ -26,25 +26,19 @@ public class MapProxyProcessUnstructuredSSRequest {
     ProcessUnstructuredSSResponse procUnstrResInd = (ProcessUnstructuredSSResponse) message;
     Long dialogId = procUnstrResInd.getMAPDialog().getLocalDialogId();
     String messageType = procUnstrResInd.getMessageType().toString();
-    String logmsg = "";
+    String logmsg;
     try {
       Long respInvokeId = procUnstrResInd.getInvokeId();
       MapDialogOut mapDialogOut = new MapDialogOut();
       mapDialogOut.setOriginalDialogId(dialogId);
-      logger.debug(String.format("[MAP::RESPONSE<%s>] Incoming DialogId '%d', invokeId '%d', %s",
-          procUnstrResInd.getMessageType().toString(),
-          procUnstrResInd.getMAPDialog().getLocalDialogId(), procUnstrResInd.getInvokeId(),
-          transactionId));
+      logger.debug("[MAP::RESPONSE<{}>] Incoming DialogId '{}', invokeId '{}', {}", procUnstrResInd.getMessageType().toString(), procUnstrResInd.getMAPDialog().getLocalDialogId(), procUnstrResInd.getInvokeId(), transactionId);
 
-      DataElement dataElement = null;
-      logger.debug(String.format(
-          "TCAP Message Type = '%s', dialogId = %d, InvokeId = %d, Service = '%s'",
-          procUnstrResInd.getMAPDialog().getTCAPMessageType(), dialogId,
-          procUnstrResInd.getInvokeId(), procUnstrResInd.getMAPDialog().getService().toString()));
+      DataElement dataElement;
+      logger.debug("TCAP Message Type = '{}', dialogId = {}, InvokeId = {}, Service = '{}'", procUnstrResInd.getMAPDialog().getTCAPMessageType(), dialogId, procUnstrResInd.getInvokeId(), procUnstrResInd.getMAPDialog().getService().toString());
 
       if (procUnstrResInd.getMAPDialog().getTCAPMessageType() == MessageType.End
           || procUnstrResInd.getMAPDialog().getTCAPMessageType() == MessageType.Abort) {
-        logger.debug("Closing for dialogId = " + dialogId);
+        logger.debug("Closing for dialogId = {}", dialogId);
         dataElement = Transaction.getInstance().removeDialogData(dialogId, respInvokeId);
         mapDialogOut.setIsResponse();
       } else {
@@ -68,8 +62,7 @@ public class MapProxyProcessUnstructuredSSRequest {
       mapDialogOut.setMapDialog(mapDialogSupplementary);
       return mapDialogOut;
     } catch (MAPException mapex) {
-      logger.error("ProcessUnstructuredSSResponse with DialogId " + dialogId + " failed "
-          + transactionId + ". Exception caught '" + mapex + "'");
+      logger.error("ProcessUnstructuredSSResponse with DialogId {} failed {}. Exception caught '{}'", dialogId, transactionId, mapex);
       logmsg = mapex.getMessage();
     } catch (Exception ex) {
       logmsg = ex.getMessage();
@@ -79,10 +72,10 @@ public class MapProxyProcessUnstructuredSSRequest {
 
 
   public static MapDialogOut getRequest(MapProxyDialog mapProxyDialog,
-      ProcessUnstructuredSSRequest procUnstrReqInd, String transactionId) {
+                                        ProcessUnstructuredSSRequest procUnstrReqInd, String transactionId) {
     Long dialogId = procUnstrReqInd.getMAPDialog().getLocalDialogId();
     String messageType = procUnstrReqInd.getMessageType().toString();
-    String logmsg = "";
+    String logmsg;
     if (mapProxyDialog == null) {
       logmsg = String.format(
           "%s, MAP Application Rule not found for DialogId = '%d', InvokeId = '%d', MessageType = '%s'. MAP Message will be discarded",
@@ -91,9 +84,7 @@ public class MapProxyProcessUnstructuredSSRequest {
       return MapProxyUtilsHelper.discardReason(logmsg, messageType, transactionId);
     }
     try {
-      logger.debug(String.format("[MAP::REQUEST<%s>] Incoming DialogId = '%d', InvokeId = '%d', %s",
-          messageType, dialogId, procUnstrReqInd.getInvokeId(), transactionId));
-
+      logger.debug("[MAP::REQUEST<{}>] Incoming DialogId = '{}', InvokeId = '{}', {}", messageType, dialogId, procUnstrReqInd.getInvokeId(), transactionId);
 
       MAPDialogSupplementary mapDialogSupplementary = mapProxyDialog.getMapDialogSupplementary();
       Long newInvokeId = mapDialogSupplementary.addProcessUnstructuredSSRequest(
@@ -103,8 +94,7 @@ public class MapProxyProcessUnstructuredSSRequest {
       return new MapDialogOut(mapDialogSupplementary, newInvokeId, dialogId, mapProxyDialog);
 
     } catch (MAPException mapex) {
-      logger.error("ProcessUnstructuredSSResponse with DialogId " + dialogId
-          + " failed. Exception caught '" + mapex + "', " + transactionId);
+      logger.error("ProcessUnstructuredSSResponse with DialogId {} failed. Exception caught '{}', {}", dialogId, mapex, transactionId);
       logmsg = mapex.getMessage();
     } catch (Exception ex) {
       logmsg = ex.getMessage();

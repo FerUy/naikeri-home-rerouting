@@ -9,17 +9,17 @@ import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.Up
  */
 public class UpdateLocationResponseCopy {
 
-  private ISDNAddressString hlrNumber;
+  private final ISDNAddressString hlrNumber;
 
-  private MAPExtensionContainer extensionContainer;
+  private final MAPExtensionContainer extensionContainer;
 
-  private boolean addCapability;
+  private final boolean addCapability;
 
-  private boolean pagingAreaCapability;
+  private final boolean pagingAreaCapability;
 
-  private long mapProtocolVersion;
+  private final long mapProtocolVersion;
 
-  public UpdateLocationResponseCopy(UpdateLocationResponse response){
+  public UpdateLocationResponseCopy(UpdateLocationResponse response) {
     this.addCapability = response.getAddCapability();
     this.hlrNumber = response.getHlrNumber();
     this.extensionContainer = response.getExtensionContainer();

@@ -4,8 +4,8 @@ import com.naikeri.sgw.impl.app.map.MapDialogOut;
 import com.naikeri.sgw.impl.app.map.MapProxyDialog;
 import com.naikeri.sgw.info.DataElement;
 import com.naikeri.sgw.info.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.api.MAPException;
 import org.restcomm.protocols.ss7.map.api.service.mobility.MAPDialogMobility;
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.UpdateGprsLocationRequest;
@@ -19,21 +19,19 @@ import org.restcomm.protocols.ss7.tcap.api.MessageType;
  */
 public class MapProxyInsertSubscriberData {
 
-  private static final Logger logger = LoggerFactory.getLogger(MapProxyInsertSubscriberData.class);
+  private static final Logger logger = LogManager.getLogger(MapProxyInsertSubscriberData.class);
 
   private MapProxyInsertSubscriberData() {
   }
 
   /**
-   * process response for InsertSubscriberData
-   * 
-   * @param message
-   * @param transactionId
+   * Process response for InsertSubscriberData
+   *
    * @return MapDialogOut
    */
   public static MapDialogOut getInsertSubDataResponse(Object message, String transactionId) {
     Long dialogId = 0L;
-    String logmsg = "";
+    String logmsg;
     String messageType = "";
     try {
       InsertSubscriberDataResponse insertSubDataResp = (InsertSubscriberDataResponse) message;
@@ -43,21 +41,14 @@ public class MapProxyInsertSubscriberData {
       Long respInvokeId = insertSubDataResp.getInvokeId();
       MapDialogOut mapDialogOut = new MapDialogOut();
       mapDialogOut.setOriginalDialogId(dialogId);
-      InsertSubscriberDataResponseCopy clone =
-          new InsertSubscriberDataResponseCopy(insertSubDataResp);
-      logger.debug(String.format("[MAP::RESPONSE<%s>] Incoming dialogId '%d', invokeId '%d' %s",
-          insertSubDataResp.getMessageType().toString(), dialogId, insertSubDataResp.getInvokeId(),
-          transactionId));
-      DataElement dataElement = null;
-      logger.debug(
-          String.format("TCAP Message Type = '%s', dialogId = %d, InvokeId = %d, Service = '%s'",
-              insertSubDataResp.getMAPDialog().getTCAPMessageType(), dialogId,
-              insertSubDataResp.getInvokeId(),
-              insertSubDataResp.getMAPDialog().getService().toString()));
+      InsertSubscriberDataResponseCopy clone = new InsertSubscriberDataResponseCopy(insertSubDataResp);
+      logger.debug("[MAP::RESPONSE<{}>] Incoming dialogId '{}', invokeId '{}' {}", insertSubDataResp.getMessageType().toString(), dialogId, insertSubDataResp.getInvokeId(), transactionId);
+      DataElement dataElement;
+      logger.debug("TCAP Message Type = '{}', dialogId = {}, InvokeId = {}, Service = '{}'", insertSubDataResp.getMAPDialog().getTCAPMessageType(), dialogId, insertSubDataResp.getInvokeId(), insertSubDataResp.getMAPDialog().getService().toString());
 
       if (insertSubDataResp.getMAPDialog().getTCAPMessageType() == MessageType.End
           || insertSubDataResp.getMAPDialog().getTCAPMessageType() == MessageType.Abort) {
-        logger.debug("Closing for dialogId = " + dialogId);
+        logger.debug("Closing for dialogId = {}", dialogId);
         dataElement = Transaction.getInstance().removeDialogData(dialogId, respInvokeId);
         mapDialogOut.setIsResponse();
       } else {
@@ -79,15 +70,14 @@ public class MapProxyInsertSubscriberData {
           clone.getBearerServiceList(), clone.getSSList(), clone.getODBGeneralData(),
           clone.getRegionalSubscriptionResponse(), clone.getSupportedCamelPhases(),
           clone.getExtensionContainer(), clone.getOfferedCamel4CSIs(),
-          clone.getSupportedFeatures());
+          clone.getSupportedFeatures(), clone.getExtSupportedFeatures());
 
       mapDialogOut.setLogInvokeIds(respInvokeId, invokeId);
       mapDialogOut.setMapDialog(mapDialogMobility);
       // return
       return mapDialogOut;
     } catch (MAPException mapex) {
-      logger.error("InsertSubscriberDataResponse with DialogId " + dialogId + " failed. Error:",
-          mapex);
+      logger.error("InsertSubscriberDataResponse with DialogId {} failed. Error:", dialogId, mapex);
       logmsg = mapex.getMessage();
     } catch (Exception e) {
       logmsg = e.getMessage();
@@ -96,17 +86,17 @@ public class MapProxyInsertSubscriberData {
   }
 
   /**
-   * process request for InsertSubscriberData
-   * 
+   * Process request for InsertSubscriberData
+   *
    * @param mapProxyDialog MapProxyDialog
    * @param request        InsertSubscriberDataRequest
    * @return MapDialogOut
    */
   public static MapDialogOut getInsertSubDataRequest(MapProxyDialog mapProxyDialog,
-      InsertSubscriberDataRequest request, String transactionId) {
+                                                     InsertSubscriberDataRequest request, String transactionId) {
     Long dialogId = request.getMAPDialog().getLocalDialogId();
     String messageType = request.getMessageType().toString();
-    String logmsg = "";
+    String logmsg;
     if (mapProxyDialog == null) {
       logmsg = String.format(
           "%s, MAP Application Rule not found for DialogId = '%d', InvokeId = '%d', MessageType = '%s'. MAP Message will be discarded",
@@ -117,8 +107,7 @@ public class MapProxyInsertSubscriberData {
       return MapProxyUtilsHelper.discardReason(logmsg, messageType, transactionId);
     }
     try {
-      logger.debug(String.format("[MAP::REQUEST<%s>] Incoming DialogId = '%d', InvokeId = '%d', %s",
-          request.getMessageType().toString(), dialogId, request.getInvokeId(), transactionId));
+      logger.debug("[MAP::REQUEST<{}>] Incoming DialogId = '{}', InvokeId = '{}', {}", request.getMessageType().toString(), dialogId, request.getInvokeId(), transactionId);
       MAPDialogMobility mapMobilityOut = mapProxyDialog.getMapDialogMobility();
 
       Long newInvokeId = mapMobilityOut.addInsertSubscriberDataRequest(mapProxyDialog.getImsi(),
@@ -137,14 +126,21 @@ public class MapProxyInsertSubscriberData {
           request.getChargingCharacteristics(), request.getAccessRestrictionData(),
           request.getIcsIndicator(), request.getEpsSubscriptionData(),
           request.getCsgSubscriptionDataList(), request.getUeReachabilityRequestIndicator(),
-          request.getSgsnNumber(), request.getMmeName(), request.getSubscribedPeriodicLAUtimer(),
+          request.getSgsnNumber(), request.getMmeName(), request.getSubscribedPeriodicRAUTAUtimer(),
           request.getVplmnLIPAAllowed(), request.getMdtUserConsent(),
-          request.getSubscribedPeriodicLAUtimer());
+          request.getSubscribedPeriodicLAUtimer(), request.getVPLMNCSGSubscriptionDataList(),
+          request.getAdditionalMSISDN(), request.getPSandSMSOnlyServiceProvision(),
+          request.getSMSInSGSNAllowed(), request.getCsToPsSRVCCAllowedIndicator(),
+          request.getPCSCFRestorationRequest(), request.getAdjacentAccessRestrictionDataList(),
+          request.getIMSIGroupIdList(), request.getUEUsageType(), request.getUserPlaneIntegrityProtectionIndicator(),
+          request.getDLBufferingSuggestedPacketCount(), request.getResetIdList(),
+          request.getEDRXCycleLengthList(), request.getExtAccessRestrictionData(),
+          request.getIabOperationAllowedIndicator());
+
 
       return new MapDialogOut(mapMobilityOut, newInvokeId, dialogId, mapProxyDialog);
     } catch (MAPException mapex) {
-      logger.error("InsertSubscriberDataRequest with DialogId " + dialogId
-          + " failed. Exception caught '" + mapex + "', " + transactionId);
+      logger.error("InsertSubscriberDataRequest with DialogId {} failed. Exception caught '{}', {}", dialogId, mapex, transactionId);
       logmsg = mapex.getMessage();
     } catch (Exception ex) {
       logmsg = ex.getMessage();
@@ -153,10 +149,10 @@ public class MapProxyInsertSubscriberData {
   }
 
   public static MapDialogOut sendUpdateLocation(InsertSubscriberDataRequest request,
-      DataElement dataElement, String transactionId) {
+                                                DataElement dataElement, String transactionId) {
     Long dialogId = request.getMAPDialog().getLocalDialogId();
     String messageType = request.getMessageType().toString();
-    String logmsg = "";
+    String logmsg;
     try {
       MAPDialogMobility mapDialogMobility;
       if (dataElement.getMessageType().equals("updateLocation_Request")) {
@@ -168,7 +164,7 @@ public class MapProxyInsertSubscriberData {
             (UpdateGprsLocationRequest) dataElement.getRequestObject();
         mapDialogMobility = upgprsLocation.getMAPDialog();
       } else {
-        logmsg = "FAILED to process MAP Message: " + request.toString();
+        logmsg = "FAILED to process MAP Message: " + request;
         return MapProxyUtilsHelper.discardReason(logmsg, messageType, transactionId);
       }
 
@@ -188,14 +184,20 @@ public class MapProxyInsertSubscriberData {
           request.getChargingCharacteristics(), request.getAccessRestrictionData(),
           request.getIcsIndicator(), request.getEpsSubscriptionData(),
           request.getCsgSubscriptionDataList(), request.getUeReachabilityRequestIndicator(),
-          request.getSgsnNumber(), request.getMmeName(), request.getSubscribedPeriodicLAUtimer(),
+          request.getSgsnNumber(), request.getMmeName(), request.getSubscribedPeriodicRAUTAUtimer(),
           request.getVplmnLIPAAllowed(), request.getMdtUserConsent(),
-          request.getSubscribedPeriodicLAUtimer());
+          request.getSubscribedPeriodicLAUtimer(), request.getVPLMNCSGSubscriptionDataList(),
+          request.getAdditionalMSISDN(), request.getPSandSMSOnlyServiceProvision(),
+          request.getSMSInSGSNAllowed(), request.getCsToPsSRVCCAllowedIndicator(),
+          request.getPCSCFRestorationRequest(), request.getAdjacentAccessRestrictionDataList(),
+          request.getIMSIGroupIdList(), request.getUEUsageType(), request.getUserPlaneIntegrityProtectionIndicator(),
+          request.getDLBufferingSuggestedPacketCount(), request.getResetIdList(),
+          request.getEDRXCycleLengthList(), request.getExtAccessRestrictionData(),
+          request.getIabOperationAllowedIndicator());
 
       return new MapDialogOut(mapDialogMobility, newInvokeId, dialogId);
     } catch (MAPException mapex) {
-      logger.error("sendUpdateLocation with DialogId " + dialogId + " failed. Exception caught '"
-          + mapex + "', " + transactionId);
+      logger.error("sendUpdateLocation with DialogId {} failed. Exception caught '{}', {}", dialogId, mapex, transactionId);
       logmsg = mapex.getMessage();
     } catch (Exception ex) {
       logmsg = ex.getMessage();

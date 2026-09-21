@@ -24,7 +24,7 @@ import java.util.UUID;
 
 public class BcsmCallContent {
 
-  private UUID uid;
+  private final UUID uid;
 
   private BcsmCallStep step;
   private CAPDialogCircuitSwitchedCall capDialog, ssfCapDialog;

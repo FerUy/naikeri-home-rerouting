@@ -14,7 +14,7 @@ public class ApplicationMatchRule {
   private String imsi;
   private String primitive;
   private Boolean regexEnabled;
-  private List<String> messageTypes = new ArrayList<>();
+  private final List<String> messageTypes = new ArrayList<>();
 
   public String getCallingGt() {
     return callingGt;
@@ -63,7 +63,7 @@ public class ApplicationMatchRule {
    */
   public Boolean compareWith(ApplicationMatchRule newMatchRule) {
     // check if primitive
-    Boolean result = true;
+    boolean result = true;
     // do not proceed to check the remaining criteria
     for (String pitive : this.primitive.split(",")) {
       result = result && pitive.equalsIgnoreCase(newMatchRule.primitive);

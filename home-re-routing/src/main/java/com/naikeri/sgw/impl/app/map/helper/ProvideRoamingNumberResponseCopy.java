@@ -9,15 +9,15 @@ import org.restcomm.protocols.ss7.map.api.service.callhandling.ProvideRoamingNum
  */
 public class ProvideRoamingNumberResponseCopy {
 
-  private ISDNAddressString roamingNumber;
+  private final ISDNAddressString roamingNumber;
 
-  private MAPExtensionContainer extensionContainer;
+  private final MAPExtensionContainer extensionContainer;
 
-  private boolean releaseResourcesSupported;
+  private final boolean releaseResourcesSupported;
 
-  private ISDNAddressString vmscAddress;
+  private final ISDNAddressString vmscAddress;
 
-  private long mapProtocolVersion;
+  private final long mapProtocolVersion;
 
   public ProvideRoamingNumberResponseCopy(ProvideRoamingNumberResponse response) {
     this.roamingNumber = response.getRoamingNumber();
@@ -31,11 +31,9 @@ public class ProvideRoamingNumberResponseCopy {
     return roamingNumber;
   }
 
-
   public MAPExtensionContainer getExtensionContainer() {
     return extensionContainer;
   }
-
 
   public boolean getReleaseResourcesSupported() {
     return releaseResourcesSupported;
@@ -44,7 +42,6 @@ public class ProvideRoamingNumberResponseCopy {
   public ISDNAddressString getVmscAddress() {
     return vmscAddress;
   }
-
 
   public long getMapProtocolVersion() {
     return mapProtocolVersion;

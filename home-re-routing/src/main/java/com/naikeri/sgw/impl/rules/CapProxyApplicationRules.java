@@ -4,17 +4,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * CapProxyApplicationRules
  */
 public class CapProxyApplicationRules {
 
-  private static final Logger logger = LoggerFactory.getLogger(CapProxyApplicationRules.class);
+  private static final Logger logger = LogManager.getLogger(CapProxyApplicationRules.class);
   private static CapProxyApplicationRules sInstance = null;
-  private CopyOnWriteArrayList<ApplicationRulesSetting> capApplicationRules;
+  private final CopyOnWriteArrayList<ApplicationRulesSetting> capApplicationRules;
 
   public CapProxyApplicationRules() {
     capApplicationRules = new CopyOnWriteArrayList<>();
@@ -36,21 +36,19 @@ public class CapProxyApplicationRules {
       XmlCapApplicationRules xmlCapAppRules = new XmlCapApplicationRules(filename);
       capApplicationRules.addAll(xmlCapAppRules.getApplicationRules());
     } catch (Exception e) {
-      logger.error("Exception caught reading CAP Application Rule xml file. Exception: " + e);
+      logger.error("Exception caught reading CAP Application Rule xml file. Exception: {}", String.valueOf(e));
     }
   }
 
   public Optional<ApplicationRulesSetting> findCAPApplicationRule(String callingGT, String calledGT,
-      String imsi, String primitive, Boolean isLeg2) {
+                                                                  String imsi, String primitive, Boolean isLeg2) {
 
-    return this.capApplicationRules.stream()
-        .filter(currentRuleSetting -> searchApplicationRules(currentRuleSetting, callingGT,
-            calledGT, imsi, primitive, isLeg2))
-        .findFirst();
+    return this.capApplicationRules.stream().filter(currentRuleSetting -> searchApplicationRules(currentRuleSetting, callingGT,
+        calledGT, imsi, primitive, isLeg2)).findFirst();
   }
 
   private boolean searchApplicationRules(ApplicationRulesSetting ruleSetting, String callingGT,
-      String calledGT, String imsi, String primitive, boolean isLeg2) {
+                                         String calledGT, String imsi, String primitive, boolean isLeg2) {
     // checking the legs rules
     if (ruleSetting.getIsLeg2() != isLeg2) {
       return false;

@@ -4,8 +4,8 @@ import com.naikeri.sgw.impl.app.map.MapDialogOut;
 import com.naikeri.sgw.impl.app.map.MapProxyDialog;
 import com.naikeri.sgw.info.DataElement;
 import com.naikeri.sgw.info.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.api.MAPException;
 import org.restcomm.protocols.ss7.map.api.primitives.IMSI;
 import org.restcomm.protocols.ss7.map.api.service.mobility.MAPDialogMobility;
@@ -15,9 +15,12 @@ import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.Up
 import org.restcomm.protocols.ss7.map.api.service.mobility.locationManagement.UpdateLocationResponse;
 import org.restcomm.protocols.ss7.tcap.api.MessageType;
 
+/**
+ * MapProxyUpdateLocation
+ */
 public class MapProxyUpdateLocation {
 
-  private static final Logger logger = LoggerFactory.getLogger(MapProxyUpdateLocation.class);
+  private static final Logger logger = LogManager.getLogger(MapProxyUpdateLocation.class);
 
   private MapProxyUpdateLocation() {
   }
@@ -32,20 +35,17 @@ public class MapProxyUpdateLocation {
       mapDialogOut.setOriginalDialogId(dialogId);
       UpdateLocationResponseCopy clone = new UpdateLocationResponseCopy(locationResponse);
 
-      logger.debug(String.format("[MAP::RESPONSE<%s>] Incoming DialogId '%d', invokeId '%d', %s",
-          locationResponse.getMessageType().toString(),
-          locationResponse.getMAPDialog().getLocalDialogId(), locationResponse.getInvokeId(),
-          transactionId));
-      DataElement dataElement = null;
-      logger.debug(String.format("TCAP Message Type = '%s', dialogId = %d, Service = '%s'",
-          locationResponse.getMAPDialog().getTCAPMessageType(), dialogId,
-          locationResponse.getMAPDialog().getService().toString()));
+      logger.debug("[MAP::RESPONSE<{}>] Incoming DialogId '{}', invokeId '{}', {}",
+          locationResponse.getMessageType().toString(), locationResponse.getMAPDialog().getLocalDialogId(), locationResponse.getInvokeId(), transactionId);
+      DataElement dataElement;
+      logger.debug("TCAP Message Type = '{}', dialogId = {}, Service = '{}'",
+          locationResponse.getMAPDialog().getTCAPMessageType(), dialogId, locationResponse.getMAPDialog().getService().toString());
       // last result
 
       if (locationResponse.getMAPDialog().getTCAPMessageType() == MessageType.End
           || locationResponse.getMAPDialog().getTCAPMessageType() == MessageType.Abort) {
         // close the dialog
-        logger.debug("Closing for dialogId = " + dialogId);
+        logger.debug("Closing for dialogId = {}", dialogId);
         dataElement = Transaction.getInstance().removeDialogData(dialogId, respInvokeId);
         // close the dialog here
         mapDialogOut.setIsResponse();
@@ -73,8 +73,7 @@ public class MapProxyUpdateLocation {
           String.format("Dialog Id = %d not found in Transaction Map. %s", dialogId, transactionId);
       return MapProxyUtilsHelper.discardReason(logmsg, messageType, transactionId);
     } catch (MAPException mapex) {
-      logger.error("UpdateLocationResponse with DialogId " + dialogId + " failed " + transactionId
-          + ". Exception caught '" + mapex + "'");
+      logger.error("UpdateLocationResponse with DialogId {} failed {}. Exception caught '{}'", dialogId, transactionId, mapex);
       return MapProxyUtilsHelper.discardReason(mapex.getMessage(), messageType, transactionId);
     } catch (Exception ex) {
       logger.error("Failed", ex);
@@ -83,41 +82,39 @@ public class MapProxyUpdateLocation {
   }
 
   public static MapDialogOut getLocationRequest(MapProxyDialog mapProxyDialog,
-      UpdateLocationRequest locRequest, String transactionId) {
-    Long dialogId = locRequest.getMAPDialog().getLocalDialogId();
-    String messageType = locRequest.getMessageType().toString();
+                                                UpdateLocationRequest updateLocationRequest, String transactionId) {
+    Long dialogId = updateLocationRequest.getMAPDialog().getLocalDialogId();
+    String messageType = updateLocationRequest.getMessageType().toString();
 
     if (mapProxyDialog == null) {
       String debugmsg = String.format(
           "%s, MAP Application Rule not found for DialogId = '%d', InvokeId = '%d', MessageType = '%s'. ",
-          transactionId, dialogId, locRequest.getInvokeId(),
-          locRequest.getMessageType().toString());
+          transactionId, dialogId, updateLocationRequest.getInvokeId(),
+          updateLocationRequest.getMessageType().toString());
       logger.debug(debugmsg);
       debugmsg =
           String.format("MAP Application Rule not found for DialogId = '%d', InvokeId = '%d'",
-              dialogId, locRequest.getInvokeId());
+              dialogId, updateLocationRequest.getInvokeId());
       return MapProxyUtilsHelper.discardReason(debugmsg, messageType, transactionId);
     }
     try {
-      logger.debug(String.format("[MAP::REQUEST<%s>] Incoming DialogId = '%d', InvokeId = '%d', %s",
-          locRequest.getMessageType().toString(), dialogId, locRequest.getInvokeId(),
-          transactionId));
+      logger.debug("[MAP::REQUEST<{}>] Incoming DialogId = '{}', InvokeId = '{}', {}", updateLocationRequest.getMessageType().toString(), dialogId, updateLocationRequest.getInvokeId(), transactionId);
 
       IMSI updateLocationImsi = mapProxyDialog.getImsi();
       MAPDialogMobility mapMobilityOut = mapProxyDialog.getMapDialogMobility();
 
       Long newInvokeId = mapMobilityOut.addUpdateLocationRequest(updateLocationImsi,
-          locRequest.getMscNumber(), locRequest.getRoamingNumber(), locRequest.getVlrNumber(),
-          locRequest.getLmsi(), locRequest.getExtensionContainer(), locRequest.getVlrCapability(),
-          locRequest.getInformPreviousNetworkEntity(), locRequest.getCsLCSNotSupportedByUE(),
-          locRequest.getVGmlcAddress(), locRequest.getADDInfo(), locRequest.getPagingArea(),
-          locRequest.getSkipSubscriberDataUpdate(), locRequest.getRestorationIndicator());
+          updateLocationRequest.getMscNumber(), updateLocationRequest.getRoamingNumber(), updateLocationRequest.getVlrNumber(),
+          updateLocationRequest.getLmsi(), updateLocationRequest.getExtensionContainer(), updateLocationRequest.getVlrCapability(),
+          updateLocationRequest.getInformPreviousNetworkEntity(), updateLocationRequest.getCsLCSNotSupportedByUE(),
+          updateLocationRequest.getVGmlcAddress(), updateLocationRequest.getADDInfo(), updateLocationRequest.getPagingArea(),
+          updateLocationRequest.getSkipSubscriberDataUpdate(), updateLocationRequest.getRestorationIndicator(),
+          updateLocationRequest.getEPLMNList(), updateLocationRequest.getMmeDiameterAddress());
 
       return new MapDialogOut(mapMobilityOut, newInvokeId, dialogId, mapProxyDialog);
 
     } catch (MAPException mapex) {
-      logger.error("UpdateLocationRequest with DialogId " + dialogId + " failed. Exception caught '"
-          + mapex + "', " + transactionId);
+      logger.error("UpdateLocationRequest with DialogId {} failed. Exception caught '{}', {}", dialogId, mapex, transactionId);
       return MapProxyUtilsHelper.discardReason(mapex.getMessage(), messageType, transactionId);
     } catch (Exception ex) {
       logger.error("Error: ", ex);
@@ -127,28 +124,24 @@ public class MapProxyUpdateLocation {
 
   /**
    * update GPRS location response
-   * 
-   * @param updateResponse UpdateLocationResponse
+   *
    * @return MapDialogOut
    */
   public static MapDialogOut getGprsLocationResponse(Object message, String transactionId) {
     UpdateGprsLocationResponse event = (UpdateGprsLocationResponse) message;
     Long dialogId = event.getMAPDialog().getLocalDialogId();
     String messageType = event.getMessageType().toString();
-    DataElement dataElement = null;
+    DataElement dataElement;
     try {
       Long respInvokeId = event.getInvokeId();
       MapDialogOut mapDialogOut = new MapDialogOut();
       mapDialogOut.setOriginalDialogId(dialogId);
       UpdateGprsLocationResponseCopy clone = new UpdateGprsLocationResponseCopy(event);
-      logger.debug(String.format("[MAP::RESPONSE<%s>] Incoming dialogId '%d', InvokeId '%d' %s",
-          event.getMessageType().toString(), dialogId, event.getInvokeId(), transactionId));
-      logger.debug(String.format("TCAP Message Type = '%s', dialogId = %d, Service = '%s'",
-          event.getMAPDialog().getTCAPMessageType(), dialogId,
-          event.getMAPDialog().getService().toString()));
+      logger.debug("[MAP::RESPONSE<{}>] Incoming dialogId '{}', InvokeId '{}' {}", event.getMessageType().toString(), dialogId, event.getInvokeId(), transactionId);
+      logger.debug("TCAP Message Type = '{}', dialogId = {}, Service = '{}'", event.getMAPDialog().getTCAPMessageType(), dialogId, event.getMAPDialog().getService().toString());
       if (event.getMAPDialog().getTCAPMessageType() == MessageType.End
           || event.getMAPDialog().getTCAPMessageType() == MessageType.Abort) {
-        logger.debug("Closing for dialogId = " + dialogId);
+        logger.debug("Closing for dialogId = {}", dialogId);
         dataElement = Transaction.getInstance().removeDialogData(dialogId, respInvokeId);
         mapDialogOut.setIsResponse();
       } else {
@@ -160,23 +153,21 @@ public class MapProxyUpdateLocation {
             transactionId);
         return MapProxyUtilsHelper.discardReason(logmsg, messageType, transactionId);
       }
-      UpdateGprsLocationRequest origEvent =
-          (UpdateGprsLocationRequest) dataElement.getRequestObject();
+      UpdateGprsLocationRequest origEvent = (UpdateGprsLocationRequest) dataElement.getRequestObject();
       MAPDialogMobility mapDialogMobility = origEvent.getMAPDialog();
       Long invokeId = origEvent.getInvokeId();
       mapDialogMobility.setUserObject(invokeId);
 
       mapDialogMobility.addUpdateGprsLocationResponse(invokeId, clone.getHlrNumber(),
-          clone.getExtensionContainer(), clone.getAddCapability(),
-          clone.getSgsnMmeSeparationSupported());
+          clone.getExtensionContainer(), clone.isCapability(),
+          clone.isSgsnMmeSeparationSupported(), clone.isMmeRegisteredForSM());
 
       mapDialogOut.setLogInvokeIds(respInvokeId, invokeId);
       mapDialogOut.setMapDialog(mapDialogMobility);
 
       return mapDialogOut;
     } catch (MAPException mapex) {
-      logger.error("UpdateGprsLocationResponse with DialogId " + dialogId + " failed "
-          + transactionId + ". Exception caught '" + mapex + "'");
+      logger.error("UpdateGprsLocationResponse with DialogId {} failed {}. Exception caught '{}'", dialogId, transactionId, mapex);
       return MapProxyUtilsHelper.discardReason(mapex.getMessage(), messageType, transactionId);
     } catch (Exception ex) {
       logger.error("Error occurred: ", ex);
@@ -186,48 +177,45 @@ public class MapProxyUpdateLocation {
 
   /**
    * update GPRS location request
-   * 
+   *
    * @param mapProxyDialog MapProxyDialog
-   * @param updateGprs     UpdateGprsLocationRequest
    * @return MapDialogOut
    */
   public static MapDialogOut getGprsLocationRequest(MapProxyDialog mapProxyDialog,
-      UpdateGprsLocationRequest updateGprs, String transactionId) {
-    Long dialogId = updateGprs.getMAPDialog().getLocalDialogId();
-    String messageType = updateGprs.getMessageType().toString();
+                                                    UpdateGprsLocationRequest updateGprsLocationRequest, String transactionId) {
+    Long dialogId = updateGprsLocationRequest.getMAPDialog().getLocalDialogId();
+    String messageType = updateGprsLocationRequest.getMessageType().toString();
     if (mapProxyDialog == null) {
-      logger.debug(String.format(
-          "%s, MAP Application Rule not found for DialogId = '%d', InvokeId = '%d', MessageType = '%s'.",
-          transactionId, dialogId, updateGprs.getInvokeId(),
-          updateGprs.getMessageType().toString()));
+      logger.debug("{}, MAP Application Rule not found for DialogId = '{}', InvokeId = '{}', MessageType = '{}'.", transactionId, dialogId, updateGprsLocationRequest.getInvokeId(), updateGprsLocationRequest.getMessageType().toString());
       String logmsg =
           String.format("MAP Application Rule not found for DialogId = '%d', InvokeId = '%d'",
-              dialogId, updateGprs.getInvokeId());
+              dialogId, updateGprsLocationRequest.getInvokeId());
       return MapProxyUtilsHelper.discardReason(logmsg, messageType, transactionId);
     }
     try {
-      logger
-          .debug(String.format("[MAP::REQUEST<%s>] Incoming DialogId  = '%d', invokeId = '%d', %s",
-              updateGprs.getMessageType().toString(), dialogId, updateGprs.getInvokeId(),
-              transactionId));
+      logger.debug("[MAP::REQUEST<{}>] Incoming DialogId  = '{}', invokeId = '{}', {}", updateGprsLocationRequest.getMessageType().toString(), dialogId, updateGprsLocationRequest.getInvokeId(), transactionId);
 
       IMSI updateLocationImsi = mapProxyDialog.getImsi();
       MAPDialogMobility mapMobilityOut = mapProxyDialog.getMapDialogMobility();
 
       Long newInvokeId = mapMobilityOut.addUpdateGprsLocationRequest(updateLocationImsi,
-          updateGprs.getSgsnNumber(), updateGprs.getSgsnAddress(),
-          updateGprs.getExtensionContainer(), updateGprs.getSGSNCapability(),
-          updateGprs.getInformPreviousNetworkEntity(), updateGprs.getPsLCSNotSupportedByUE(),
-          updateGprs.getVGmlcAddress(), updateGprs.getADDInfo(), updateGprs.getEPSInfo(),
-          updateGprs.getServingNodeTypeIndicator(), updateGprs.getSkipSubscriberDataUpdate(),
-          updateGprs.getUsedRATType(), updateGprs.getGprsSubscriptionDataNotNeeded(),
-          updateGprs.getNodeTypeIndicator(), updateGprs.getAreaRestricted(),
-          updateGprs.getUeReachableIndicator(), updateGprs.getEpsSubscriptionDataNotNeeded(),
-          updateGprs.getUESRVCCCapability());
+          updateGprsLocationRequest.getSgsnNumber(), updateGprsLocationRequest.getSgsnAddress(),
+          updateGprsLocationRequest.getExtensionContainer(), updateGprsLocationRequest.getSGSNCapability(),
+          updateGprsLocationRequest.getInformPreviousNetworkEntity(), updateGprsLocationRequest.getPsLCSNotSupportedByUE(),
+          updateGprsLocationRequest.getVGmlcAddress(), updateGprsLocationRequest.getADDInfo(), updateGprsLocationRequest.getEPSInfo(),
+          updateGprsLocationRequest.getServingNodeTypeIndicator(), updateGprsLocationRequest.getSkipSubscriberDataUpdate(),
+          updateGprsLocationRequest.getUsedRATType(), updateGprsLocationRequest.getGprsSubscriptionDataNotNeeded(),
+          updateGprsLocationRequest.getNodeTypeIndicator(), updateGprsLocationRequest.getAreaRestricted(),
+          updateGprsLocationRequest.getUeReachableIndicator(), updateGprsLocationRequest.getEpsSubscriptionDataNotNeeded(),
+          updateGprsLocationRequest.getUESRVCCCapability(), updateGprsLocationRequest.getEPLMNList(),
+          updateGprsLocationRequest.getMmeNumberForMTSMS(), updateGprsLocationRequest.getSMSRegisterRequest(),
+          updateGprsLocationRequest.getSmsOnly(), updateGprsLocationRequest.getSgsnName(), updateGprsLocationRequest.getSgsnRealm(),
+          updateGprsLocationRequest.getLgdSupportIndicator(), updateGprsLocationRequest.getRemovalOfMMERegistrationForSMS(),
+          updateGprsLocationRequest.getAdjacentPLMNList());
+
       return new MapDialogOut(mapMobilityOut, newInvokeId, dialogId, mapProxyDialog);
     } catch (MAPException mapex) {
-      logger.error("UpdateGprsLocationRequest with DialogId " + dialogId
-          + " failed. Exception caught '" + mapex + "', " + transactionId);
+      logger.error("UpdateGprsLocationRequest with DialogId {} failed. Exception caught '{}', {}", dialogId, mapex, transactionId);
       return MapProxyUtilsHelper.discardReason(mapex.getMessage(), messageType, transactionId);
     } catch (Exception ex) {
       logger.error("Error: ", ex);

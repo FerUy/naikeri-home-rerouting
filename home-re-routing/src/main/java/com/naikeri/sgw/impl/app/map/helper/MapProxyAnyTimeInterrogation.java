@@ -4,8 +4,8 @@ import com.naikeri.sgw.impl.app.map.MapDialogOut;
 import com.naikeri.sgw.impl.app.map.MapProxyDialog;
 import com.naikeri.sgw.info.DataElement;
 import com.naikeri.sgw.info.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.api.MAPException;
 import org.restcomm.protocols.ss7.map.api.service.mobility.MAPDialogMobility;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation.AnyTimeInterrogationRequest;
@@ -17,16 +17,14 @@ import org.restcomm.protocols.ss7.tcap.api.MessageType;
  */
 public class MapProxyAnyTimeInterrogation {
 
-  private static final Logger logger = LoggerFactory.getLogger(MapProxyAnyTimeInterrogation.class);
+  private static final Logger logger = LogManager.getLogger(MapProxyAnyTimeInterrogation.class);
 
   private MapProxyAnyTimeInterrogation() {
   }
 
   /**
-   * process response for AnyTimeInterrogationResponse
+   * Process response for AnyTimeInterrogationResponse
    *
-   * @param message
-   * @param transactionId
    * @return MapDialogOut
    */
   public static MapDialogOut getResponse(Object message, String transactionId) {
@@ -34,29 +32,23 @@ public class MapProxyAnyTimeInterrogation {
         (AnyTimeInterrogationResponse) message;
     Long dialogId = anyTimeInterrogationResponse.getMAPDialog().getLocalDialogId();
     String messageType = anyTimeInterrogationResponse.getMessageType().toString();
-    String logmsg = "";
+    String logmsg;
     try {
       Long respInvokeId = anyTimeInterrogationResponse.getInvokeId();
       MapDialogOut mapDialogOut = new MapDialogOut();
       mapDialogOut.setOriginalDialogId(dialogId);
       AnyTimeInterrogationResponseCopy clone =
           new AnyTimeInterrogationResponseCopy(anyTimeInterrogationResponse);
-      logger.debug(String.format("[MAP::RESPONSE<%s>] Incoming DialogId '%d', invokeId '%d', %s",
-          anyTimeInterrogationResponse.getMessageType().toString(), dialogId,
-          anyTimeInterrogationResponse.getInvokeId(), transactionId));
-      DataElement dataElement = null;
+      logger.debug("[MAP::RESPONSE<{}>] Incoming DialogId '{}', invokeId '{}', {}", anyTimeInterrogationResponse.getMessageType().toString(), dialogId, anyTimeInterrogationResponse.getInvokeId(), transactionId);
+      DataElement dataElement;
 
-      logger.debug(
-          String.format("TCAP Message Type = '%s', dialogId = %d, InvokeId = %d, Service = '%s'",
-              anyTimeInterrogationResponse.getMAPDialog().getTCAPMessageType(), dialogId,
-              anyTimeInterrogationResponse.getInvokeId(),
-              anyTimeInterrogationResponse.getMAPDialog().getService().toString()));
+      logger.debug("TCAP Message Type = '{}', dialogId = {}, InvokeId = {}, Service = '{}'", anyTimeInterrogationResponse.getMAPDialog().getTCAPMessageType(), dialogId, anyTimeInterrogationResponse.getInvokeId(), anyTimeInterrogationResponse.getMAPDialog().getService().toString());
 
       if (anyTimeInterrogationResponse.getMAPDialog().getTCAPMessageType() == MessageType.End
           || anyTimeInterrogationResponse.getMAPDialog()
-              .getTCAPMessageType() == MessageType.Abort) {
+          .getTCAPMessageType() == MessageType.Abort) {
         // close the dialog
-        logger.debug("Closing for dialogId = " + dialogId);
+        logger.debug("Closing for dialogId = {}", dialogId);
         mapDialogOut.setIsResponse();
         dataElement = Transaction.getInstance().removeDialogData(dialogId, respInvokeId);
       } else {
@@ -81,8 +73,7 @@ public class MapProxyAnyTimeInterrogation {
       mapDialogOut.setMapDialog(mapDialogMobility);
       return mapDialogOut;
     } catch (MAPException mapex) {
-      logger.error("AnyTimeInterrogationResponse with DialogId " + dialogId + " failed "
-          + transactionId + ". Exception caught '" + mapex + "'");
+      logger.error("AnyTimeInterrogationResponse with DialogId {} failed {}. Exception caught '{}'", dialogId, transactionId, mapex);
       logmsg = mapex.getMessage();
     } catch (Exception ex) {
       logmsg = ex.getMessage();
@@ -91,17 +82,17 @@ public class MapProxyAnyTimeInterrogation {
   }
 
   /**
-   * process Any Time Interrogation request
-   * 
+   * Process Any Time Interrogation request
+   *
    * @param mapProxyDialog              MapProxyDialog
    * @param anyTimeInterrogationRequest AnyTimeInterrogationRequest
    * @return MapDialogOut
    */
   public static MapDialogOut getRequest(MapProxyDialog mapProxyDialog,
-      AnyTimeInterrogationRequest anyTimeInterrogationRequest, String transactionId) {
+                                        AnyTimeInterrogationRequest anyTimeInterrogationRequest, String transactionId) {
     Long dialogId = anyTimeInterrogationRequest.getMAPDialog().getLocalDialogId();
     String messageType = anyTimeInterrogationRequest.getMessageType().toString();
-    String logmsg = "";
+    String logmsg;
     if (mapProxyDialog == null) {
       logmsg = String.format(
           "%s MAP Application Rule not found for DialogId = '%d', InvokeId = '%d', MessageType = '%s'. MAP Message will be discarded",
@@ -110,9 +101,7 @@ public class MapProxyAnyTimeInterrogation {
       return MapProxyUtilsHelper.discardReason(logmsg, messageType, transactionId);
     }
     try {
-      logger.debug(String.format("[MAP::REQUEST<%s>] Incoming DialogId '%d', InvokeId '%d', %s",
-          anyTimeInterrogationRequest.getMessageType().toString(), dialogId,
-          anyTimeInterrogationRequest.getInvokeId(), transactionId));
+      logger.debug("[MAP::REQUEST<{}>] Incoming DialogId '{}', InvokeId '{}', {}", anyTimeInterrogationRequest.getMessageType().toString(), dialogId, anyTimeInterrogationRequest.getInvokeId(), transactionId);
       MAPDialogMobility mapMobilityOut = mapProxyDialog.getMapDialogMobility();
 
       Long newInvokeId = mapMobilityOut.addAnyTimeInterrogationRequest(
@@ -123,8 +112,7 @@ public class MapProxyAnyTimeInterrogation {
 
       return new MapDialogOut(mapMobilityOut, newInvokeId, dialogId, mapProxyDialog);
     } catch (MAPException mapex) {
-      logger.error("AnyTimeInterrogationRequest with DialogId " + dialogId
-          + " failed. Exception caught '" + mapex + "', " + transactionId);
+      logger.error("AnyTimeInterrogationRequest with DialogId {} failed. Exception caught '{}', {}", dialogId, mapex, transactionId);
       logmsg = mapex.getMessage();
     } catch (Exception ex) {
       logmsg = ex.getMessage();

@@ -9,20 +9,20 @@ import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberInformation
  */
 public class AnyTimeInterrogationResponseCopy {
 
-  private SubscriberInfo subscriberInfo;
+  private final SubscriberInfo subscriberInfo;
 
-  private MAPExtensionContainer extensionContainer;
+  private final MAPExtensionContainer extensionContainer;
 
-  public AnyTimeInterrogationResponseCopy(AnyTimeInterrogationResponse response){
+  public AnyTimeInterrogationResponseCopy(AnyTimeInterrogationResponse response) {
     this.subscriberInfo = response.getSubscriberInfo();
     this.extensionContainer = response.getExtensionContainer();
   }
 
   public SubscriberInfo getSubscriberInfo() {
     return subscriberInfo;
-  } 
+  }
 
   public MAPExtensionContainer getExtensionContainer() {
     return extensionContainer;
-  } 
+  }
 }

@@ -56,5 +56,4 @@ public class TestApplicationReplace {
     assertNull(result);
   }
 
-
 }

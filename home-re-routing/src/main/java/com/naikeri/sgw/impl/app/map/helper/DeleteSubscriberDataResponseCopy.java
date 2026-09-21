@@ -9,11 +9,11 @@ import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberManagement.
  */
 public class DeleteSubscriberDataResponseCopy {
 
-  private RegionalSubscriptionResponse regionalSubscriptionResponse;
+  private final RegionalSubscriptionResponse regionalSubscriptionResponse;
 
-  private MAPExtensionContainer extensionContainer;
+  private final MAPExtensionContainer extensionContainer;
 
-  public DeleteSubscriberDataResponseCopy(DeleteSubscriberDataResponse response){
+  public DeleteSubscriberDataResponseCopy(DeleteSubscriberDataResponse response) {
     this.regionalSubscriptionResponse = response.getRegionalSubscriptionResponse();
     this.extensionContainer = response.getExtensionContainer();
   }

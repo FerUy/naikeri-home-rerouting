@@ -26,8 +26,8 @@ import com.naikeri.sgw.impl.rules.ReplacedValues;
 import com.naikeri.sgw.info.DataElement;
 import com.naikeri.sgw.info.Transaction;
 import com.naikeri.sgw.network.layers.MapLayer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.indicator.RoutingIndicator;
 import org.restcomm.protocols.ss7.map.api.MAPDialog;
 import org.restcomm.protocols.ss7.map.api.MAPException;
@@ -63,7 +63,7 @@ import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
  * MapProcessingNode
  */
 public class MapProcessingNode {
-  private static final Logger logger = LoggerFactory.getLogger(MapProcessingNode.class);
+  private static final Logger logger = LogManager.getLogger(MapProcessingNode.class);
 
   private MAPMessageType messageType;
   private Object message;
@@ -72,51 +72,40 @@ public class MapProcessingNode {
 
   /**
    *
-   * @param calledGt
-   * @param callingGt
-   * @param imsi
-   * @return
+   * @param calledGt  Called Party Address Global Title
+   * @param callingGt Calling Party Address Global Title
+   * @param imsi      IMSI
+   * @return ReplacedValues
    */
   public ReplacedValues getReplacedRule(String calledGt, String callingGt, String imsi) {
     if (this.messageType == null) {
       logger
-          .error(String.format("<%s,%s>: Unknown Message Type: [ClgGt = %s, CldGt = %s, Imsi = %s]",
-              this.messageType, this.transactionId, callingGt, calledGt, imsi));
+          .error("<{},{}>: Unknown Message Type: [ClgGt = {}, CldGt = {}, Imsi = {}]", this.messageType, this.transactionId, callingGt, calledGt, imsi);
       return null;
     }
-    logger
-        .info(String.format("<%s, %s>: Searching RULE for: ClgGt = '%s', CldGt = '%s', Imsi = '%s'",
-            this.messageType, this.transactionId, callingGt, calledGt, imsi));
+    logger.info("<{}, {}>: Searching RULE for: ClgGt = '{}', CldGt = '{}', Imsi = '{}'", this.messageType, this.transactionId, callingGt, calledGt, imsi);
 
     ApplicationRulesSetting rulesSetting = MapProxyApplicationRules.getInstance()
         .findMAPApplicationRule(callingGt, calledGt, imsi, messageType.toString());
     if (rulesSetting != null) {
-      logger.info(String.format(
-          "<%s, %s>: Matching rule found. Rule Name = '%s', ClgGt = '%s', CldGt = '%s', Imsi = '%s'",
-          this.messageType, this.transactionId, rulesSetting.getName(), callingGt, calledGt, imsi));
+      logger.info("<{}, {}>: Matching rule found. Rule Name = '{}', ClgGt = '{}', CldGt = '{}', Imsi = '{}'", this.messageType, this.transactionId, rulesSetting.getName(), callingGt, calledGt, imsi);
       ReplacedValues replaceRule =
           rulesSetting.getReplaceRule().applyReplaceRule(imsi, callingGt, calledGt);
       if (replaceRule != null) {
         replaceRule.setRuleName(rulesSetting.getName());
         if (replaceRule.getImsi() != null) {
-          logger.info(String.format("<%s, %s>, Replaced Values: OldIMSI = '%s', newIMSI = '%s'",
-              this.messageType, this.transactionId, imsi, replaceRule.getImsi()));
+          logger.info("<{}, {}>, Replaced Values: OldIMSI = '{}', newIMSI = '{}'", this.messageType, this.transactionId, imsi, replaceRule.getImsi());
         }
         if (replaceRule.getCalledGlobalTitle() != null) {
-          logger.info(String.format("<%s, %s>, Replaced Values: Old CldGt = '%s', new CldGt = '%s'",
-              this.messageType, this.transactionId, calledGt,
-              replaceRule.getCalledGlobalTitle().getDigits()));
+          logger.info("<{}, {}>, Replaced Values: Old CldGt = '{}', new CldGt = '{}'", this.messageType, this.transactionId, calledGt, replaceRule.getCalledGlobalTitle().getDigits());
         }
         if (replaceRule.getCallingGlobalTitle() != null) {
-          logger.info(String.format("<%s, %s>, Replaced Values: Old ClgGt = '%s', new ClgGt = '%s'",
-              this.messageType, this.transactionId, callingGt,
-              replaceRule.getCallingGlobalTitle().getDigits()));
+          logger.info("<{}, {}>, Replaced Values: Old ClgGt = '{}', new ClgGt = '{}'", this.messageType, this.transactionId, callingGt, replaceRule.getCallingGlobalTitle().getDigits());
         }
         return replaceRule;
       }
     }
-    logger.info(String.format("<%s, %s>: RULE not found for: ClgGt = %s, CldGt = %s, Imsi = %s",
-        this.messageType, this.transactionId, callingGt, calledGt, imsi));
+    logger.info("<{}, {}>: RULE not found for: ClgGt = {}, CldGt = {}, Imsi = {}", this.messageType, this.transactionId, callingGt, calledGt, imsi);
     return null;
   }
 
@@ -129,9 +118,7 @@ public class MapProcessingNode {
     String imsi = optImsi.map(IMSI::getData).orElse("");
     Long dialogId = mapDialog.getLocalDialogId();
 
-    logger.debug(String.format(
-        "Processing Message Type = '%s', DialogId = '%d', InvokeId = '%d', Channel Message Id = %s",
-        this.messageType, dialogId, invokeId, this.transactionId));
+    logger.debug("Processing Message Type = '{}', DialogId = '{}', InvokeId = '{}', Channel Message Id = {}", this.messageType, dialogId, invokeId, this.transactionId);
 
     // apply the rules and changes the necessary values
     ReplacedValues replacedValues = getReplacedRule(calledGT, callingGT, imsi);
@@ -156,18 +143,15 @@ public class MapProcessingNode {
               .orElse(calledSccpAddress.getSubsystemNumber());
       // save new called GT
       mapProxyObj.setNewCalledGt(gt.getDigits());
-      logger.trace(String.format("Called Address pc = %d, ssn = %d, RI = %s, %s", dpc, ssn,
-          ri.toString(), this.transactionId));
+      logger.trace("Called Address pc = {}, ssn = {}, RI = {}, {}", dpc, ssn, ri.toString(), this.transactionId);
       calledSccpAddress = new SccpAddressImpl(ri, gt, dpc, ssn);
-      logger.info(String.format("<%s, %s> calledGT Changed: SccpAddress = '%s', New GT = '%s'",
-          this.messageType, this.transactionId, calledSccpAddress.toString(), gt.toString()));
+      logger.info("<{}, {}> calledGT Changed: SccpAddress = '{}', New GT = '{}'", this.messageType, this.transactionId, calledSccpAddress, gt);
     } else {
       // change only the point code to 0 for better routing which uses the configuration
       // rules
-      logger.trace(String.format("Changing pc = 0 for %s", calledSccpAddress.getGlobalTitle()));
-      calledSccpAddress =
-          new SccpAddressImpl(calledSccpAddress.getAddressIndicator().getRoutingIndicator(),
-              calledSccpAddress.getGlobalTitle(), 0, calledSccpAddress.getSubsystemNumber());
+      logger.trace("Changing pc = 0 for {}", calledSccpAddress.getGlobalTitle());
+      calledSccpAddress = new SccpAddressImpl(calledSccpAddress.getAddressIndicator().getRoutingIndicator(),
+          calledSccpAddress.getGlobalTitle(), 0, calledSccpAddress.getSubsystemNumber());
     }
     // for CDR for the new calling SccpAddress
     mapProxyObj.setNewCalledAddress(calledSccpAddress);
@@ -184,11 +168,9 @@ public class MapProcessingNode {
           .orElse(callingSccpAddress.getSubsystemNumber());
 
       mapProxyObj.setNewCallingGt(gt.getDigits());
-      logger.trace(String.format("Calling Address pc = %d, ssn = %d, RI = %s, %s", dpc, ssn,
-          ri.toString(), this.transactionId));
+      logger.trace("Calling Address pc = {}, ssn = {}, RI = {}, {}", dpc, ssn, ri.toString(), this.transactionId);
       callingSccpAddress = new SccpAddressImpl(ri, gt, dpc, ssn);
-      logger.info(String.format("<%s, %s> callingGT Changed: SccpAddress = '%s', New GT = '%s'",
-          this.messageType, this.transactionId, callingSccpAddress.toString(), gt.toString()));
+      logger.info("<{}, {}> callingGT Changed: SccpAddress = '{}', New GT = '{}'", this.messageType, this.transactionId, callingSccpAddress, gt);
     }
     mapProxyObj.setNewCallingAddress(callingSccpAddress);
 
@@ -251,15 +233,11 @@ public class MapProcessingNode {
         return MapProxyInsertSubscriberData.getInsertSubDataRequest(mapProxyDialog, request,
             this.transactionId);
       }
-      logger.info(String.format(
-          "[MAP::CONTINUE<%s>] Continue from '%s', dialogId = '%d', InvokeId = '%d', [ISD Request: Dialog Id = '%d', Invoke Id = '%d'], %s",
-          request.getMessageType().toString(), dataElement.getMessageType(),
-          dataElement.getDialogId(), dataElement.getInvokeId(), dialogId, request.getInvokeId(),
-          this.transactionId));
+      logger.info("[MAP::CONTINUE<{}>] Continue from '{}', dialogId = '{}', InvokeId = '{}', [ISD Request: Dialog Id = '{}', Invoke Id = '{}'], {}", request.getMessageType().toString(), dataElement.getMessageType(), dataElement.getDialogId(), dataElement.getInvokeId(), dialogId, request.getInvokeId(), this.transactionId);
       return MapProxyInsertSubscriberData.sendUpdateLocation(request, dataElement,
           this.transactionId);
     } catch (Exception ex) {
-      logger.error("Exception caught: " + ex + ". " + this.transactionId);
+      logger.error("Exception caught: {}. {}", ex, this.transactionId);
     }
     return null;
   }
@@ -280,7 +258,7 @@ public class MapProcessingNode {
 
     try {
       switch (this.messageType) {
-        /********** MOBILITY ***************/
+        //********** MOBILITY ***************//
         case updateLocation_Request:
           return processLocationUpdate();
         case updateGprsLocation_Request:
@@ -303,12 +281,12 @@ public class MapProcessingNode {
           return processDeleteSubscriber();
         case anyTimeSubscriptionInterrogation_Request:
           return processAnyTimeSubscription();
-        /************* CALL HANDLING *************/
+        //************* CALL HANDLING *************//
         case provideRoamingNumber_Request:
           return processProvideRoamingNumber();
         case sendRoutingInfo_Request:
           return processSendRoutingInfo();
-        /************* SMS *********************/
+        //************* SMS *********************//
         case mtForwardSM_Request:
           return processMtForwardSM();
         case moForwardSM_Request:
@@ -318,27 +296,25 @@ public class MapProcessingNode {
         case forwardSM_Request:
           return processForwardSM();
 
-        /************ OAM **************/
+        //************ OAM **************//
         case sendIMSI_Request:
           return processSendIMSI();
 
-        /*************** Supplementary ***************/
+        //*************** Supplementary ***************//
         case processUnstructuredSSRequest_Request:
           return processProcessUSSR();
         case unstructuredSSRequest_Request:
           return processUSSR();
 
         default:
-          logger.info(String.format("<%s>. Unhandled Message Type: '%s' ", this.transactionId,
-              this.messageType));
+          logger.info("<{}>. Unhandled Message Type: '{}' ", this.transactionId, this.messageType);
           break;
       }
     } catch (Exception ex) {
-      logger.error("Failed to process request for " + this.transactionId + ". Error: " + ex);
+      logger.error("Failed to process request for {}. Error: {}", this.transactionId, ex);
     }
     return null;
   }
-
 
 
   private MapDialogOut processLocationUpdate() {
@@ -378,8 +354,7 @@ public class MapProcessingNode {
       return MapProxySendAuthenticationInfo.getSendAuthenticationInfoRequest(mapProxyDialog,
           sendAuthInfoReq, this.transactionId);
     } catch (Exception e) {
-      logger.error(
-          "Error prorcessing sendAuthenicationInfo_Request. " + this.transactionId + " Error: ", e);
+      logger.error("Error prorcessing sendAuthenicationInfo_Request. {} Error: ", this.transactionId, e);
       return discardReason(e);
     }
   }
@@ -389,7 +364,7 @@ public class MapProcessingNode {
       AnyTimeInterrogationRequest anyTimeInterrogationRequest =
           (AnyTimeInterrogationRequest) this.message;
       MapProxyDialog mapProxyDialog =
-          getMapProxyDialog(anyTimeInterrogationRequest.getMAPDialog(), Optional.ofNullable(null),
+          getMapProxyDialog(anyTimeInterrogationRequest.getMAPDialog(), Optional.empty(),
               MapDialogType.Mobility, anyTimeInterrogationRequest.getInvokeId());
       return MapProxyAnyTimeInterrogation.getRequest(mapProxyDialog, anyTimeInterrogationRequest,
           this.transactionId);
@@ -427,7 +402,7 @@ public class MapProcessingNode {
       SendIdentificationRequest sendIdentificationRequest =
           (SendIdentificationRequest) this.message;
       MapProxyDialog mapProxyDialog =
-          getMapProxyDialog(sendIdentificationRequest.getMAPDialog(), Optional.ofNullable(null),
+          getMapProxyDialog(sendIdentificationRequest.getMAPDialog(), Optional.empty(),
               MapDialogType.Mobility, sendIdentificationRequest.getInvokeId());
       return MapProxySendIdentification.getRequest(mapProxyDialog, sendIdentificationRequest,
           this.transactionId);
@@ -467,7 +442,7 @@ public class MapProcessingNode {
       AnyTimeSubscriptionInterrogationRequest anyTimeSubscriptionRequest =
           (AnyTimeSubscriptionInterrogationRequest) this.message;
       MapProxyDialog mapProxyDialog =
-          getMapProxyDialog(anyTimeSubscriptionRequest.getMAPDialog(), Optional.ofNullable(null),
+          getMapProxyDialog(anyTimeSubscriptionRequest.getMAPDialog(), Optional.empty(),
               MapDialogType.Mobility, anyTimeSubscriptionRequest.getInvokeId());
       return MapProxyAnyTimeSubscriptionInterrogation.getRequest(mapProxyDialog,
           anyTimeSubscriptionRequest, this.transactionId);
@@ -494,7 +469,7 @@ public class MapProcessingNode {
       SendRoutingInformationRequest sendRoutingInfoReq =
           (SendRoutingInformationRequest) this.message;
       MapProxyDialog mapProxyDialog = getMapProxyDialog(sendRoutingInfoReq.getMAPDialog(),
-          Optional.ofNullable(null), MapDialogType.CallHandling, sendRoutingInfoReq.getInvokeId());
+          Optional.empty(), MapDialogType.CallHandling, sendRoutingInfoReq.getInvokeId());
       return MapProxySendRoutingInfo.getRequest(mapProxyDialog, sendRoutingInfoReq,
           this.transactionId);
     } catch (Exception e) {
@@ -508,11 +483,7 @@ public class MapProcessingNode {
       Long dialogId = mtShortMessage.getMAPDialog().getLocalDialogId();
       DataElement dataElement = Transaction.getInstance().getDialogId(dialogId);
       if (dataElement != null) {
-        logger.info(String.format(
-            "[MAP::CONTINUE<%s>] Continue from '%s', dialogId = '%d', InvokeId = '%d', [ISD Request: Dialog Id = '%d', Invoke Id = '%d'], %s",
-            mtShortMessage.getMessageType().toString(), dataElement.getMessageType(),
-            dataElement.getDialogId(), dataElement.getInvokeId(), dialogId,
-            mtShortMessage.getInvokeId(), this.transactionId));
+        logger.info("[MAP::CONTINUE<{}>] Continue from '{}', dialogId = '{}', InvokeId = '{}', [ISD Request: Dialog Id = '{}', Invoke Id = '{}'], {}", mtShortMessage.getMessageType().toString(), dataElement.getMessageType(), dataElement.getDialogId(), dataElement.getInvokeId(), dialogId, mtShortMessage.getInvokeId(), this.transactionId);
         return MapProxyMoMtForwardSM.contMtForwardSm(mtShortMessage, dataElement, transactionId);
       }
       Optional<IMSI> smImsi =
@@ -567,7 +538,7 @@ public class MapProcessingNode {
     try {
       SendImsiRequest sendIMSIRequest = (SendImsiRequest) this.message;
       MapProxyDialog mapProxyDialog = getMapProxyDialog(sendIMSIRequest.getMAPDialog(),
-          Optional.ofNullable(null), MapDialogType.OAM, sendIMSIRequest.getInvokeId());
+          Optional.empty(), MapDialogType.OAM, sendIMSIRequest.getInvokeId());
       return MapProxySendIMSI.getRequest(mapProxyDialog, sendIMSIRequest, this.transactionId);
     } catch (Exception e) {
       return discardReason(e);
@@ -578,7 +549,7 @@ public class MapProcessingNode {
     try {
       ProcessUnstructuredSSRequest procUnstrReqInd = (ProcessUnstructuredSSRequest) this.message;
       MapProxyDialog mapProxyDialog = getMapProxyDialog(procUnstrReqInd.getMAPDialog(),
-          Optional.ofNullable(null), MapDialogType.Supplementary, procUnstrReqInd.getInvokeId());
+          Optional.empty(), MapDialogType.Supplementary, procUnstrReqInd.getInvokeId());
       return MapProxyProcessUnstructuredSSRequest.getRequest(mapProxyDialog, procUnstrReqInd,
           this.transactionId);
     } catch (Exception e) {
@@ -590,7 +561,7 @@ public class MapProcessingNode {
     try {
       UnstructuredSSRequest unstrReqInd = (UnstructuredSSRequest) this.message;
       MapProxyDialog mapProxyDialog = getMapProxyDialog(unstrReqInd.getMAPDialog(),
-          Optional.ofNullable(null), MapDialogType.Supplementary, unstrReqInd.getInvokeId());
+          Optional.empty(), MapDialogType.Supplementary, unstrReqInd.getInvokeId());
       return MapProxyUnstructuredSSRequest.getRequest(mapProxyDialog, unstrReqInd,
           this.transactionId);
     } catch (Exception e) {
@@ -600,9 +571,7 @@ public class MapProcessingNode {
 
   private MapDialogOut discardReason(Exception e) {
     MapDialogOut builder = new MapDialogOut();
-    logger.debug(
-        String.format("Error process %s. TransactionId = %s", this.messageType, this.transactionId),
-        e);
+    logger.debug("Error process {}. TransactionId = {}", this.messageType, this.transactionId, e);
     builder.setDiscardReason(e.getMessage());
     return builder;
   }
@@ -657,7 +626,6 @@ public class MapProcessingNode {
         return null;
     }
   }
-
 
   public void setMessageType(MAPMessageType messageType) {
     this.messageType = messageType;
