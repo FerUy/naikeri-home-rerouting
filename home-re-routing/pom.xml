@@ -10,9 +10,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.naikeri</groupId>
     <artifactId>home-re-routing</artifactId>
-    <version>2.2.0</version>
     
     <dependencies>
         <dependency>
@@ -54,6 +52,9 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <!-- runtime scope only: without this, JUnit and Hamcrest are copied into the
+                                 distribution's lib/ alongside what the agent actually needs. -->
+                            <includeScope>runtime</includeScope>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
