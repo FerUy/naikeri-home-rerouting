@@ -61,7 +61,7 @@
     <sccp name="sccpserver" m3ua="m3uaserver" enable="false">
       <spc name="1001" remoteSpcId="1" remoteSpc="1001" remoteSpcFlag="0" mask="0" />
       <ssn name="8" remoteSsnid="1" remoteSpc="1001" remoteSsn="8" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
-     
+
       <!-- sap === Service Access Point-->
       <sap name="SAPServer" id="1" mtp3Id="1" opc="1000" ni="2" networkId="0" localGtDigits="50373700000">
         <destination name="SAPServer" destid="1" firstDpc="1001" lastDpc="1001" firstSls="0" lastSls="255" slsMask="255" />

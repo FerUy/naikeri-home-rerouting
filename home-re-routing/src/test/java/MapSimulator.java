@@ -101,7 +101,7 @@ public class MapSimulator {
       simul = new MapSimulatorSendPrimitive(mapClient, sccpClientSettings, sccpServerSettings);
       this.simulate();
     } catch (Exception e) {
-      logger.error(e.getStackTrace());
+      logger.error("Caught exception", e);
     }
   }
 

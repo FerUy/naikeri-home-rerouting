@@ -86,7 +86,7 @@ public class MapProtoTypeSMSListener implements MAPServiceSmsListener {
       MAPDialogSms dialogSms = mtForwSmInd.getMAPDialog();
       dialogSms.addMtForwardShortMessageResponse(mtForwSmInd.getInvokeId(), mtForwSmInd.getSM_RP_UI(), null);
     } catch (Exception e) {
-      logger.error(e.getStackTrace());
+      logger.error("Caught exception", e);
     }
   }
 

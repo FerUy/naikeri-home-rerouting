@@ -87,7 +87,7 @@ public class CapSimulator {
           Thread.sleep(8000);
           vplmnStpPrototype.sendInitialDPRequest();
         } catch (Exception e) {
-          logger.error(e.getStackTrace());
+          logger.error("Caught exception", e);
         }
       }
       logger.info("DONE");

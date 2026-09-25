@@ -106,7 +106,7 @@ public class MapPrototype extends ChannelHandler {
                 null);
             sctpClient = new SctpLayer(sctpClientSettings);
         } catch (Exception e) {
-            logger.error(e.getStackTrace());
+            logger.error("Caught exception", e);
         }
 
         // M3UA
@@ -129,7 +129,7 @@ public class MapPrototype extends ChannelHandler {
             m3uaClientSettings.addApplicationServerRoute("AS2", 1000, 1001, -1);
             m3uaClient = new M3uaLayer(m3uaClientSettings, sctpClient);
         } catch (Exception e) {
-            logger.error(e.getStackTrace());
+            logger.error("Caught exception", e);
         }
 
         // SCCP
@@ -165,7 +165,7 @@ public class MapPrototype extends ChannelHandler {
 
             sccpClient = new SccpLayer(sccpClientSettings, m3uaClient);
         } catch (Exception e) {
-            logger.error(e.getStackTrace());
+            logger.error("Caught exception", e);
         }
 
         // TCAP
@@ -186,7 +186,7 @@ public class MapPrototype extends ChannelHandler {
             tcapClientSettings.setMaxDialogs(5000);
             tcapClient = new TcapLayer(tcapClientSettings, sccpClient);
         } catch (Exception e) {
-            logger.error(e.getStackTrace());
+            logger.error("Caught exception", e);
         }
 
         // MAP
@@ -215,7 +215,7 @@ public class MapPrototype extends ChannelHandler {
             mapClientProvider.getMAPServiceLsm().activate();
             mapClient.start();
         } catch (Exception e) {
-            logger.error(e.getStackTrace());
+            logger.error("Caught exception", e);
         }
     }
 
@@ -232,7 +232,7 @@ public class MapPrototype extends ChannelHandler {
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e) {
-                    logger.error(e.getStackTrace());
+                    logger.error("Caught exception", e);
                 }
             }
 
@@ -368,7 +368,7 @@ public class MapPrototype extends ChannelHandler {
             }
 
         } catch (Exception e) {
-            logger.error(e.getStackTrace());
+            logger.error("Caught exception", e);
         }
 
     }

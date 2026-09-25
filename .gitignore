@@ -97,7 +97,8 @@ cap*_management.xml
 
 deletexml.sh
 notes.txt
-home-re-routing/debuglog.txt
+debuglog*.txt
+license/
 
 ##############################
 ## Generated directories

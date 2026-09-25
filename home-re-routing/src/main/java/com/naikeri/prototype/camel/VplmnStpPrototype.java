@@ -398,7 +398,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             logger.debug("RRB sent from VPLMN SSF to CAP Proxy SSF over dialog : {}", this.leg1ScfCallContent.getCapDialog());
             logger.debug("scfCurrentCapDialog state = {}", this.leg1ScfCallContent.getCapDialog().getState());
           } catch (CAPException e) {
-            logger.error(e.getStackTrace());
+            logger.error("Caught exception", e);
           }
         } else {
           long invokeId = requestReportBCSMEventRequest.getInvokeId();
@@ -489,7 +489,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           logger.debug("ETC-CUE sent from VPLMN SSF to CAP Proxy over dialog : {}", this.leg1ScfCallContent.getCapDialog());
           logger.debug("SSF Cap Dialog state = {}", this.leg1ScfCallContent.getCapDialog().getState());
         } catch (CAPException e) {
-          logger.error(e.getStackTrace());
+          logger.error("Caught exception", e);
         }
       }
     }
@@ -932,7 +932,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           logger.debug("ERB oAnswer sent from VPLMN SSF to HPLMN SCF over dialog : {}", this.leg1SsfCallContent.getCapDialog());
           logger.debug("SSF CAP Dialog state = {}", this.leg1SsfCallContent.getCapDialog().getState());
         } catch (CAPException e) {
-          logger.error(e.getStackTrace());
+          logger.error("Caught exception", e);
         }
       } else {
         // terminate CAMEL dialog
@@ -977,7 +977,7 @@ public class VplmnStpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           logger.debug("ERB oDisconnect sent from VPLMN SSF to HPLMN SCF over dialog : {}", this.leg1SsfCallContent.getCapDialog());
           logger.debug("ssf Cap Dialog state = {}", this.leg1SsfCallContent.getCapDialog().getState());
         } catch (CAPException e) {
-          logger.error(e.getStackTrace());
+          logger.error("Caught exception", e);
         }
       } else {
         // terminate CAMEL dialog

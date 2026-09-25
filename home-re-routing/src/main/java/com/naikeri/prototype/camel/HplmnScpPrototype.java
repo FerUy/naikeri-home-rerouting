@@ -193,7 +193,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
       new Thread(new HPLMNTimer(this)).start();
 
     } catch (Exception e) {
-      logger.error(e.getStackTrace());
+      logger.error("Caught exception", e);
     }
   }
 
@@ -210,7 +210,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
       try {
         Thread.sleep(100);
       } catch (InterruptedException ie) {
-        logger.error(ie.getStackTrace());
+        logger.error("Caught exception", ie);
       }
       try {
         if (hplmnScpPrototype.cc.getCapDialog().getLocalDialogId() % 2 == 1) {
@@ -221,7 +221,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           hplmnScpPrototype.sendConnectRequestAndContinueRequests();
         }
       } catch (CAPException e) {
-        logger.error(e.getStackTrace());
+        logger.error("Caught exception", e);
       }
     }
   }
@@ -251,7 +251,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
             null, null, null, null, null, callSegmentId, null, null, null, null, false));
         logger.debug("ETC and CUE sent from HPLMN SCP prototype to CAP proxy via STP over dialog : {}", this.cc.getCapDialog());
       } catch (CAPException e) {
-        logger.error(e.getStackTrace());
+        logger.error("Caught exception", e);
       }
     } else {
       // else, close the HPLMN CAP dialog via a TC-Close
@@ -262,7 +262,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           this.cc.getCapDialog().close(preArrangedEnd);
         }
       } catch (CAPException e) {
-        logger.error(e.getStackTrace());
+        logger.error("Caught exception", e);
       }
     }
   }
@@ -322,7 +322,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
         this.cc.setStep(BcsmCallStep.conSent);
         logger.debug("CON and CUE sent from HPLMN SCP to CAP proxy over dialog : {}", this.cc.getCapDialog());
       } catch (CAPException e) {
-        logger.error(e.getStackTrace());
+        logger.error("Caught exception", e);
       }
     } else {
       // else, close the HPLMN CAP dialog via a TC-Close
@@ -333,7 +333,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           this.cc.getCapDialog().close(preArrangedEnd);
         }
       } catch (CAPException e) {
-        logger.error(e.getStackTrace());
+        logger.error("Caught exception", e);
       }
     }
   }
@@ -421,7 +421,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
           if (this.cc.getCapDialog() != null)
             this.cc.getCapDialog().close(preArrangedEnd);
         } catch (CAPException e) {
-          logger.error(e.getStackTrace());
+          logger.error("Caught exception", e);
         }
       }
     }
@@ -455,7 +455,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
                   this.cc.getCapDialog().close(preArrangedEnd);
                 }
               } catch (CAPException e) {
-                logger.error(e.getStackTrace());
+                logger.error("Caught exception", e);
               }
               break;
             default:
@@ -465,7 +465,7 @@ public class HplmnScpPrototype implements CAPDialogListener, CAPServiceCircuitSw
       }
 
     } catch (Exception e) {
-      logger.error(e.getStackTrace());
+      logger.error("Caught exception", e);
     }
   }
 
