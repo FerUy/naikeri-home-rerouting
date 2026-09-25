@@ -3,8 +3,8 @@
   <Applications/>
   <Channels/>
   <Layers>
-    <sctp name="sctpclient" singleThread="true" connectDelay="10000" enable="false">
-      <association name="assoc_0" host="127.0.0.1:8011" peer="127.0.0.1:8022" transport="TCP" multihome="127.0.0.10,127.0.0.11" />
+    <sctp name="sctpclient" singleThread="true" connectDelay="1000" enable="false">
+      <association name="assoc_0" host="127.0.0.1:8011" peer="127.0.0.1:8022" transport="SCTP" />
     </sctp>
     <m3ua name="m3uaclient" heartbeatTime="10000" sctp="sctpclient" productName="Naikeri_SGW" enable="false">
       <!-- as === Application Server -->

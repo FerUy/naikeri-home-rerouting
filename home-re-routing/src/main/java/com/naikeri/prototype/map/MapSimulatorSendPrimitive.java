@@ -135,7 +135,7 @@ public class MapSimulatorSendPrimitive {
       MAPDialogSms clientDialogSms =
           this.mapClient.getMAPProvider().getMAPServiceSms().createNewDialog(appCnt,
               this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), orgiReference,
-              this.sccpServerSettings.getRoutingAddresses().get(1).getSccpAddress(), destReference);
+              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), destReference);
       SM_RP_DA smRPDA =
           this.mapParameterFactory.createSM_RP_DA(this.mapParameterFactory.createIMSI(imsiString));
 
@@ -179,7 +179,7 @@ public class MapSimulatorSendPrimitive {
       MAPDialogSms clientDialogSms =
           this.mapClient.getMAPProvider().getMAPServiceSms().createNewDialog(appCnt,
               this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), orgiReference,
-              this.sccpServerSettings.getRoutingAddresses().get(1).getSccpAddress(), destReference);
+              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), destReference);
       // clientDialogSms.setExtentionContainer(MAPExtensionContainerTest.GetTestExtensionContainer())
 
       IMSI imsi1 = this.mapParameterFactory.createIMSI(imstring);
@@ -235,7 +235,7 @@ public class MapSimulatorSendPrimitive {
               MAPApplicationContext.getInstance(MAPApplicationContextName.gprsLocationUpdateContext,
                   MAPApplicationContextVersion.version3),
               this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), origRef,
-              this.sccpServerSettings.getRoutingAddresses().get(1).getSccpAddress(), destRef);
+              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), destRef);
 
       ISDNAddressString sgsnNumber = new ISDNAddressStringImpl(AddressNature.international_number,
           NumberingPlan.ISDN, sgsnNumberString);
@@ -342,7 +342,7 @@ public class MapSimulatorSendPrimitive {
       MAPDialogMobility clientDialogMobility =
           clientMapProvider.getMAPServiceMobility().createNewDialog(appCnt,
               this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), null,
-              this.sccpServerSettings.getRoutingAddresses().get(1).getSccpAddress(), null);
+              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), null);
 
       IMSI imsi = this.mapParameterFactory.createIMSI(imsiString);
       ISDNAddressString mscNumber = this.mapParameterFactory.createISDNAddressString(
@@ -394,7 +394,7 @@ public class MapSimulatorSendPrimitive {
       MAPDialogMobility clientDialogMobility =
           clientMapProvider.getMAPServiceMobility().createNewDialog(appCnt,
               this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), null,
-              this.sccpServerSettings.getRoutingAddresses().get(1).getSccpAddress(), null);
+              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), null);
 
       IMSI imsi = this.mapParameterFactory.createIMSI(imsiString);
       clientDialogMobility.addSendAuthenticationInfoRequest(imsi, 3, true, true, null, null,
@@ -439,7 +439,7 @@ public class MapSimulatorSendPrimitive {
       MAPDialogCallHandling mapDialogMobility =
           clientMapProvider.getMAPServiceCallHandling().createNewDialog(appCnt,
               this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), origRef,
-              this.sccpServerSettings.getRoutingAddresses().get(1).getSccpAddress(), destRef);
+              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), destRef);
       ArrayList<MAPPrivateExtension> al = new ArrayList<>();
       al.add(mapFactory.createMAPPrivateExtension(new long[] {1, 2, 3, 4},
           new byte[] {11, 12, 13, 14, 15}));
@@ -520,7 +520,7 @@ public class MapSimulatorSendPrimitive {
       MAPDialogMobility clientDialogMobility =
           clientMapProvider.getMAPServiceMobility().createNewDialog(appCnt,
               this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), null,
-              this.sccpServerSettings.getRoutingAddresses().get(1).getSccpAddress(), null);
+              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), null);
 
       IMSI imsi = this.mapParameterFactory.createIMSI(imsiString);
       Category category = this.mapParameterFactory.createCategory(5);

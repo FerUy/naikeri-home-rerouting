@@ -44,10 +44,9 @@
   <Layers>
     <sctp name="sctpserver" singleThread="true" connectDelay="10000" enable="true">
       <!-- <association name="assoc_0" host="127.0.0.1:8011" peer="127.0.0.2:8012" transport="SCTP" multihome="127.0.0.10,127.0.0.11" /> -->
-      <server name="testsrv" host="127.0.0.1:8022" transport="TCP" acceptAnonymousConnections="false" concurrentConnections="10" multihome="127.0.0.20,127.0.0.21">
-        <serverAssociation name="server_assoc_0" peer="127.0.0.1:8011" transport="TCP" />
+      <server name="testsrv" host="127.0.0.1:8022" transport="SCTP" acceptAnonymousConnections="false" concurrentConnections="10">
+        <serverAssociation name="server_assoc_0" peer="127.0.0.1:8011" transport="SCTP" />
       </server>
-      <association name="assoc_NSN" host="172.17.0.2:3905" peer="172.21.219.3:3906" transport="SCTP" multihome="127.0.0.10,127.0.0.11" />
     </sctp>
     <m3ua name="m3uaserver" heartbeatTime="10000" sctp="sctpserver" productName="NAIKERI_SGW" enable="true">
       <!-- as === Application Server -->
