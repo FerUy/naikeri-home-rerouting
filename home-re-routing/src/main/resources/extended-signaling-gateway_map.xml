@@ -110,6 +110,13 @@
                     <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="4" natureOfAddress="INTERNATIONAL" digits="*" />
                 </patternCallingSccpAddress> -->
       </rule>
+      <!-- SAI and UL leave the proxy with an E.214 Called Party GT (numbering plan 7), which the rule
+           above, for E.164 (numbering plan 1), does not match: without this they are dropped. -->
+      <rule name="localRuleServerE214" id="3" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="LOCAL" pattern="*" mask="K" pAddressId="2" sAddressId="-1" networkId="0">
+        <patternSccpAddress routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" dpc="0" ssn="0" aivalue="16">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="7" natureOfAddress="INTERNATIONAL" digits="*" />
+        </patternSccpAddress>
+      </rule>
     </sccp>
     <tcap name="tcapserver" sccp="sccpserver" ssn="6" extraSsn="147,8" dialogidletimeout="60000" invoketimeout="30000" maxdialogs="5000" enable="true" />
     <map name="map" tcap="tcapserver" enable="true" />

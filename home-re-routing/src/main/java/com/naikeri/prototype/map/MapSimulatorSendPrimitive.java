@@ -12,7 +12,6 @@ import com.naikeri.sgw.impl.settings.sccp.SccpSettings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mobicents.protocols.asn.BitSetStrictLength;
-import org.restcomm.protocols.ss7.map.MAPParameterFactoryImpl;
 import org.restcomm.protocols.ss7.map.MAPStackImpl;
 import org.restcomm.protocols.ss7.map.api.MAPApplicationContext;
 import org.restcomm.protocols.ss7.map.api.MAPApplicationContextName;
@@ -464,6 +463,11 @@ public class MapSimulatorSendPrimitive {
       ValidityPeriod validityPeriod = new ValidityPeriodImpl(3);
       DataCodingScheme dataCodingScheme = new DataCodingSchemeImpl(0);
       UserDataHeader userDataHeader = null;
+      if (dataCodingScheme.getCharacterSet() == CharacterSet.GSM8) {
+        ApplicationPortAddressing16BitAddressImpl apa16 = new ApplicationPortAddressing16BitAddressImpl(16020, 0);
+        userDataHeader = new UserDataHeaderImpl();
+        userDataHeader.addInformationElement(apa16);
+      }
       Charset gsm8Charset = StandardCharsets.UTF_8;
       UserData userData = new UserDataImpl("MO SMS test", dataCodingScheme, userDataHeader, gsm8Charset);
       SmsTpduImpl smsTpdu = new SmsSubmitTpduImpl(rejectDuplicates, replyPathExists, statusReportRequest, messageReference, destinationAddress,
@@ -635,7 +639,6 @@ public class MapSimulatorSendPrimitive {
       ISDNAddressString roamingNumber = null;
       ISDNAddressString vlrNumber = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "491710460000");
       LMSI lmsi = null;
-      MAPExtensionContainer mapExtensionContainer = null;
       VLRCapability vlrCapability = getVlrCapability();
       boolean informPreviousNetworkEntity = false;
       boolean csLCSNotSupportedByUE = false;
@@ -650,7 +653,7 @@ public class MapSimulatorSendPrimitive {
       ePLMNList.add(plmnId1);
       ePLMNList.add(plmnId2);
       NetworkNodeDiameterAddress mmeDiameterAddress = getNetworkNodeDiameterAddress();
-      clientDialogMobility.addUpdateLocationRequest(imsi, mscNumber, roamingNumber, vlrNumber, lmsi, mapExtensionContainer,
+      clientDialogMobility.addUpdateLocationRequest(imsi, mscNumber, roamingNumber, vlrNumber, lmsi, null,
           vlrCapability, informPreviousNetworkEntity, csLCSNotSupportedByUE, vGmlcAddress, addInfo, pagingArea,
           skipSubscriberDataUpdate, restorationIndicator, ePLMNList, mmeDiameterAddress);
 
@@ -719,7 +722,6 @@ public class MapSimulatorSendPrimitive {
 
       }
       this.rateLimiterObj.acquire();
-      MAPParameterFactoryImpl mapFactory = new MAPParameterFactoryImpl();
       // First create Dialog
       AddressString origRef = clientMapProvider.getMAPParameterFactory()
           .createAddressString(AddressNature.international_number, NumberingPlan.ISDN, "12345");
@@ -733,23 +735,16 @@ public class MapSimulatorSendPrimitive {
       MAPDialogCallHandling mapDialogMobility = clientMapProvider.getMAPServiceCallHandling().createNewDialog(appCnt,
               this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), origRef,
               this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), destRef);
-      ArrayList<MAPPrivateExtension> al = new ArrayList<>();
-      al.add(mapFactory.createMAPPrivateExtension(new long[] {1, 2, 3, 4},
-          new byte[] {11, 12, 13, 14, 15}));
-      al.add(mapFactory.createMAPPrivateExtension(new long[] {1, 2, 3, 6}, null));
-      al.add(mapFactory.createMAPPrivateExtension(new long[] {1, 2, 3, 5},
-          new byte[] {21, 22, 23, 24, 25, 26}));
       IMSI imsi = new IMSIImpl(imsiString);
       ISDNAddressString mscNumber = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "22228");
       ISDNAddressString msisdn = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "22227");
       LMSI lmsi = new LMSIImpl(new byte[] {0, 3, 98, 39});
 
-      MAPExtensionContainer extensionContainerForExtSigInfo = mapFactory.createMAPExtensionContainer(al, new byte[] {31, 32, 33});
       byte[] dataTa = new byte[] {10, 20, 30, 40};
       SignalInfo signalInfo = new SignalInfoImpl(dataTa);
       ProtocolId protocolId = ProtocolId.gsm_0806;
-      ExternalSignalInfo gsmBearerCapability = new ExternalSignalInfoImpl(signalInfo, protocolId, extensionContainerForExtSigInfo);
-      ExternalSignalInfo networkSignalInfo = new ExternalSignalInfoImpl(signalInfo, protocolId, extensionContainerForExtSigInfo);
+      ExternalSignalInfo gsmBearerCapability = new ExternalSignalInfoImpl(signalInfo, protocolId, null);
+      ExternalSignalInfo networkSignalInfo = new ExternalSignalInfoImpl(signalInfo, protocolId, null);
 
       boolean suppressionOfAnnouncement = false;
       ISDNAddressString gmscAddress = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "22226");
@@ -898,10 +893,6 @@ public class MapSimulatorSendPrimitive {
         boolean vplmnLIPAAllowed = true;
         // mdtUserConsent
         boolean mdtUserConsent = true;
-        // vplmnCSGSubscriptionDataList
-        ArrayList<CSGSubscriptionData> vplmnCSGSubscriptionDataList = null;
-        // additionalMSISDN
-        ISDNAddressString additionalMSISDN = null;
         // psAndSMSOnlyServiceProvision
         boolean psAndSMSOnlyServiceProvision = true;
         // smsInSGSNAllowed
@@ -910,8 +901,6 @@ public class MapSimulatorSendPrimitive {
         boolean csToPsSRVCCAllowedIndicator = true;
         // pcscfRestorationRequest
         boolean pcscfRestorationRequest = true;
-        // ueUsageType
-        UEUsageType ueUsageType = null;
         // userPlaneIntegrityProtectionIndicator
         boolean userPlaneIntegrityProtectionIndicator = true;
         // dlBufferingSuggestedPacketCount
@@ -1122,8 +1111,6 @@ public class MapSimulatorSendPrimitive {
         boolean iHspaEvolutionNotAllowed = false;
         boolean hoToNon3GppAccessNotAllowed = true;
         AccessRestrictionData accessRestrictionData = new AccessRestrictionDataImpl(utranNotAllowed, geranNotAllowed, ganNotAllowed, iHspaEvolutionNotAllowed, eUtranNotAllowed, hoToNon3GppAccessNotAllowed);
-        // icsIndicator
-        Boolean icsIndicator = Boolean.TRUE;
         // epsSubscriptionData
         int defaultContext = 1;
         boolean completeDataListIncluded = true;

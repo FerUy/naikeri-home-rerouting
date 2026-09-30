@@ -13,6 +13,7 @@ import com.naikeri.sgw.network.layers.SccpLayer;
 import com.naikeri.sgw.network.layers.SctpLayer;
 import com.naikeri.sgw.network.layers.TcapLayer;
 import com.naikeri.prototype.map.MapProtoTypeSMSListener;
+import com.naikeri.prototype.map.MapPrototypeCallHandlingListener;
 import com.naikeri.prototype.map.MapPrototypeListener;
 import com.naikeri.prototype.map.MapPrototypeMobility;
 import com.naikeri.prototype.map.MapSimulatorSendPrimitive;
@@ -109,6 +110,10 @@ public class MapSimulator {
       map.getMapProvider().getMAPServiceMobility().addMAPServiceListener(new MapPrototypeMobility(mapClient.getMAPProvider().getMAPParameterFactory()));
       map.getMapProvider().getMAPServiceSms().addMAPServiceListener(new MapProtoTypeSMSListener());
       map.getMapProvider().getMAPServiceMobility().activate();
+      map.getMapProvider().getMAPServiceCallHandling()
+          .addMAPServiceListener(new MapPrototypeCallHandlingListener(mapClient.getMAPProvider().getMAPParameterFactory()));
+      map.getMapProvider().getMAPServiceCallHandling().activate();
+      map.getMapProvider().getMAPServiceSms().activate();
 
       mapSimulatorSendPrimitive = new MapSimulatorSendPrimitive(mapClient, sccpClientSettings, sccpServerSettings);
       this.simulate();

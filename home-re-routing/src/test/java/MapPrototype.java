@@ -590,26 +590,22 @@ public class MapPrototype extends ChannelHandler
   }
 
   @Override
-  public void onSendAuthenticationInfoRequest(
-      SendAuthenticationInfoRequest sendAuthenticationInfoRequest) {
+  public void onSendAuthenticationInfoRequest(SendAuthenticationInfoRequest sendAuthenticationInfoRequest) {
 
   }
 
   @Override
-  public void onSendAuthenticationInfoResponse(
-      SendAuthenticationInfoResponse sendAuthenticationInfoResponse) {
+  public void onSendAuthenticationInfoResponse(SendAuthenticationInfoResponse sendAuthenticationInfoResponse) {
 
   }
 
   @Override
-  public void onAuthenticationFailureReportRequest(
-      AuthenticationFailureReportRequest authenticationFailureReportRequest) {
+  public void onAuthenticationFailureReportRequest(AuthenticationFailureReportRequest authenticationFailureReportRequest) {
 
   }
 
   @Override
-  public void onAuthenticationFailureReportResponse(
-      AuthenticationFailureReportResponse authenticationFailureReportResponse) {
+  public void onAuthenticationFailureReportResponse(AuthenticationFailureReportResponse authenticationFailureReportResponse) {
 
   }
 
@@ -619,8 +615,7 @@ public class MapPrototype extends ChannelHandler
   }
 
   @Override
-  public void onForwardCheckSSIndicationRequest(
-      ForwardCheckSSIndicationRequest forwardCheckSSIndicationRequest) {
+  public void onForwardCheckSSIndicationRequest(ForwardCheckSSIndicationRequest forwardCheckSSIndicationRequest) {
 
   }
 
@@ -635,26 +630,22 @@ public class MapPrototype extends ChannelHandler
   }
 
   @Override
-  public void onAnyTimeInterrogationRequest(
-      AnyTimeInterrogationRequest anyTimeInterrogationRequest) {
+  public void onAnyTimeInterrogationRequest(AnyTimeInterrogationRequest anyTimeInterrogationRequest) {
 
   }
 
   @Override
-  public void onAnyTimeInterrogationResponse(
-      AnyTimeInterrogationResponse anyTimeInterrogationResponse) {
+  public void onAnyTimeInterrogationResponse(AnyTimeInterrogationResponse anyTimeInterrogationResponse) {
 
   }
 
   @Override
-  public void onAnyTimeSubscriptionInterrogationRequest(
-      AnyTimeSubscriptionInterrogationRequest anyTimeSubscriptionInterrogationRequest) {
+  public void onAnyTimeSubscriptionInterrogationRequest(AnyTimeSubscriptionInterrogationRequest anyTimeSubscriptionInterrogationRequest) {
 
   }
 
   @Override
-  public void onAnyTimeSubscriptionInterrogationResponse(
-      AnyTimeSubscriptionInterrogationResponse anyTimeSubscriptionInterrogationResponse) {
+  public void onAnyTimeSubscriptionInterrogationResponse(AnyTimeSubscriptionInterrogationResponse anyTimeSubscriptionInterrogationResponse) {
 
   }
 
@@ -669,38 +660,32 @@ public class MapPrototype extends ChannelHandler
   }
 
   @Override
-  public void onProvideSubscriberInfoRequest(
-      ProvideSubscriberInfoRequest provideSubscriberInfoRequest) {
+  public void onProvideSubscriberInfoRequest(ProvideSubscriberInfoRequest provideSubscriberInfoRequest) {
 
   }
 
   @Override
-  public void onProvideSubscriberInfoResponse(
-      ProvideSubscriberInfoResponse provideSubscriberInfoResponse) {
+  public void onProvideSubscriberInfoResponse(ProvideSubscriberInfoResponse provideSubscriberInfoResponse) {
 
   }
 
   @Override
-  public void onInsertSubscriberDataRequest(
-      InsertSubscriberDataRequest insertSubscriberDataRequest) {
+  public void onInsertSubscriberDataRequest(InsertSubscriberDataRequest insertSubscriberDataRequest) {
 
   }
 
   @Override
-  public void onInsertSubscriberDataResponse(
-      InsertSubscriberDataResponse insertSubscriberDataResponse) {
+  public void onInsertSubscriberDataResponse(InsertSubscriberDataResponse insertSubscriberDataResponse) {
 
   }
 
   @Override
-  public void onDeleteSubscriberDataRequest(
-      DeleteSubscriberDataRequest deleteSubscriberDataRequest) {
+  public void onDeleteSubscriberDataRequest(DeleteSubscriberDataRequest deleteSubscriberDataRequest) {
 
   }
 
   @Override
-  public void onDeleteSubscriberDataResponse(
-      DeleteSubscriberDataResponse deleteSubscriberDataResponse) {
+  public void onDeleteSubscriberDataResponse(DeleteSubscriberDataResponse deleteSubscriberDataResponse) {
 
   }
 
@@ -715,14 +700,12 @@ public class MapPrototype extends ChannelHandler
   }
 
   @Override
-  public void onActivateTraceModeRequest_Mobility(
-      ActivateTraceModeRequest_Mobility activateTraceModeRequest_mobility) {
+  public void onActivateTraceModeRequest_Mobility(ActivateTraceModeRequest_Mobility activateTraceModeRequest_mobility) {
 
   }
 
   @Override
-  public void onActivateTraceModeResponse_Mobility(
-      ActivateTraceModeResponse_Mobility activateTraceModeResponse_mobility) {
+  public void onActivateTraceModeResponse_Mobility(ActivateTraceModeResponse_Mobility activateTraceModeResponse_mobility) {
 
   }
 
@@ -793,8 +776,7 @@ public class MapPrototype extends ChannelHandler
   }
 
   @Override
-  public void onDialogNotice(MAPDialog mapDialog,
-                             MAPNoticeProblemDiagnostic mapNoticeProblemDiagnostic) {
+  public void onDialogNotice(MAPDialog mapDialog, MAPNoticeProblemDiagnostic mapNoticeProblemDiagnostic) {
 
   }
 
