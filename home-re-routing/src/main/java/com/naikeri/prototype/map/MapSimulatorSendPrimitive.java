@@ -1,8 +1,12 @@
 package com.naikeri.prototype.map;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.*;
+
 import com.google.common.util.concurrent.RateLimiter;
 import com.naikeri.sgw.impl.settings.sccp.SccpSettings;
 import org.apache.logging.log4j.LogManager;
@@ -15,21 +19,7 @@ import org.restcomm.protocols.ss7.map.api.MAPApplicationContextVersion;
 import org.restcomm.protocols.ss7.map.api.MAPException;
 import org.restcomm.protocols.ss7.map.api.MAPParameterFactory;
 import org.restcomm.protocols.ss7.map.api.MAPProvider;
-import org.restcomm.protocols.ss7.map.api.primitives.AddressNature;
-import org.restcomm.protocols.ss7.map.api.primitives.AddressString;
-import org.restcomm.protocols.ss7.map.api.primitives.DiameterIdentity;
-import org.restcomm.protocols.ss7.map.api.primitives.ExternalSignalInfo;
-import org.restcomm.protocols.ss7.map.api.primitives.GSNAddress;
-import org.restcomm.protocols.ss7.map.api.primitives.IMEI;
-import org.restcomm.protocols.ss7.map.api.primitives.IMSI;
-import org.restcomm.protocols.ss7.map.api.primitives.ISDNAddressString;
-import org.restcomm.protocols.ss7.map.api.primitives.LMSI;
-import org.restcomm.protocols.ss7.map.api.primitives.MAPExtensionContainer;
-import org.restcomm.protocols.ss7.map.api.primitives.MAPPrivateExtension;
-import org.restcomm.protocols.ss7.map.api.primitives.NumberingPlan;
-import org.restcomm.protocols.ss7.map.api.primitives.PlmnId;
-import org.restcomm.protocols.ss7.map.api.primitives.ProtocolId;
-import org.restcomm.protocols.ss7.map.api.primitives.SignalInfo;
+import org.restcomm.protocols.ss7.map.api.primitives.*;
 import org.restcomm.protocols.ss7.map.api.service.callhandling.MAPDialogCallHandling;
 import org.restcomm.protocols.ss7.map.api.service.mobility.MAPDialogMobility;
 import org.restcomm.protocols.ss7.map.api.service.mobility.authentication.RequestingNodeType;
@@ -61,31 +51,31 @@ import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberManagement.
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberManagement.VoiceBroadcastData;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberManagement.VoiceGroupCallData;
 import org.restcomm.protocols.ss7.map.api.service.mobility.subscriberManagement.ZoneCode;
-import org.restcomm.protocols.ss7.map.api.service.sms.MAPDialogSms;
-import org.restcomm.protocols.ss7.map.api.service.sms.SM_RP_DA;
-import org.restcomm.protocols.ss7.map.api.service.sms.SM_RP_OA;
-import org.restcomm.protocols.ss7.map.api.service.sms.SmsSignalInfo;
+import org.restcomm.protocols.ss7.map.api.service.sms.*;
+import org.restcomm.protocols.ss7.map.api.smstpdu.AbsoluteTimeStamp;
+import org.restcomm.protocols.ss7.map.api.smstpdu.AddressField;
+import org.restcomm.protocols.ss7.map.api.smstpdu.CharacterSet;
+import org.restcomm.protocols.ss7.map.api.smstpdu.DataCodingScheme;
 import org.restcomm.protocols.ss7.map.api.smstpdu.NumberingPlanIdentification;
+import org.restcomm.protocols.ss7.map.api.smstpdu.ProtocolIdentifier;
+import org.restcomm.protocols.ss7.map.api.smstpdu.SmsDeliverTpdu;
 import org.restcomm.protocols.ss7.map.api.smstpdu.TypeOfNumber;
-import org.restcomm.protocols.ss7.map.primitives.ExternalSignalInfoImpl;
-import org.restcomm.protocols.ss7.map.primitives.GSNAddressImpl;
-import org.restcomm.protocols.ss7.map.primitives.IMEIImpl;
-import org.restcomm.protocols.ss7.map.primitives.IMSIImpl;
-import org.restcomm.protocols.ss7.map.primitives.ISDNAddressStringImpl;
-import org.restcomm.protocols.ss7.map.primitives.LMSIImpl;
-import org.restcomm.protocols.ss7.map.primitives.SignalInfoImpl;
-import org.restcomm.protocols.ss7.map.service.mobility.locationManagement.ADDInfoImpl;
-import org.restcomm.protocols.ss7.map.service.mobility.locationManagement.LACImpl;
-import org.restcomm.protocols.ss7.map.service.mobility.locationManagement.LocationAreaImpl;
-import org.restcomm.protocols.ss7.map.service.mobility.locationManagement.SGSNCapabilityImpl;
-import org.restcomm.protocols.ss7.map.service.mobility.locationManagement.SupportedLCSCapabilitySetsImpl;
-import org.restcomm.protocols.ss7.map.service.mobility.locationManagement.SupportedRATTypesImpl;
+import org.restcomm.protocols.ss7.map.api.smstpdu.UserData;
+import org.restcomm.protocols.ss7.map.api.smstpdu.UserDataHeader;
+import org.restcomm.protocols.ss7.map.primitives.*;
+import org.restcomm.protocols.ss7.map.service.mobility.locationManagement.*;
 import org.restcomm.protocols.ss7.map.service.mobility.subscriberManagement.SupportedCamelPhasesImpl;
+import org.restcomm.protocols.ss7.map.service.sms.CorrelationIDImpl;
+import org.restcomm.protocols.ss7.map.service.sms.SipUriImpl;
 import org.restcomm.protocols.ss7.map.service.sms.SmsSignalInfoImpl;
+import org.restcomm.protocols.ss7.map.smstpdu.AbsoluteTimeStampImpl;
 import org.restcomm.protocols.ss7.map.smstpdu.AddressFieldImpl;
+import org.restcomm.protocols.ss7.map.smstpdu.ApplicationPortAddressing16BitAddressImpl;
 import org.restcomm.protocols.ss7.map.smstpdu.DataCodingSchemeImpl;
 import org.restcomm.protocols.ss7.map.smstpdu.ProtocolIdentifierImpl;
+import org.restcomm.protocols.ss7.map.smstpdu.SmsDeliverTpduImpl;
 import org.restcomm.protocols.ss7.map.smstpdu.SmsSubmitTpduImpl;
+import org.restcomm.protocols.ss7.map.smstpdu.UserDataHeaderImpl;
 import org.restcomm.protocols.ss7.map.smstpdu.UserDataImpl;
 import org.restcomm.protocols.ss7.map.smstpdu.ValidityPeriodImpl;
 import org.restcomm.protocols.ss7.sccp.NetworkIdState;
@@ -111,40 +101,73 @@ public class MapSimulatorSendPrimitive {
 
   public void sendMtForwardSM(String imsiString) {
     try {
-      logger.debug("Sending Mt Forward SM for IMSI = " + imsiString);
+      logger.debug("Sending Mt Forward SM for IMSI = {}", imsiString);
       this.mapClient.getMAPProvider().getMAPServiceSms().activate();
 
       NetworkIdState networkIdState = this.mapClient.getMAPProvider().getNetworkIdState(0);
-      if (!(networkIdState == null
-          || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
+      if (!(networkIdState == null || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState={}", networkIdState);
         Thread.sleep(3000);
       }
 
       this.rateLimiterObj.acquire();
 
       MAPApplicationContext appCnt;
-      appCnt = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgMTRelayContext,
-          MAPApplicationContextVersion.version3);
-      AddressString orgiReference = this.mapParameterFactory.createAddressString(
-          AddressNature.international_number, NumberingPlan.ISDN, "31628968300");
-      AddressString destReference = this.mapParameterFactory.createAddressString(
-          AddressNature.international_number, NumberingPlan.land_mobile, "204208300008002");
+      appCnt = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgMTRelayContext, MAPApplicationContextVersion.version3);
+      AddressString originReference = this.mapParameterFactory.createAddressString(AddressNature.international_number, NumberingPlan.ISDN, "31628968300");
+      AddressString destReference = this.mapParameterFactory.createAddressString(AddressNature.international_number, NumberingPlan.land_mobile, "204208300008002");
 
       MAPDialogSms clientDialogSms =
           this.mapClient.getMAPProvider().getMAPServiceSms().createNewDialog(appCnt,
-              this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), orgiReference,
+              this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), originReference,
               this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), destReference);
-      SM_RP_DA smRPDA =
-          this.mapParameterFactory.createSM_RP_DA(this.mapParameterFactory.createIMSI(imsiString));
-
+      SM_RP_DA smRPDA = this.mapParameterFactory.createSM_RP_DA(this.mapParameterFactory.createIMSI(imsiString));
       AddressString msisdn1 = this.mapParameterFactory
           .createAddressString(AddressNature.international_number, NumberingPlan.ISDN, "111222333");
       SM_RP_OA smRPOA = this.mapParameterFactory.createSM_RP_OA_ServiceCentreAddressOA(msisdn1);
-      SmsSignalInfo smRPUI = new SmsSignalInfoImpl(new byte[] {21, 22, 23, 24, 25}, null);
-      clientDialogSms.addMtForwardShortMessageRequest(smRPDA, smRPOA, smRPUI, true, null,
-          null, null, false, null, null, null, null);
+      AddressField originatingAddress = new AddressFieldImpl(TypeOfNumber.Alphanumeric, NumberingPlanIdentification.Unknown, "447");
+      ZonedDateTime now = ZonedDateTime.now();
+      AbsoluteTimeStamp serviceCentreTimeStamp = getAbsoluteTimeStamp(now);
+      int dcsVal = 4; // 0 = GSM7, 4 = GSM8, 8 = UCS2
+      DataCodingScheme dcs = new DataCodingSchemeImpl(dcsVal);
+      UserDataHeader udh = null;
+      if (dcs.getCharacterSet() == CharacterSet.GSM8) {
+        ApplicationPortAddressing16BitAddressImpl apa16 = new ApplicationPortAddressing16BitAddressImpl(16020, 0);
+        udh = new UserDataHeaderImpl();
+        udh.addInformationElement(apa16);
+      }
+      boolean moreMessagesToSend = false;
+      boolean forwardedOrSpawned = false;
+      boolean replyPathExists = false;
+      boolean statusReportIndication = false;
+      Charset gsm8Charset = StandardCharsets.UTF_8;
+      UserData userData = new UserDataImpl("MT-SMS text", dcs, udh, gsm8Charset);
+      ProtocolIdentifier pi = new ProtocolIdentifierImpl(0);
+
+      Integer smDeliveryTimer = 60;
+      boolean smsOverIPOnlyIndicator = true;
+      DiameterIdentity gmscName = new DiameterIdentityImpl("msc04.mme.epc.mnc002.mcc748.3gppnetwork.org".getBytes(StandardCharsets.UTF_8));
+      DiameterIdentity gmscRealm = new DiameterIdentityImpl("epc.mnc002.mcc748.3gppnetwork.org".getBytes(StandardCharsets.UTF_8));
+      SmsDeliverTpdu tpdu = new SmsDeliverTpduImpl(moreMessagesToSend, forwardedOrSpawned, replyPathExists, statusReportIndication, originatingAddress, pi, serviceCentreTimeStamp, userData);
+      SmsSignalInfo sm_RP_UI = new SmsSignalInfoImpl(tpdu, gsm8Charset);
+      ZonedDateTime utcNow = now.withZoneSameInstant(ZoneOffset.UTC);
+      ZonedDateTime utcDeadline = utcNow.plusDays(1);
+      Time smDeliveryStartTime = new TimeImpl(utcNow.getYear(), utcNow.getMonthValue(), utcNow.getDayOfMonth(),
+              utcNow.getHour(), utcNow.getMinute(), utcNow.getSecond());
+      Time maximumRetransmissionTime = new TimeImpl(utcDeadline.getYear(), utcDeadline.getMonthValue(),
+              utcDeadline.getDayOfMonth(), utcDeadline.getHour(), utcDeadline.getMinute(), utcDeadline.getSecond());
+      ISDNAddressString msisdn = new ISDNAddressStringImpl(AddressNature.international_number,
+              NumberingPlan.ISDN, "59899077937");
+      String uriA = msisdn.getAddress() + "@restcomm.org";
+      SipUri sipUriA = new SipUriImpl(uriA.getBytes(StandardCharsets.UTF_8));
+      SipUri sipUriB = new SipUriImpl("mtLoadTest@restcomm.org".getBytes(StandardCharsets.UTF_8));
+      CorrelationID correlationID = new CorrelationIDImpl(new IMSIImpl(imsiString), sipUriA, sipUriB);
+      ISDNAddressString smsGmscAddress = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "5989900123");
+      NetworkNodeDiameterAddress smsGmscDiameterAddress = new NetworkNodeDiameterAddressImpl(gmscName, gmscRealm);
+
+      clientDialogSms.addMtForwardShortMessageRequest(smRPDA, smRPOA, sm_RP_UI, moreMessagesToSend, null, smDeliveryTimer,
+              smDeliveryStartTime, smsOverIPOnlyIndicator, correlationID, maximumRetransmissionTime, smsGmscAddress, smsGmscDiameterAddress);
 
       clientDialogSms.send();
       logger.debug("Message sent successfully");
@@ -153,28 +176,29 @@ public class MapSimulatorSendPrimitive {
     }
   }
 
+  private static AbsoluteTimeStamp getAbsoluteTimeStamp(ZonedDateTime zonedDateTime) {
+    int quarterHours = zonedDateTime.getOffset().getTotalSeconds() / 900;
+    return new AbsoluteTimeStampImpl(zonedDateTime.getYear() - 2000, zonedDateTime.getMonthValue(), zonedDateTime.getDayOfMonth(),
+            zonedDateTime.getHour(), zonedDateTime.getMinute(), zonedDateTime.getSecond(), quarterHours);
+  }
 
   public void sendMoForwardSm(String imstring, String imsi2String) {
     try {
       this.mapClient.getMAPProvider().getMAPServiceSms().activate();
       NetworkIdState networkIdState = this.mapClient.getMAPProvider().getNetworkIdState(0);
-      if (!(networkIdState == null
-          || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
+      if (!(networkIdState == null || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState={}", networkIdState);
         Thread.sleep(3000);
       }
 
       this.rateLimiterObj.acquire();
       MAPApplicationContext appCnt;
 
-      appCnt = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgMORelayContext,
-          MAPApplicationContextVersion.version3);
+      appCnt = MAPApplicationContext.getInstance(MAPApplicationContextName.shortMsgMORelayContext, MAPApplicationContextVersion.version3);
 
-      AddressString orgiReference = this.mapParameterFactory.createAddressString(
-          AddressNature.international_number, NumberingPlan.ISDN, "31628968300");
-      AddressString destReference = this.mapParameterFactory.createAddressString(
-          AddressNature.international_number, NumberingPlan.land_mobile, "204208300008002");
+      AddressString orgiReference = this.mapParameterFactory.createAddressString(AddressNature.international_number, NumberingPlan.ISDN, "31628968300");
+      AddressString destReference = this.mapParameterFactory.createAddressString(AddressNature.international_number, NumberingPlan.land_mobile, "204208300008002");
 
       MAPDialogSms clientDialogSms =
           this.mapClient.getMAPProvider().getMAPServiceSms().createNewDialog(appCnt,
@@ -184,8 +208,7 @@ public class MapSimulatorSendPrimitive {
 
       IMSI imsi1 = this.mapParameterFactory.createIMSI(imstring);
       SM_RP_DA smRPDA = this.mapParameterFactory.createSM_RP_DA(imsi1);
-      ISDNAddressString msisdn1 = this.mapParameterFactory.createISDNAddressString(
-          AddressNature.international_number, NumberingPlan.ISDN, "111222333");
+      ISDNAddressString msisdn1 = this.mapParameterFactory.createISDNAddressString(AddressNature.international_number, NumberingPlan.ISDN, "111222333");
       SM_RP_OA smRPOA = this.mapParameterFactory.createSM_RP_OA_Msisdn(msisdn1);
 
       AddressFieldImpl da = new AddressFieldImpl(TypeOfNumber.InternationalNumber,
@@ -215,10 +238,9 @@ public class MapSimulatorSendPrimitive {
       MAPProvider clientMapProvider = this.mapClient.getMAPProvider();
       // preparing congestion control -- code not changing
       NetworkIdState networkIdState = this.mapClient.getMAPProvider().getNetworkIdState(0);
-      if (!(networkIdState == null
-          || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
+      if (!(networkIdState == null || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState={}", networkIdState);
         Thread.sleep(3000);
       }
 
@@ -324,7 +346,7 @@ public class MapSimulatorSendPrimitive {
       if (!(networkIdState == null
           || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState={}", networkIdState);
 
         Thread.sleep(3000);
 
@@ -378,7 +400,7 @@ public class MapSimulatorSendPrimitive {
       if (!(networkIdState == null
           || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState={}", networkIdState);
         Thread.sleep(3000);
       }
 
@@ -412,10 +434,9 @@ public class MapSimulatorSendPrimitive {
       NetworkIdState networkIdState = this.mapClient.getMAPProvider().getNetworkIdState(0);
       MAPProvider clientMapProvider = this.mapClient.getMAPProvider();
       this.rateLimiterObj = RateLimiter.create(5000);
-      if (!(networkIdState == null
-          || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
+      if (!(networkIdState == null || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState={}", networkIdState);
 
         Thread.sleep(3000);
 
@@ -499,10 +520,9 @@ public class MapSimulatorSendPrimitive {
       MAPProvider clientMapProvider = this.mapClient.getMAPProvider();
       // preparing congestion control -- code not changing
       NetworkIdState networkIdState = this.mapClient.getMAPProvider().getNetworkIdState(0);
-      if (!(networkIdState == null
-          || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
+      if (!(networkIdState == null || networkIdState.isAvailable() && networkIdState.getCongLevel() == 0)) {
         // congestion or unavailable
-        logger.warn("Outgoing congestion control: MAP load test client: networkIdState=" + networkIdState);
+        logger.warn("Outgoing congestion control: MAP load test client: networkIdState={}", networkIdState);
         Thread.sleep(3000);
 
       }

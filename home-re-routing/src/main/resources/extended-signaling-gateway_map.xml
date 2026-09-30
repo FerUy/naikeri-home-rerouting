@@ -76,7 +76,7 @@
       </remoteSsns>
       -->
       <!-- Enable the longMessage if it is applicable -->
-      <!-- <longMessageRule name="longMessageRule" id="5" firstSpc="201" lastSpc="202" ruleType="XUDT_ENABLED" /> -->
+      <longMessageRule name="longMessageRule" id="5" firstSpc="1" lastSpc="16385" ruleType="XUDT_ENABLED" />
       <!-- sap === Service Access Point-->
       <sap name="SAPServer" id="1" mtp3Id="1" opc="1000" ni="2" networkId="0" localGtDigits="50373700000">
         <destination name="SAPServer" destid="1" firstDpc="1001" lastDpc="1001" firstSls="0" lastSls="255" slsMask="255" />

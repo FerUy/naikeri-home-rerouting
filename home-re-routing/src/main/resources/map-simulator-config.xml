@@ -19,7 +19,7 @@
       <spc name="1000" remoteSpcId="1" remoteSpc="1000" remoteSpcFlag="0" mask="0" />
       <ssn name="6" remoteSsnid="1" remoteSpc="1000" remoteSsn="6" remoteSsnFlag="0" markProhibitedWhenSpcResuming="false" />
       <!-- Enable the longMessage if it is applicable -->
-      <!-- <longMessageRule name="longMessageRule" id="5" firstSpc="201" lastSpc="202" ruleType="XUDT_ENABLED" /> -->
+      <longMessageRule name="longMessageRule" id="5" firstSpc="1" lastSpc="16384" ruleType="XUDT_ENABLED" />
       <!-- sap === Service Access Point-->
       <sap name="SAPClient" id="1" mtp3Id="1" opc="1001" ni="2" networkId="0" localGtDigits="50373700001">
         <destination name="SAPClient" destid="1" firstDpc="1000" lastDpc="1000" firstSls="0" lastSls="255" slsMask="255" />
