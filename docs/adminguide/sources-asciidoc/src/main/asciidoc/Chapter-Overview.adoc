@@ -1,0 +1,123 @@
+[[_hrr_overview]]
+= Overview
+
+{this-platform} {this-application} (Home Re-Routing) is a MAP and CAP proxy built on the Naikeri
+Signaling Gateway. This chapter describes the platform it runs on; the next chapter describes the
+MAP and CAP use cases it implements.
+
+[[_hrr_overview_sgw]]
+== Signaling Gateway
+
+The Signaling Gateway is a telecommunications platform enabling bi-directional, multi-channel,
+multi-layered concurrent flows of asynchronous messages from different base protocol
+implementations such as SS7 MAP/CAP, Diameter, SIP, SMPP OTA and HTTP. It acts as a gateway for
+tailor-made applications, with a complete set of API interfaces and simple integration with data
+storage engines.
+
+// CHECK: 6,000 TPS here and "up to 300 transactions per second" under Features contradict each other.
+The Signaling Gateway can be configured as a signaling transfer point, a proxy, a gateway, a border
+controller or a routing agent, and deployed as a scale-up or scale-out platform, delivering as much
+as 6,000 TPS per node.
+
+Two main components are used to extend the system:
+
+Application API::
+The main object to be instantiated to create logic within the system. An application inherits the
+`Application` class and is placed as a new class in the `com.naikeri.sgw.impl.app` package.
+
+Channel API::
+A channel inherits the homonymous class and implements the workers mechanism for finite state
+machine processing, as the logic element that extracts messages from an underlying layer.
+
+[[_hrr_overview_features]]
+== Features
+
+The Signaling Gateway provides the following features:
+
+* Asynchronous queue platform for high-availability, stability and fault-tolerance scenarios.
+* High transaction support thanks to the decoupled platform architecture, composed of network
+  layers, channel connectors, queue handling and a multi-threaded application.
+* Support for multiple roll-out architectures:
+** Docker image, enabling containerised and Kubernetes deployments.
+** Standalone server application running on a Java virtual machine.
+** Multi-tenancy and multi-instance support.
+** Any Unix platform supporting the SCTP libraries.
+** Cloud deployments.
+* Monitoring ecosystem and components to check the running parameters and key performance
+  indicators (KPIs), extracted from logs and calculated from the application status, with sanity
+  checks and corrective actions including alarms and notifications to support agents, and actions
+  to be taken automatically where a situation requires it.
+* Call Detail Records, represented as a readable string, radix-64 or abstract representation.
+* SS7-based proxy, in which an STP forwards MAP and CAMEL requests.
+* Command-line interface for operation and maintenance commands.
+// CHECK: confirm the Prometheus/Grafana integration exists in this code base before publishing.
+* Integration with external monitoring systems (Prometheus/Grafana).
+* Multi-threaded processing: worker threads extract requests from the input queue, as enqueued by
+  the channel logic (receiving MAP or CAP requests through the SS7 layer), helped by the
+  configuration and lookup tables.
+* Management of up to 300 transactions per second.
+* Expansion flexibility.
+* A wide range of use cases to match different scenarios.
+
+[[_hrr_overview_protocols]]
+== Protocols supported
+
+// CHECK: {this-application} itself uses only SS7 (MAP and CAP over M3UA/SCTP). Confirm which of the
+// protocols below exist in the Signaling Gateway code base today; SIP, SMPP, HTTP, the MAP firewall
+// and the 3GPP release are the ones to verify before this goes public.
+The Signaling Gateway supports the following protocols and functionalities:
+
+* SS7
+** Congestion control
+** TCP and SCTP transport
+** Multi-homing
+** Load balancing
+** MAP firewall
+** CAP/CAMEL support
+* Diameter
+** 3GPP Release 19
+** RFC 6733 and RFC 4006
+** Stateless and stateful handling
+** Session binding
+** Reference points: SLh/SLg, Sh, S13/S13', S6a/S6d, Rx/Ro/Rf/Gx, Gq, Cx/Dx, S6c/SGd
+** AVP manipulation
+** SCTP and TCP transport
+* HTTP
+** Versions 0.9, 1.0, 1.1 and 2.0
+** Active and passive connection closing
+** Connection manager for port reuse
+* SMPP
+** Versions 3.x, 4.x and 5.0
+** High availability, fault tolerance and load balancing
+** Binary SMS support
+** DLR support
+** Client and server connection authentication
+* SIP
+** TCP and UDP transport
+** High availability, fault tolerance and load balancing
+** Session Border Controller features
+** Several security methods
+** SIP servlets integration for tailored application design
+
+[[_hrr_overview_architecture]]
+== High-level architecture
+
+As a core module, the system command starts the application through its main entry point,
+instantiating the SS7 MAP and CAP channels, which receive the messages and enqueue the requests to
+be processed by the application logic.
+
+The application logic is a multi-threaded component. Each worker thread extracts requests from the
+input queue, as enqueued by the channel logic (which received MAP or CAP requests through the SS7
+layer), and, helped by the configuration and lookup tables, processes and replaces the pertinent
+parameters. It then either replies to the origin (for example, a query for an IMSI) or forwards the
+message to its final core network element through the corresponding channel, replacing the IMSI
+or the SCCP Calling Party Address, or changing the requested primitive where applicable.
+
+.Signaling Gateway high-level architecture
+image::SGW_Arch.jpg[Signaling Gateway high-level architecture]
+
+As the diagram shows, the service-oriented architecture is composed of three decoupled modules:
+the application logic, the channel interworking and message exchange (bus), and the SS7 stack
+layer. A buffering mechanism (queue) manages the workload of each channel separately, and the
+worker threads can be tuned in the configuration, adding or removing threads depending on the load
+to be processed, replied to or forwarded.

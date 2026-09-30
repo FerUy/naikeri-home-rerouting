@@ -1,0 +1,108 @@
+[[_hrr_use_cases]]
+= Use Cases
+
+[[_hrr_use_cases_proxy]]
+== MAP/CAP proxy
+
+{this-application} is an instance of the Signaling Gateway as shown in the architecture diagram,
+built from three decoupled modules of two types (application and channel), with a buffering
+mechanism (queue) between them. Messages are transferred from the channels to the applications and
+back using a protocol-independent data structure.
+
+The platform configuration (layers, channels and applications) is read from
+`naikeri-signaling-gateway.xml`, in the directory named by the `mainConfig.path` system property.
+The MAP and CAP parameter matching and replacement rules are loaded from two further files in the
+same directory, `map-application-rules.xml` and `cap-application-rules.xml`.
+
+[[_hrr_use_cases_map]]
+== MAP integration
+
+The interworking for MAP messages (Send-Authentication-Info, Update-Location,
+Insert-Subscriber-Data, MO-Forward-Short-Message, MT-Forward-Short-Message and
+Provide-Roaming-Number) is based on the TCAP, SCCP and M3UA layers provided by the jSS7 stack.
+
+The MAP channel connects to the jSS7 stack according to the parameters configured in
+`naikeri-signaling-gateway.xml` and defines TCAP as its provider layer. TCAP and the lower layers
+take their configuration from the same file and define their own provider layers in turn. Finally,
+the channel registers the callbacks for the MAP services (Location Registration, Authentication
+Management, Subscriber Management, Call Handling and Short Message Service) to receive the
+incoming messages.
+
+The following call flows illustrate how MAP parameters are identified and replaced:
+
+. MAP messages arriving from the VPLMN VLR are routed through the STP to the MAP proxy.
+. The MAP proxy modifies the MAP message, changing the IMSI according to a lookup table that
+  translates each arriving IMSI (IMSI_a) to a new IMSI (IMSI_b).
+. The MAP proxy sends the MAP message to the HPLMN through the STP.
+. The STP routes the modified MAP message to the HPLMN.
+. The HPLMN network element (for example the HLR or SMSC) responds to the MAP message through the
+  STP.
+. The STP routes the MAP response to the MAP proxy.
+. The MAP proxy modifies the MAP message, changing parameter values (for example the IMSI)
+  according to a lookup table that translates each arriving value B (for example IMSI_b) back to
+  the original value A (for example IMSI_a).
+. The MAP proxy sends the MAP message back to the VPLMN through the STP.
+. The STP routes the MAP response to the VPLMN.
+. The proxy can also modify SCCP fields such as the Called and Calling Party Addresses.
+. The proxy changes the Called and Calling Party Addresses of any MAP message routed to the VPLMN,
+  according to the SCCP translation lookup table.
+
+For dialogues the HPLMN starts, such as MT-Forward-Short-Message and Provide-Roaming-Number, the
+same steps apply in the opposite direction: the request arrives from the HPLMN carrying IMSI_b and
+reaches the VPLMN carrying IMSI_a. Responses carry no IMSI; the proxy matches each response to its
+request by TCAP dialogue.
+
+.VPLMN, proxy and HPLMN attach procedure (simplified)
+image::MAP_SAI_UL-ISD.jpg[MAP attach procedure through the proxy]
+
+The attach flow is simplified: Send-Authentication-Info and Update-Location are separate dialogues,
+and their results and the Insert-Subscriber-Data acknowledgement are not shown.
+
+.VPLMN, proxy and HPLMN mobile-originated SMS
+image::MAP_MO-SMS.jpg[MAP MO-Forward-Short-Message through the proxy]
+
+.HPLMN, proxy and VPLMN mobile-terminated SMS
+image::MAP_MT-SMS.jpg[MAP MT-Forward-Short-Message through the proxy]
+
+NOTE: The MAP simulator shipped with {this-application} exercises this flow: it sends
+MT-Forward-Short-Message to the proxy, which returns it with the IMSI replaced. The simulator
+stands in for both network sides and there is no STP in between.
+
+.HPLMN, proxy and VPLMN Provide-Roaming-Number
+image::MAP_PRN.jpg[MAP Provide-Roaming-Number through the proxy]
+
+[[_hrr_use_cases_cap]]
+== CAP integration
+
+The CAP application acts as a CAMEL gateway between a VPLMN STP and an HPLMN SCP, applying
+substitution rules such as IMSI and Global Title replacement within the SCCP Called and Calling
+Party Addresses.
+
+The CAMEL call flow below shows the dialogues established between the six functions involved:
+
+* Three within the VPLMN STP (two gsmSSF and one gsmSCF).
+* Two within the proxy (one gsmSSF and one gsmSCF).
+* One within the HPLMN SCP (one gsmSCF).
+
+The CAP application can also modify, inject and remove components, such as sending an ETC for a
+CAP CON with a particular MSRN as the called party number, with their respective SCCP Calling and
+Called Party Addresses, all of it transparent to both sides of the call.
+
+[[_hrr_use_cases_hrr]]
+== Home Re-Routing
+
+. #A is the number of the roaming subscriber, #B is the destination number called in the HPLMN,
+  and #C is a temporary number (MSRN) allocated from a numbering pool.
+. All transactions go through the proxy described above.
+. The original call, from #A to #B, starts with an IDP in the VPLMN, which reaches the HPLMN SCP.
+. The HPLMN SCP may respond with CONTINUE or ETC.
+. The proxy SCF keeps the call session with #A and #B, and sends a CONNECT to the VPLMN with #C in
+  the called party number field instead of #B.
+. #C is allocated from a special numbering pool (MSRN).
+. The ISUP or SIP call from #A to #C arrives at the MSC.
+. The MSC triggers the proxy SCF with an IDP.
+. The proxy SCF replaces #C with #B from the original call and sends a CONNECT to the MSC.
+. The MSC continues the call (ISUP or SIP) to #B.
+
+.CAP call flow for Home Re-Routing
+image::CAP_HRR.jpg[CAP Home Re-Routing call flow]

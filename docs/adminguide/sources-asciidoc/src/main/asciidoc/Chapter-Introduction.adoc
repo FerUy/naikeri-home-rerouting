@@ -1,0 +1,15 @@
+[[_introduction_]]
+= Introduction to {this-platform} {this-application}
+
+{this-platform} {this-application} is an Open Source Java based DRA.
+
+{this-platform} {this-application} strictly adheres to the standards and specifications defined by the International Telecommunications Union (ITU), the Internet Engineering Task Force (IETF) and the 3rd Generation Partnership Project / Long Term Evolution (3GPP/LTE) .
+
+{this-platform} {this-application} is easy-to-install and easy-to-deploy allowing you to have the Gateway set up and configured very quickly.
+
+{this-platform} {this-application} comes with an efficient Command Line Interface (CLI) tool allowing you to completely configure the Gateway at run-time and manage it using simple commands rather than do everything manually. {this-platform} {this-application} also comes with a Graphical User Interface (GUI) that will allow you to configure, monitor and manage the Gateway through a convenient user-friendly interface.
+
+This guide provides details on configuring and using the platform and information regarding the supported protocols and compliant standards.
+
+For installation instructions, please refer to the Installation Guide published along with this release.
+ 

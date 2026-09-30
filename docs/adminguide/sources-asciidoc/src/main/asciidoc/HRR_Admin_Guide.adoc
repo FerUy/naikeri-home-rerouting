@@ -1,0 +1,41 @@
+= Admin Guide of {this-platform} {this-application}
+:imagesdir: images
+:doctype: book
+:sectnums:
+:toc: left
+:icons: font
+:experimental:
+:sourcedir: .
+:sectnumlevels: 7
+
+:leveloffset: 1
+
+include::Book_Info.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Common_Content/Preface.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Chapter-Introduction.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Chapter-Overview.adoc[]
+
+include::Chapter-Use_Cases.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Revision_History.adoc[]
+
+:leveloffset: 0

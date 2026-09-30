@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.naikeri.hrr.docs</groupId>
+	<artifactId>naikeri-hrr-docs</artifactId>
+	<version>1.0</version>
+
+	<name>Naikeri HRR :: Docs :: Parent :: ${project.artifactId}</name>
+	<packaging>pom</packaging>
+
+	<properties>
+		<docs.this.platform>Naikeri</docs.this.platform>
+		<docs.this.folder>naikeri</docs.this.folder>
+		<docs.this.application>HRR</docs.this.application>
+		<docs.project.version>${project.version}</docs.project.version>
+		<docs.jee.platform>standalone JVM</docs.jee.platform>
+		<docs.slee.binary.url>${docs.this.release.binary.url}</docs.slee.binary.url>
+		<docs.this.issue.tracker.url>https://github.com/FerUy/naikeri-home-rerouting/issues</docs.this.issue.tracker.url>
+		<docs.this.release.source.code.url>https://github.com/FerUy/naikeri-home-rerouting</docs.this.release.source.code.url>
+		<docs.this.trunk.source.code.url>https://github.com/FerUy/naikeri-home-rerouting/tree/master</docs.this.trunk.source.code.url>
+		<docs.this.release.binary.url>https://github.com/FerUy/naikeri-home-rerouting/releases</docs.this.release.binary.url>
+	</properties>
+
+	<modules>
+		<module>adminguide</module>
+	</modules>
+</project>

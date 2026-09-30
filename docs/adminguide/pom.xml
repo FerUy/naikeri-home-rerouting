@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.naikeri.hrr.docs</groupId>
+		<artifactId>naikeri-hrr-docs</artifactId>
+		<version>1.0</version>
+	</parent>
+
+	<artifactId>naikeri-hrr-adminguide</artifactId>
+	<groupId>com.naikeri.hrr.docs.adminguide</groupId>
+	<name>Naikeri HRR :: Docs :: Admin Guide :: ${project.artifactId}</name>
+	<packaging>pom</packaging>
+
+	<properties>
+		<docs.application.name>HRR</docs.application.name>
+		<docs.application.dirname>hrr</docs.application.dirname>
+		<docs.bookid>HRR</docs.bookid>
+	</properties>
+
+	<!-- -->
+	<modules>
+		<module>sources-asciidoc</module>
+	</modules>
+
+</project>
