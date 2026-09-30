@@ -1,4 +1,5 @@
 import java.io.InputStream;
+
 import com.naikeri.sgw.helpers.SgwResource;
 import com.naikeri.sgw.impl.settings.XmlConfiguration;
 import com.naikeri.sgw.impl.settings.m3ua.M3uaSettings;
@@ -19,41 +20,53 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restcomm.protocols.ss7.map.MAPStackImpl;
 
-
 public class MapSimulator {
 
   private static final Logger logger = LogManager.getLogger(MapSimulator.class);
   String imsiString = "425100402000108";
+  String imsi3String = "011220200198227";
   String sgsn_address = "112233445500";
   String sgsn_number = "112233445501";
   int testNumber = 5;
-  private MapSimulatorSendPrimitive simul;
+  private MapSimulatorSendPrimitive mapSimulatorSendPrimitive;
 
   private void simulate() {
     new Thread() {
       @Override
       public void run() {
-        if (simul == null){
+        if (mapSimulatorSendPrimitive == null) {
           return;
         }
         for (int i = 0; i < testNumber; i++) {
           try {
             Thread.sleep(2000);
-            // test the mt sms
-            simul.sendMtForwardSM(imsiString);
-            // Thread.sleep(1000 + new Random().nextInt(2000));
-            // simul.initiateProvideRoamingNumber("011220200198227");
-            // simul.initiateUpdateGprsLocation(imsiString, sgsn_address, sgsn_number);
-            // Thread.sleep(1000 + new Random().nextInt(5000));
-            // simul.simulateUpdateLocationRequest(imsiString);
-            // Thread.sleep(1000 + new Random().nextInt(4000));
-            // simul.sendAuthenticationInfo(imsiString);
-            // Thread.sleep(1000 + new Random().nextInt(6000));
-            // simul.insertSubscriberDataRequest(imsiString);
+            // Test MAP Send Authentication Info
+            mapSimulatorSendPrimitive.sendAuthenticationInfo(imsiString);
+            Thread.sleep(1000);
+            // Test MAP Update Location (CS domain)
+            mapSimulatorSendPrimitive.simulateUpdateLocationRequest(imsiString);
+            Thread.sleep(1000);
+            // Test MAP Insert Subscriber Data
+            mapSimulatorSendPrimitive.insertSubscriberDataRequest(imsiString, "cs");
+            // Test MAP Send Authentication Info
+            mapSimulatorSendPrimitive.sendAuthenticationInfo(imsiString);
+            Thread.sleep(1000);
+            // Test MAP Update GPRS Location (PS Domain)
+            mapSimulatorSendPrimitive.initiateUpdateGprsLocation(imsiString, sgsn_address, sgsn_number);
+            Thread.sleep(1000);
+            // Test MAP Insert Subscriber Data
+            mapSimulatorSendPrimitive.insertSubscriberDataRequest(imsiString, "ps");
+            // test MO SMS
+            mapSimulatorSendPrimitive.sendMoForwardSm(imsiString);
+            Thread.sleep(1000);
+            // test MT SMS
+            mapSimulatorSendPrimitive.sendMtForwardSM(imsiString);
+            Thread.sleep(1000);
+            // Test MAP Provide Roaming Number
+            mapSimulatorSendPrimitive.initiateProvideRoamingNumber(imsi3String);
 
           } catch (Exception e) {
-            // nothing
-            logger.error(e);
+            logger.error("MAP simulation step failed", e);
           }
         }
       }
@@ -86,19 +99,18 @@ public class MapSimulator {
       TcapSettings tcapSettings = (TcapSettings) configuration.getLayerSettings("tcapclient");
       TcapLayer tcap = new TcapLayer(tcapSettings, sccp);
 
-      logger.info("Initializing CAP layer...");
-      MapSettings capSettings = (MapSettings) configuration.getLayerSettings("mapclient");
-      MapLayer map = new MapLayer(capSettings, tcap);
+      logger.info("Initializing MAP layer...");
+      MapSettings mapSettings = (MapSettings) configuration.getLayerSettings("mapclient");
+      MapLayer map = new MapLayer(mapSettings, tcap);
 
       // start listeners
       MAPStackImpl mapClient = map.getMapStack();
       map.getMapProvider().addMAPDialogListener(new MapPrototypeListener());
-      map.getMapProvider().getMAPServiceMobility()
-          .addMAPServiceListener(new MapPrototypeMobility(mapClient.getMAPProvider().getMAPParameterFactory()));
+      map.getMapProvider().getMAPServiceMobility().addMAPServiceListener(new MapPrototypeMobility(mapClient.getMAPProvider().getMAPParameterFactory()));
       map.getMapProvider().getMAPServiceSms().addMAPServiceListener(new MapProtoTypeSMSListener());
       map.getMapProvider().getMAPServiceMobility().activate();
 
-      simul = new MapSimulatorSendPrimitive(mapClient, sccpClientSettings, sccpServerSettings);
+      mapSimulatorSendPrimitive = new MapSimulatorSendPrimitive(mapClient, sccpClientSettings, sccpServerSettings);
       this.simulate();
     } catch (Exception e) {
       logger.error("Caught exception", e);
