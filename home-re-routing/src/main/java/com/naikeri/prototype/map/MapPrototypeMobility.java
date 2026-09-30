@@ -219,7 +219,7 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
           addCapability, sgsnMmeSeparationSupported, false);
 
       // This will initiate the TC-BEGIN with INVOKE component
-      mapDialogMobility.send();
+      mapDialogMobility.close(false);
 
     } catch (MAPException mapException) {
       logger.error("MAP Exception while processing onUpdateGprsLocationRequest ", mapException);

@@ -71,6 +71,9 @@ public class MapChannel extends ChannelHandler {
         // only send message which are defined in the configurations
         if (this.channelSetting != null && this.channelSetting.isPrimitiveExist(messagetype)) {
           sendMessageRequest(channelMessage);
+        } else {
+          logger.warn("[MAP::DROP<{}>] Not among the channel's configured primitives, so not forwarded: '{}'",
+              messagetype, channelMessage);
         }
       } else {
         MAPDialog mapDialog = (MAPDialog) channelMessage.getParameter("dialog");
