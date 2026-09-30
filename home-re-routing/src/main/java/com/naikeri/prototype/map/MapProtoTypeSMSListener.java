@@ -25,138 +25,118 @@ import org.restcomm.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMReques
 import org.restcomm.protocols.ss7.map.api.service.sms.SendRoutingInfoForSMResponse;
 import org.restcomm.protocols.ss7.tcap.asn.comp.Problem;
 
+/**
+ * Plays the far end of the SMS flows: the SMSC for MO-ForwardSM and the MSC for MT-ForwardSM. Each
+ * request is acknowledged and the dialogue ended, so the proxy's return path is exercised in both
+ * directions. The result's sm-RP-UI is optional and left out: where present it would carry an
+ * SMS-DELIVER-REPORT or SMS-SUBMIT-REPORT, not the TPDU that came in.
+ */
 public class MapProtoTypeSMSListener implements MAPServiceSmsListener {
 
   private static final Logger logger = LogManager.getLogger(MapProtoTypeSMSListener.class);
 
   @Override
-  public void onErrorComponent(MAPDialog mapDialog, Long invokeId,
-                               MAPErrorMessage mapErrorMessage) {
-    //  Auto-generated method stub
-
-  }
-
-  @Override
-  public void onRejectComponent(MAPDialog mapDialog, Long invokeId, Problem problem,
-                                boolean isLocalOriginated) {
-    //  Auto-generated method stub
-
-  }
-
-  @Override
-  public void onInvokeTimeout(MAPDialog mapDialog, Long invokeId) {
-    //  Auto-generated method stub
-
-  }
-
-  @Override
-  public void onMAPMessage(MAPMessage mapMessage) {
-    //  Auto-generated method stub
-
-  }
-
-  @Override
-  public void onForwardShortMessageRequest(ForwardShortMessageRequest forwSmInd) {
-    //  Auto-generated method stub
-
-  }
-
-  @Override
-  public void onForwardShortMessageResponse(ForwardShortMessageResponse forwSmRespInd) {
-    //  Auto-generated method stub
-
-  }
-
-  @Override
-  public void onMoForwardShortMessageRequest(MoForwardShortMessageRequest moForwSmInd) {
-    //  Auto-generated method stub
-
-  }
-
-  @Override
-  public void onMoForwardShortMessageResponse(MoForwardShortMessageResponse moForwSmRespInd) {
-    //  Auto-generated method stub
-
-  }
-
-  @Override
-  public void onMtForwardShortMessageRequest(MtForwardShortMessageRequest mtForwSmInd) {
-    //  Auto-generated method stub
+  public void onMoForwardShortMessageRequest(MoForwardShortMessageRequest request) {
+    MAPDialogSms dialog = request.getMAPDialog();
+    logger.info("MoForwardShortMessageRequest for DialogId={}", dialog.getLocalDialogId());
     try {
-      MAPDialogSms dialogSms = mtForwSmInd.getMAPDialog();
-      dialogSms.addMtForwardShortMessageResponse(mtForwSmInd.getInvokeId(), mtForwSmInd.getSM_RP_UI(), null);
+      dialog.addMoForwardShortMessageResponse(request.getInvokeId(), null, null);
+      dialog.close(false);
     } catch (Exception e) {
-      logger.error("Caught exception", e);
+      logger.error("Unable to answer the MO-Forward-Short-Message request", e);
     }
   }
 
   @Override
-  public void onMtForwardShortMessageResponse(MtForwardShortMessageResponse mtForwSmRespInd) {
-    //  Auto-generated method stub
-
+  public void onMoForwardShortMessageResponse(MoForwardShortMessageResponse response) {
+    logger.info("MoForwardShortMessageResponse for DialogId={}", response.getMAPDialog().getLocalDialogId());
   }
 
   @Override
-  public void onSendRoutingInfoForSMRequest(SendRoutingInfoForSMRequest sendRoutingInfoForSMInd) {
-    //  Auto-generated method stub
-
+  public void onMtForwardShortMessageRequest(MtForwardShortMessageRequest request) {
+    MAPDialogSms dialog = request.getMAPDialog();
+    logger.info("MtForwardShortMessageRequest for DialogId={}", dialog.getLocalDialogId());
+    try {
+      dialog.addMtForwardShortMessageResponse(request.getInvokeId(), null, null);
+      dialog.close(false);
+    } catch (Exception e) {
+      logger.error("Unable to answer the MT-Forward-Short-Message request", e);
+    }
   }
 
   @Override
-  public void onSendRoutingInfoForSMResponse(
-      SendRoutingInfoForSMResponse sendRoutingInfoForSMRespInd) {
-    //  Auto-generated method stub
-
+  public void onMtForwardShortMessageResponse(MtForwardShortMessageResponse response) {
+    logger.info("MtForwardShortMessageResponse for DialogId={}", response.getMAPDialog().getLocalDialogId());
   }
 
   @Override
-  public void onReportSMDeliveryStatusRequest(
-      ReportSMDeliveryStatusRequest reportSMDeliveryStatusInd) {
-    //  Auto-generated method stub
-
+  public void onErrorComponent(MAPDialog mapDialog, Long invokeId, MAPErrorMessage mapErrorMessage) {
+    logger.warn("Error component on DialogId={}, invokeId={}: {}", mapDialog.getLocalDialogId(), invokeId, mapErrorMessage);
   }
 
   @Override
-  public void onReportSMDeliveryStatusResponse(
-      ReportSMDeliveryStatusResponse reportSMDeliveryStatusRespInd) {
-    //  Auto-generated method stub
-
+  public void onRejectComponent(MAPDialog mapDialog, Long invokeId, Problem problem, boolean isLocalOriginated) {
+    logger.warn("Reject component on DialogId={}, invokeId={}, localOriginated={}: {}",
+        mapDialog.getLocalDialogId(), invokeId, isLocalOriginated, problem);
   }
 
   @Override
-  public void onInformServiceCentreRequest(InformServiceCentreRequest informServiceCentreInd) {
-    //  Auto-generated method stub
-
+  public void onInvokeTimeout(MAPDialog mapDialog, Long invokeId) {
+    logger.warn("Invoke timeout on DialogId={}, invokeId={}", mapDialog.getLocalDialogId(), invokeId);
   }
 
   @Override
-  public void onAlertServiceCentreRequest(AlertServiceCentreRequest alertServiceCentreInd) {
-    //  Auto-generated method stub
+  public void onMAPMessage(MAPMessage mapMessage) {
+    logger.debug("MAP message {} on DialogId={}", mapMessage.getMessageType(), mapMessage.getMAPDialog().getLocalDialogId());
+  }
 
+  // Not simulated: none of these is sent by the MAP simulator or forwarded by the proxy.
+
+  @Override
+  public void onForwardShortMessageRequest(ForwardShortMessageRequest request) {
   }
 
   @Override
-  public void onAlertServiceCentreResponse(AlertServiceCentreResponse alertServiceCentreInd) {
-    //  Auto-generated method stub
+  public void onForwardShortMessageResponse(ForwardShortMessageResponse response) {
+  }
 
+  @Override
+  public void onSendRoutingInfoForSMRequest(SendRoutingInfoForSMRequest request) {
+  }
+
+  @Override
+  public void onSendRoutingInfoForSMResponse(SendRoutingInfoForSMResponse response) {
+  }
+
+  @Override
+  public void onReportSMDeliveryStatusRequest(ReportSMDeliveryStatusRequest request) {
+  }
+
+  @Override
+  public void onReportSMDeliveryStatusResponse(ReportSMDeliveryStatusResponse response) {
+  }
+
+  @Override
+  public void onInformServiceCentreRequest(InformServiceCentreRequest request) {
+  }
+
+  @Override
+  public void onAlertServiceCentreRequest(AlertServiceCentreRequest request) {
+  }
+
+  @Override
+  public void onAlertServiceCentreResponse(AlertServiceCentreResponse response) {
   }
 
   @Override
   public void onReadyForSMRequest(ReadyForSMRequest request) {
-    //  Auto-generated method stub
-
   }
 
   @Override
   public void onReadyForSMResponse(ReadyForSMResponse response) {
-    //  Auto-generated method stub
-
   }
 
   @Override
   public void onNoteSubscriberPresentRequest(NoteSubscriberPresentRequest request) {
-    //  Auto-generated method stub
-
   }
-  
 }
