@@ -22,10 +22,6 @@
         <Primitive name="insertSubscriberData" />
         <Primitive name="updateGprsLocation" />
         <Primitive name="provideRoamingNumber" />
-        <!-- jSS7 names the PRN result's message type privideRoamingNumber_Response, and a primitive
-             matches on the name before _Request/_Response: without this entry MapChannel drops every
-             PRN result. Remove it when the constant is renamed in jSS7. -->
-        <Primitive name="privideRoamingNumber" />
         <Primitive name="mtForwardSM" />
         <Primitive name="moForwardSM" />
       </Primitives>

@@ -23,14 +23,13 @@
         <maven-jar-plugin.version>3.5.1</maven-jar-plugin.version>
         <log4j.version>2.26.0</log4j.version>
         <sctp.version>2.1.0-41</sctp.version>
-        <jss7.version>9.0.0-1559</jss7.version>
         <jdiameter.version>2.2.0-1027</jdiameter.version>
         <guava.version>33.4.7-jre</guava.version>
         <commons.version>1.0.0.CR1</commons.version>
         <slf4j.version>2.0.17</slf4j.version>
         <junit.version>4.13.2</junit.version>
         <commons-cli.version>1.11.0</commons-cli.version>
-        <naikeri-signaling-gateway-core.version>2.2.0-110</naikeri-signaling-gateway-core.version>
+        <naikeri-signaling-gateway-core.version>2.2.0-111</naikeri-signaling-gateway-core.version>
     </properties>
 
     <developers>

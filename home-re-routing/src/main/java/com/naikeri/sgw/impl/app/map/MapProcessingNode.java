@@ -597,7 +597,7 @@ public class MapProcessingNode {
         return MapProxyMoMtForwardSM.getMtForwardSMResponse(this.message, this.transactionId);
       case moForwardSM_Response:
         return MapProxyMoMtForwardSM.getMOForwardSMResponse(this.message, this.transactionId);
-      case privideRoamingNumber_Response:
+      case provideRoamingNumber_Response:
         return MapProxyProvideRoamingNumber.getResponse(this.message, this.transactionId);
       case checkIMEI_Response:
         return MapProxyCheckIMEI.getResponse(this.message, this.transactionId);
