@@ -5,17 +5,23 @@
   Converted from the log4j 1.x log4j.xml: same appenders, patterns, levels and rotation.
 -->
 <Configuration status="warn">
+    <!-- bin/start.sh sets hrr.log.dir to the installation's logs/; started any other way, the files go to
+         ./logs under the working directory, as before. -->
+    <Properties>
+        <Property name="logDir">${sys:hrr.log.dir:-./logs}</Property>
+    </Properties>
     <Appenders>
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout charset="UTF-8" noConsoleNoAnsi="true"
                            pattern="%d{yyyy-MM-dd HH:mm:ss} %-5level %c{1}:%L - %msg%n"/>
         </Console>
 
-        <!-- TRACE..INFO only: errors go to errorfile.log instead -->
-        <RollingFile name="debugfiles" fileName="./logs/debugfile.log"
-                     filePattern="./logs/debugfile.log.%i">
+        <!-- INFO down to TRACE: errors go to errorfile.log instead. Log4j 2 takes minLevel as the most
+             severe level of the range, the reverse of log4j 1.x LevelMin. -->
+        <RollingFile name="debugfiles" fileName="${logDir}/debugfile.log"
+                     filePattern="${logDir}/debugfile.log.%i">
             <PatternLayout charset="UTF-8" pattern="%d{yyyy-MM-dd HH:mm:ss} %-5level %c{1}:%L - %msg%n"/>
-            <LevelRangeFilter minLevel="TRACE" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <LevelRangeFilter minLevel="INFO" maxLevel="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
@@ -23,20 +29,20 @@
         </RollingFile>
 
         <!-- CDRs: the message only, no timestamp or level -->
-        <RollingFile name="cdrlogger" fileName="./logs/cdrlogger.log"
-                     filePattern="./logs/cdrlogger.log.%i">
+        <RollingFile name="cdrlogger" fileName="${logDir}/cdrlogger.log"
+                     filePattern="${logDir}/cdrlogger.log.%i">
             <PatternLayout charset="UTF-8" pattern="%msg%n"/>
-            <LevelRangeFilter minLevel="TRACE" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <LevelRangeFilter minLevel="INFO" maxLevel="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
             <DefaultRolloverStrategy max="5" fileIndex="min"/>
         </RollingFile>
 
-        <RollingFile name="capCdrLogger" fileName="./logs/cap_cdrlogger.log"
-                     filePattern="./logs/cap_cdrlogger.log.%i">
+        <RollingFile name="capCdrLogger" fileName="${logDir}/cap_cdrlogger.log"
+                     filePattern="${logDir}/cap_cdrlogger.log.%i">
             <PatternLayout charset="UTF-8" pattern="%msg%n"/>
-            <LevelRangeFilter minLevel="TRACE" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <LevelRangeFilter minLevel="INFO" maxLevel="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
@@ -44,9 +50,9 @@
         </RollingFile>
 
         <!-- ERROR and above. The log4j 1.x appender had no size policy, so this one does not roll either. -->
-        <File name="errorfiles" fileName="./logs/errorfile.log">
+        <File name="errorfiles" fileName="${logDir}/errorfile.log">
             <PatternLayout charset="UTF-8" pattern="%d{yyyy-MM-dd HH:mm:ss} %-5level %c{1}:%L - %msg%n"/>
-            <LevelRangeFilter minLevel="ERROR" maxLevel="FATAL" onMatch="ACCEPT" onMismatch="DENY"/>
+            <LevelRangeFilter minLevel="FATAL" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
         </File>
     </Appenders>
 
@@ -69,7 +75,8 @@
             <AppenderRef ref="capCdrLogger"/>
         </Logger>
 
-        <Root level="all">
+        <!-- INFO for a deployment; set to debug or all when investigating -->
+        <Root level="info">
             <AppenderRef ref="console"/>
             <AppenderRef ref="debugfiles"/>
             <AppenderRef ref="errorfiles"/>
