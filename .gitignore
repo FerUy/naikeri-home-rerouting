@@ -125,3 +125,4 @@ xml-apis/
 /.idea/
 release/target/
 release/Naikeri-HRR-*.zip
+release/docker/Naikeri-HRR-*
