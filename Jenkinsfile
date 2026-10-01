@@ -28,13 +28,22 @@ pipeline {
             }
         }
 
+        stage('Release') {
+            steps {
+                withAnt(installation: 'Ant_1.10.15') {
+                    dir('release') {
+                        sh "ant -f build.xml -Dskip.maven.build=true -Dnaikeri.hrr.release.version=${params.HRR_MAJOR_VERSION}-${BUILD_NUMBER}"
+                    }
+                }
+            }
+        }
+
         // HRR is an application, not a library: nothing depends on it, so it is not deployed to
-        // Artifactory. The jar needs its dependencies beside it and its configuration files in the
-        // directory named by -DmainConfig.path, so all three are archived with the build.
+        // Artifactory. The release zip carries the jar, its dependencies, the configuration and the
+        // admin guide, with bin/start.sh to run it.
         stage('Save Artifacts') {
             steps {
-                archiveArtifacts artifacts: "home-re-routing/target/home-re-routing-${params.HRR_MAJOR_VERSION}-${BUILD_NUMBER}.jar, home-re-routing/target/lib/*.jar, home-re-routing/src/main/resources/*.xml",
-                                 followSymlinks: false, onlyIfSuccessful: true
+                archiveArtifacts artifacts: "release/Naikeri-HRR-${params.HRR_MAJOR_VERSION}-${BUILD_NUMBER}.zip", followSymlinks: false, onlyIfSuccessful: true
             }
         }
     }
@@ -42,5 +51,6 @@ pipeline {
     post {
         success { echo "Successfully built naikeri-home-rerouting ${params.HRR_MAJOR_VERSION}-${BUILD_NUMBER}" }
         failure { echo "Building naikeri-home-rerouting failed." }
+        always  { sh 'rm -rf release/target release/Naikeri-HRR-*.zip' }
     }
 }

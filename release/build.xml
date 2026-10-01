@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<project name="naikeri.hrr.release" default="release" basedir=".">
+    <property name="release.dir" location="${ant.file.naikeri.hrr.release}/../target" />
+    <property name="base.dir" location="${ant.file.naikeri.hrr.release}/.." />
+    <property name="checkout.dir" location="${base.dir}/.." />
+    <property name="hrr.module.dir" location="${checkout.dir}/home-re-routing" />
+    <property name="hrr.docs.dir" location="${checkout.dir}/docs/adminguide/sources-asciidoc/target/generated-docs/html-website" />
+
+    <!-- Jenkins passes -Dnaikeri.hrr.release.version; for a local build this must match the project version in pom.xml,
+         because start.sh gets it substituted into the jar name. -->
+    <property name="naikeri.hrr.release.version" value="2.2.0" />
+
+    <!-- The Signaling Gateway version, and through it jSS7 and SCTP, is set in the Maven POM, not here. -->
+    <property name="release.build.goals" value="clean install -Dmaven.test.skip=true" />
+
+    <target name="release" depends="clean,build-hrr,build-docs,collect-hrr,make-final-zip" />
+
+    <target name="clean">
+        <echo>Delete ${release.dir}</echo>
+        <delete dir="${release.dir}"/>
+        <delete>
+            <fileset dir="${base.dir}">
+                <include name="Naikeri-HRR-*.zip" />
+            </fileset>
+        </delete>
+    </target>
+
+    <!-- Skipped with -Dskip.maven.build=true when the Maven build already ran, as in Jenkins -->
+    <target name="build-hrr" unless="skip.maven.build">
+        <echo>Building HRR in ${checkout.dir} with ${release.build.goals}</echo>
+        <exec failonerror="true" executable="mvn" dir="${checkout.dir}">
+            <arg line="${release.build.goals}" />
+        </exec>
+    </target>
+
+    <!-- The admin guide is a separate Maven build; skipped with -Dskip.docs.build=true -->
+    <target name="build-docs" unless="skip.docs.build">
+        <echo>Building the admin guide</echo>
+        <exec failonerror="true" executable="mvn" dir="${checkout.dir}">
+            <arg line="-q -f docs/pom.xml clean install" />
+        </exec>
+    </target>
+
+    <target name="collect-hrr">
+        <copy overwrite="true" todir="${release.dir}/bin/lib">
+            <fileset dir="${hrr.module.dir}/target/lib" />
+        </copy>
+
+        <copy overwrite="true" todir="${release.dir}/bin">
+            <fileset dir="${hrr.module.dir}/target" includes="home-re-routing-${naikeri.hrr.release.version}.jar" />
+        </copy>
+
+        <!-- The proxy's configurations, rules and logging. The simulators' configurations stay out:
+             they belong to the test rig, not to a deployment. -->
+        <copy failonerror="true" todir="${release.dir}/conf">
+            <fileset dir="${hrr.module.dir}/src/main/resources">
+                <include name="extended-signaling-gateway.xml" />
+                <include name="extended-signaling-gateway_map.xml" />
+                <include name="cap-application-rules.xml" />
+                <include name="map-application-rules.xml" />
+                <include name="log4j2.xml" />
+            </fileset>
+        </copy>
+
+        <copy failonerror="true" todir="${release.dir}/docs/adminguide">
+            <fileset dir="${hrr.docs.dir}" />
+        </copy>
+
+        <copy failonerror="true" todir="${release.dir}/bin">
+            <fileset file="${base.dir}/utils/start/**"/>
+        </copy>
+        <replace file="${release.dir}/bin/start.sh" token="VERSION" value="${naikeri.hrr.release.version}"/>
+
+        <mkdir dir="${release.dir}/logs" />
+    </target>
+
+    <target name="make-final-zip">
+        <zip destfile="${base.dir}/Naikeri-HRR-${naikeri.hrr.release.version}.zip" filesonly="false">
+            <zipfileset dir="${release.dir}" prefix="Naikeri-HRR-${naikeri.hrr.release.version}" filemode="644">
+                <include name="**" />
+                <exclude name="bin/*.sh" />
+            </zipfileset>
+            <zipfileset dir="${release.dir}" prefix="Naikeri-HRR-${naikeri.hrr.release.version}" filemode="755">
+                <include name="bin/*.sh" />
+            </zipfileset>
+        </zip>
+    </target>
+</project>
