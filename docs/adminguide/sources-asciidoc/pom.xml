@@ -13,10 +13,10 @@
 	<name>Naikeri HRR :: Docs :: Admin Guide :: Sources Asciidoc :: ${project.artifactId}</name>
 
 	<properties>
-		<asciidoctor.maven.plugin.version>1.5.3</asciidoctor.maven.plugin.version>
-		<asciidoctorj.pdf.version>1.5.0-alpha.11</asciidoctorj.pdf.version>
-		<asciidoctorj.version>1.5.4</asciidoctorj.version>
-		<jruby.version>1.7.21</jruby.version>
+		<asciidoctor.maven.plugin.version>2.1.0</asciidoctor.maven.plugin.version>
+		<asciidoctorj.pdf.version>1.5.4</asciidoctorj.pdf.version>
+		<asciidoctorj.version>2.4.3</asciidoctorj.version>
+		<jruby.version>9.2.17.0</jruby.version>
 	</properties>
 
 	<build>
@@ -214,10 +214,10 @@
 									<outputDirectory>${project.build.directory}/generated-docs/pdf</outputDirectory>
 									<!-- Since 1.5.0-alpha.9 PDF back-end can use 'rouge' as well as 
 										'coderay' source highlighting -->
-									<sourceHighlighter>rouge</sourceHighlighter>
 									<attributes>
 										<imagesdir>./images/..</imagesdir>
 										<icons>font</icons>
+										<source-highlighter>rouge</source-highlighter>
 										<pagenums />
 										<toc />
 										<idprefix />

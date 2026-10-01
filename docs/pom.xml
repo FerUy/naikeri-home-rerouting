@@ -10,6 +10,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<docs.this.platform>Naikeri</docs.this.platform>
 		<docs.this.folder>naikeri</docs.this.folder>
 		<docs.this.application>HRR</docs.this.application>

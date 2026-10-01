@@ -98,7 +98,6 @@ cap*_management.xml
 deletexml.sh
 notes.txt
 debuglog*.txt
-license/
 
 ##############################
 ## Generated directories

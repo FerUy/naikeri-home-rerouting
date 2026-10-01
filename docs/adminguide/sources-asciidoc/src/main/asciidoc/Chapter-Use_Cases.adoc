@@ -53,24 +53,25 @@ reaches the VPLMN carrying IMSI_a. Responses carry no IMSI; the proxy matches ea
 request by TCAP dialogue.
 
 .VPLMN, proxy and HPLMN attach procedure (simplified)
-image::MAP_SAI_UL-ISD.jpg[MAP attach procedure through the proxy]
+image::images/MAP_SAI_UL-ISD.jpg[MAP attach procedure through the proxy]
 
 The attach flow is simplified: Send-Authentication-Info and Update-Location are separate dialogues,
 and their results and the Insert-Subscriber-Data acknowledgement are not shown.
 
 .VPLMN, proxy and HPLMN mobile-originated SMS
-image::MAP_MO-SMS.jpg[MAP MO-Forward-Short-Message through the proxy]
+image::images/MAP_MO-SMS.jpg[MAP MO-Forward-Short-Message through the proxy]
 
 .HPLMN, proxy and VPLMN mobile-terminated SMS
-image::MAP_MT-SMS.jpg[MAP MT-Forward-Short-Message through the proxy]
+image::images/MAP_MT-SMS.jpg[MAP MT-Forward-Short-Message through the proxy]
 
 NOTE: The MAP simulator shipped with {this-application} exercises this flow: it sends
 MT-Forward-Short-Message to the proxy, which returns it with the IMSI replaced. The simulator
 stands in for both network sides and there is no STP in between.
 
 .HPLMN, proxy and VPLMN Provide-Roaming-Number
-image::MAP_PRN.jpg[MAP Provide-Roaming-Number through the proxy]
+image::images/MAP_PRN.jpg[MAP Provide-Roaming-Number through the proxy]
 
+<<<
 [[_hrr_use_cases_cap]]
 == CAP integration
 
@@ -105,4 +106,4 @@ Called Party Addresses, all of it transparent to both sides of the call.
 . The MSC continues the call (ISUP or SIP) to #B.
 
 .CAP call flow for Home Re-Routing
-image::CAP_HRR.jpg[CAP Home Re-Routing call flow]
+image::images/CAP_HRR.jpg[CAP Home Re-Routing call flow]

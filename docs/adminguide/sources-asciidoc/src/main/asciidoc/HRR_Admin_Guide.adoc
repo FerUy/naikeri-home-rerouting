@@ -1,5 +1,4 @@
 = Admin Guide of {this-platform} {this-application}
-:imagesdir: images
 :doctype: book
 :sectnums:
 :toc: left

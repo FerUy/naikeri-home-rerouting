@@ -91,7 +91,7 @@ message to its final core network element through the corresponding channel, rep
 or the SCCP Calling Party Address, or changing the requested primitive where applicable.
 
 .Signaling Gateway high-level architecture
-image::SGW_Arch.jpg[Signaling Gateway high-level architecture]
+image::images/SGW_Arch.jpg[Signaling Gateway high-level architecture]
 
 As the diagram shows, the service-oriented architecture is composed of three decoupled modules:
 the application logic, the channel interworking and message exchange (bus), and the SS7 stack
