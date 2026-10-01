@@ -97,3 +97,7 @@ the IDE with `-DmainConfig.path` pointing at `home-re-routing/src/main/resources
 
 jSS7 keeps M3UA, SCCP, SCTP and TCAP state in XML files in the working directory; remove them between runs
 that change the configuration.
+
+## License
+
+Licensed under the GNU Affero General Public License v3.0; see [LICENSE](LICENSE).
