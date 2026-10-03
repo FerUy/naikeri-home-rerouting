@@ -23,12 +23,14 @@
       <CldGt value="97254160149" pattern="^\d{11}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
+
   <Rule name="4-moForwardSM_Response" regex="true">
     <Match ClgGt="^97254160149\d*" CldGt="\d+" primitives="moForwardSM_Response" />
     <Replace>
       <ClgGt value="97254160048" pattern="^\d{11}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
+
   <Rule name="5-updateLocation request" regex="true">
     <Match ClgGt="\d+" CldGt="^9725404\d+" Imsi="^4251004\d+" primitives="updateLocation_Request" />
     <Replace>
@@ -36,18 +38,21 @@
       <CldGt value="9725407" pattern="^\d{7}" translationType="0" encodingScheme="1" numberingPlan="7" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
+
   <Rule name="6-updateLocation Response" regex="true">
     <Match ClgGt="\d+" CldGt="^383\d+" Imsi="^4251004\d+" primitives="updateLocation_Response" />
     <Replace>
       <CldGt value="972" pattern="^\d{3}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
+
   <Rule name="7-InsertSubscriberDataRequest" regex="false">
     <Match CldGt="383" primitives="insertSubscriberData_Request" />
     <Replace>
       <ClgGt value="97254160047" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
+
   <Rule name="8-mtForwardSM_Request" regex="true">
     <Match ClgGt="\d+" CldGt="^383\d+" Imsi="^4251007\d+" primitives="mtForwardSM_Request" />
     <Replace>
@@ -55,12 +60,14 @@
       <ClgGt value="97254160048" pattern="^\d{11}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
+
   <Rule name="9-mtForwardSM_Response" regex="false">
     <Match CldGt="97254160048" Imsi="4251007" primitives="mtForwardSM_Response" />
     <Replace>
       <Imsi value="4251007" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
+
   <Rule name="10-provideRoamingNumber_Request" regex="true">
     <Match ClgGt="\d+" Imsi="^4251007\d+" primitives="provideRoamingNumber_Request" />
     <Replace>
@@ -68,12 +75,14 @@
       <ClgGt value="97254160047" pattern="^\d{11}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
+
   <Rule name="12-InsertSubscriberDataResponse" regex="true">
     <Match ClgGt="^383\d+" CldGt="\d+" Imsi="\d+" primitives="insertSubscriberData_Response" />
     <Replace>
       <ClgGt value="97254160047" pattern="^\d{11}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
+
   <Rule name="13-updateGprsLocation_Request" regex="true">
     <Match ClgGt="\d+" CldGt="^9725404\d+" Imsi="^4251004\d+" primitives="updateGprsLocation_Request" />
     <Replace>
