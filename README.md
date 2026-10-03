@@ -52,8 +52,8 @@ Jenkins builds the same zip for every commit on master, as `Naikeri-HRR-<version
 Unpack the release anywhere and start it with the configuration to run:
 
 ~~~
-bin/start.sh extended-signaling-gateway.xml        # the CAP proxy
-bin/start.sh extended-signaling-gateway_map.xml    # the MAP proxy
+bin/start.sh cap-proxy.xml    # the CAP proxy
+bin/start.sh map-proxy.xml    # the MAP proxy
 ~~~
 
 With no argument, or one that isn't in `conf/`, `start.sh` lists the configurations available. It reads
@@ -77,7 +77,7 @@ if none is given):
 ~~~
 docker run -d --network host --name hrr \
   -v /var/log/naikeri-hrr:/opt/naikeri/hrr/logs \
-  naikeri-hrr:<version> extended-signaling-gateway_map.xml
+  naikeri-hrr:<version> map-proxy.xml
 ~~~
 
 The host needs SCTP support. To run with a deployment's own configuration, mount it over
@@ -92,8 +92,8 @@ the IDE with `-DmainConfig.path` pointing at `home-re-routing/src/main/resources
 
 | Proxy | HRR's argument | Simulator |
 |---|---|---|
-| MAP | `extended-signaling-gateway_map.xml` | `MapSimulator` (`map-simulator-config.xml`) |
-| CAP | `extended-signaling-gateway.xml` | `CapSimulator` (`cap-simulator-config.xml`) |
+| MAP | `map-proxy.xml` | `MapSimulator` (`map-simulator-config.xml`) |
+| CAP | `cap-proxy.xml` | `CapSimulator` (`cap-simulator-config.xml`) |
 
 jSS7 keeps M3UA, SCCP, SCTP and TCAP state in XML files in the working directory; remove them between runs
 that change the configuration.

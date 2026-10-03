@@ -6,7 +6,7 @@
     <sctp name="sctpclient" singleThread="true" connectDelay="1000" enable="false">
       <association name="assoc_0" host="127.0.0.1:8011" peer="127.0.0.1:8022" transport="SCTP" />
     </sctp>
-    <m3ua name="m3uaclient" heartbeatTime="10000" sctp="sctpclient" productName="Naikeri_SGW" enable="false">
+    <m3ua name="m3uaclient" heartbeatTime="10000" sctp="sctpclient" productName="NAIKERI_MAP_SIM" enable="false">
       <!-- as === Application Server -->
       <as name="AS2" functionality="AS" exchangetype="SE" ipsptype="CLIENT" routingcontext="100" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="0">
         <!-- asp === Application Server Process-->

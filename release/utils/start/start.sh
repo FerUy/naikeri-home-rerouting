@@ -1,14 +1,14 @@
 #!/bin/bash
 # Starts Naikeri HRR with one of the configurations in ../conf, named by the first argument:
-#   bin/start.sh extended-signaling-gateway.xml       the CAP proxy
-#   bin/start.sh extended-signaling-gateway_map.xml   the MAP proxy
+#   bin/start.sh cap-proxy.xml   the CAP proxy
+#   bin/start.sh map-proxy.xml   the MAP proxy
 # JAVA_OPTS, if set, replaces the default heap settings.
 cd "$(dirname "$0")" || exit 1
 
 if [ $# -lt 1 ]; then
   echo "Usage: $0 <configuration file in conf/>" >&2
   echo "Configurations available:" >&2
-  ls ../conf | grep -E '^extended-signaling-gateway.*\.xml$' | sed 's/^/  /' >&2
+  ls ../conf | grep -E -- '-proxy\.xml$' | sed 's/^/  /' >&2
   exit 1
 fi
 CONFIG="$1"

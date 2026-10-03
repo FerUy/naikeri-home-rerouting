@@ -19,6 +19,6 @@ VOLUME ["/opt/naikeri/hrr/logs"]
 ENV JAVA_OPTS=""
 
 # The argument names the configuration in conf/: the CAP proxy unless another is given, e.g.
-#   docker run --network host naikeri-hrr:<version> extended-signaling-gateway_map.xml
+#   docker run --network host naikeri-hrr:<version> map-proxy.xml
 ENTRYPOINT ["/opt/naikeri/hrr/bin/start.sh"]
-CMD ["extended-signaling-gateway.xml"]
+CMD ["cap-proxy.xml"]

@@ -28,28 +28,28 @@
 
     <!-- M3UA -->
     <!-- CAP Proxy SCF -> STP SSF (VPLMN/MSC) -->
-    <m3ua name="m3ua0" heartbeatTime="10000" sctp="sctp0" productName="ESG0" enable="true">
+    <m3ua name="m3ua0" heartbeatTime="10000" sctp="sctp0" productName="NAIKERI_CAP_SIM0" enable="true">
       <as name="AS0" functionality="IPSP" exchangetype="SE" ipsptype="SERVER" routingcontext="101" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="102">
         <route destinationPointCode="947" originatingPointCode="82" serviceIndicator="3" />
         <asp name="ASP0" sctpAssociationName="assoc_proxyscf_vplmnssf" heartbeatenabled="true" />
       </as>
     </m3ua>
     <!-- STP SCF -> CAP Proxy SSF -->
-    <m3ua name="m3ua1" heartbeatTime="10000" sctp="sctp1" productName="ESG1" enable="true">
+    <m3ua name="m3ua1" heartbeatTime="10000" sctp="sctp1" productName="NAIKERI_CAP_SIM1" enable="true">
       <as name="AS1" functionality="IPSP" exchangetype="SE" ipsptype="SERVER" routingcontext="101" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="102">
         <route destinationPointCode="948" originatingPointCode="1050" serviceIndicator="3" />
         <asp name="ASP1" sctpAssociationName="assoc_proxyssf_vplmnscf" heartbeatenabled="true" />
       </as>
     </m3ua>
     <!-- STP SSF -> HPLMN SCP SCF -->
-    <m3ua name="m3ua2" heartbeatTime="10000" sctp="sctp2" productName="ESG2" enable="true">
+    <m3ua name="m3ua2" heartbeatTime="10000" sctp="sctp2" productName="NAIKERI_CAP_SIM2" enable="true">
       <as name="AS2" functionality="IPSP" exchangetype="SE" ipsptype="SERVER" routingcontext="101" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="102">
         <route destinationPointCode="941" originatingPointCode="1051" serviceIndicator="3" />
         <asp name="ASP2" sctpAssociationName="assoc_vplmn_hplmn" heartbeatenabled="true" />
       </as>
     </m3ua>
     <!-- HPLMN SCP SCF -> STP SSF -->
-    <m3ua name="m3ua3" heartbeatTime="10000" sctp="sctp3" productName="ESG3" enable="true">
+    <m3ua name="m3ua3" heartbeatTime="10000" sctp="sctp3" productName="NAIKERI_CAP_SIM3" enable="true">
       <as name="AS3" functionality="IPSP" exchangetype="SE" ipsptype="CLIENT" routingcontext="101" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="102">
         <route destinationPointCode="1051" originatingPointCode="941" serviceIndicator="3" />
         <asp name="ASP3" sctpAssociationName="assoc_vplmn_hplmn" heartbeatenabled="true" />

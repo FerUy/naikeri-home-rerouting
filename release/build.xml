@@ -54,8 +54,8 @@
              they belong to the test rig, not to a deployment. -->
         <copy failonerror="true" todir="${release.dir}/conf">
             <fileset dir="${hrr.module.dir}/src/main/resources">
-                <include name="extended-signaling-gateway.xml" />
-                <include name="extended-signaling-gateway_map.xml" />
+                <include name="cap-proxy.xml" />
+                <include name="map-proxy.xml" />
                 <include name="cap-application-rules.xml" />
                 <include name="map-application-rules.xml" />
                 <include name="log4j2.xml" />

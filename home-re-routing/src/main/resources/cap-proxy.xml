@@ -49,7 +49,7 @@
       </server-->
       <!-- <association name="assoc_NSN" host="172.17.0.2:3905" peer="172.21.219.3:3906" transport="SCTP" multihome="127.0.0.10,127.0.0.11" /> -->
     <!--/sctp>
-    <m3ua name="m3uaserver" heartbeatTime="10000" sctp="sctpserver" productName="NAIKERI_SGW" enable="false"-->
+    <m3ua name="m3uaserver" heartbeatTime="10000" sctp="sctpserver" productName="NAIKERI_HRR" enable="false"-->
       <!-- as === Application Server -->
       <!--as name="AS1" functionality="SGW" exchangetype="SE" ipsptype="SERVER" routingcontext="100" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="0" -->
         <!-- asp === Application Server Process-->
@@ -108,14 +108,14 @@
     </sctp>
     <!-- M3UA -->
     <!--  CAP Proxy SCF -> STP SSF -->
-    <m3ua name="m3uaLayer0" heartbeatTime="10000" sctp="sctpLayer0" productName="ESG" enable="true">
+    <m3ua name="m3uaLayer0" heartbeatTime="10000" sctp="sctpLayer0" productName="NAIKERI_HRR" enable="true">
       <as name="AS0" functionality="IPSP" exchangetype="SE" ipsptype="CLIENT" routingcontext="101" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="102">
         <route destinationPointCode="82" originatingPointCode="947" serviceIndicator="3" />
         <asp name="ASP0" sctpAssociationName="assoc_proxyscf_vplmnssf" heartbeatenabled="true" />
       </as>
     </m3ua>
     <!-- STP SSF -> CAP Proxy SSF -->
-    <m3ua name="m3uaLayer1" heartbeatTime="10000" sctp="sctpLayer1" productName="ESG" enable="true">
+    <m3ua name="m3uaLayer1" heartbeatTime="10000" sctp="sctpLayer1" productName="NAIKERI_HRR" enable="true">
       <as name="AS1" functionality="IPSP" exchangetype="SE" ipsptype="CLIENT" routingcontext="101" trafficmode="LOADSHARE" minaspforloadbalance="0" networkappearance="102">
         <route destinationPointCode="1050" originatingPointCode="948" serviceIndicator="3" />
         <asp name="ASP1" sctpAssociationName="assoc_proxyssf_vplmnscf" heartbeatenabled="true" />
