@@ -65,6 +65,8 @@ public class CapProxyContinueRequest {
 
       CapDialogOut capDialogOut =
           new CapDialogOut(CapDialogType.CircuitSwitchedCallControl, channelTransId);
+      // ties this operation to its call's CDR, as every other operation's handler does
+      capDialogOut.setTransDialogId(dialogId);
       CapApplicationRulesResult result = ApplyCapApplicationRules.apply(callingSccpAddress,
           calledSccpAddress, imsi, request.getMessageType().toString(), this.channelTransId);
       if (result == null) {
