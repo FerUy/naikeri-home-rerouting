@@ -2,7 +2,7 @@
 <Rules>
   <!-- Testing PC error-->
   <Rule name="1-SendAuthenticationInfo request" regex="true">
-    <Match ClgGt="\d+" CldGT="^9725404\d+" Imsi="^4251004\d+" primitives="sendAuthenticationInfo_Request" />
+    <Match ClgGt="\d+" CldGt="^9725404\d+" Imsi="^4251004\d+" primitives="sendAuthenticationInfo_Request" />
     <Replace>
       <Imsi value="4251004" pattern="^\d{7}" />
       <CldGt value="9725407" pattern="^\d{7}" translationType="0" encodingScheme="1" numberingPlan="7" natureOfAddress="INTERNATIONAL" ssn="0" dpc="0" ri="ROUTING_BASED_ON_GLOBAL_TITLE" />
@@ -10,60 +10,53 @@
   </Rule>
 
   <Rule name="2-SendAuthenticationInfo Response" regex="true">
-    <Match ClgGt="\d+" CldGT="^383\d+" Imsi="^4251004\d+" primitives="sendAuthenticationInfo_Response" />
+    <Match ClgGt="\d+" CldGt="^383\d+" Imsi="^4251004\d+" primitives="sendAuthenticationInfo_Response" />
     <Replace>
       <CldGt value="972" pattern="^\d{3}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
 
   <Rule name="3-moForwardSM_Request" regex="true">
-    <Match ClgGt="\d+" CldGT="^97254160048\d+" Imsi="^4251004\d+" primitives="moForwardSM_Request" />
-    <Replace>
-      <Imsi value="4251007" pattern="^\d{7}" />
-      <CldGt value="97254160149" pattern="^\d{11}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-    </Replace>
-  </Rule>
-  <Rule name="0-mtForwardSM_Request" regex="true">
-    <Match ClgGt="\d+" CldGT="\d+" Imsi="^4251004\d+" primitives="mtForwardSM_Request" />
+    <Match ClgGt="\d+" CldGt="^97254160048\d*" Imsi="^4251004\d+" primitives="moForwardSM_Request" />
     <Replace>
       <Imsi value="4251007" pattern="^\d{7}" />
       <CldGt value="97254160149" pattern="^\d{11}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
   <Rule name="4-moForwardSM_Response" regex="true">
-    <Match ClgGT="^97254160145\d+" CldGt="\d+" primitives="moForwardSM_Response" />
+    <Match ClgGt="^97254160149\d*" CldGt="\d+" primitives="moForwardSM_Response" />
     <Replace>
       <ClgGt value="97254160048" pattern="^\d{11}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
   <Rule name="5-updateLocation request" regex="true">
-    <Match ClgGt="\d+" CldGT="^9725404\d+" Imsi="^4251004\d+" primitives="updateLocation_Request" />
+    <Match ClgGt="\d+" CldGt="^9725404\d+" Imsi="^4251004\d+" primitives="updateLocation_Request" />
     <Replace>
       <Imsi value="4251004" pattern="^\d{7}" />
       <CldGt value="9725407" pattern="^\d{7}" translationType="0" encodingScheme="1" numberingPlan="7" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
   <Rule name="6-updateLocation Response" regex="true">
-    <Match ClgGt="\d+" CldGT="^383\d+" Imsi="^4251004\d+" primitives="updateLocation_Response" />
+    <Match ClgGt="\d+" CldGt="^383\d+" Imsi="^4251004\d+" primitives="updateLocation_Response" />
     <Replace>
       <CldGt value="972" pattern="^\d{3}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
   <Rule name="7-InsertSubscriberDataRequest" regex="false">
-    <Match CldGT="383" primitives="insertSubscriberData_Request" />
+    <Match CldGt="383" primitives="insertSubscriberData_Request" />
     <Replace>
       <ClgGt value="97254160047" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
   <Rule name="8-mtForwardSM_Request" regex="true">
-    <Match ClgGt="\d+" CldGT="^383\d+" Imsi="^4251007\d+" primitives="mtForwardSM_Request" />
+    <Match ClgGt="\d+" CldGt="^383\d+" Imsi="^4251007\d+" primitives="mtForwardSM_Request" />
     <Replace>
       <Imsi value="4251007" pattern="^\d{7}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
       <ClgGt value="97254160048" pattern="^\d{11}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
   <Rule name="9-mtForwardSM_Response" regex="false">
-    <Match CldGT="97254160048" Imsi="4251007" primitives="mtForwardSM_Response" />
+    <Match CldGt="97254160048" Imsi="4251007" primitives="mtForwardSM_Response" />
     <Replace>
       <Imsi value="4251007" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
@@ -76,197 +69,17 @@
     </Replace>
   </Rule>
   <Rule name="12-InsertSubscriberDataResponse" regex="true">
-    <Match ClgGT="^383\d+" CldGt="\d+" Imsi="\d+" primitives="insertSubscriberData_Response" />
+    <Match ClgGt="^383\d+" CldGt="\d+" Imsi="\d+" primitives="insertSubscriberData_Response" />
     <Replace>
       <ClgGt value="97254160047" pattern="^\d{11}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
   <Rule name="13-updateGprsLocation_Request" regex="true">
-    <Match ClgGt="\d+" CldGT="^9725404\d+" Imsi="^4251004\d+" primitives="updateGprsLocation_Request" />
+    <Match ClgGt="\d+" CldGt="^9725404\d+" Imsi="^4251004\d+" primitives="updateGprsLocation_Request" />
     <Replace>
       <Imsi value="4251004" pattern="^\d{7}" />
-      <CldGt value="9725407" pattern="^\d{7}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
+      <CldGt value="9725407" pattern="^\d{7}" translationType="0" encodingScheme="1" numberingPlan="7" natureOfAddress="INTERNATIONAL" />
     </Replace>
   </Rule>
   <!-- End of PC configuration-->
-  <Rule name="ProvideRoamingNumber IMSI Prefix Replace and GT Replace" regex="true">
-    <Match ClgGt="^5037\d+" CldGt="^*\d+" primitives="provideRoamingNumber_Request" />
-    <Replace>
-      <Imsi value="99900" pattern="^01122" />
-      <ClgGt value="50373700004" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-      <CldGt value="50373700003" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-    </Replace>
-  </Rule>
-  <Rule name="smForwardMT IMSI Prefix Replace and GT Replace" regex="true">
-    <Match ClgGt="^5037470\d+" CldGt="^*\d+" Imsi="^25099\d+" primitives="mtForwardSM_Request" />
-    <Replace>
-      <Imsi value="99900" pattern="^25099" />
-      <ClgGt value="50373700004" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-      <CldGt value="50373700003" pattern="^*\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-    </Replace>
-  </Rule>
-  <Rule name="UpdateGPRSLocation IMSI Prefix Replace and GT Replace 01">
-    <Match ClgGt="50373700000" CldGt="" Imsi="42501" primitives="sendAuthenticationInfo_Request" />
-    <Replace>
-      <Imsi value="99900444444" />
-      <CldGt value="50373700003232" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-    </Replace>
-  </Rule>
-  <Rule name="UpdateGPRSLocation IMSI Prefix Replace and GT Replace 01" regex="true">
-    <Match ClgGt="^5037470\d+" CldGt="^\d+" Imsi="^12435\d+" primitives="updateGprsLocation_Request" />
-    <Replace>
-      <Imsi value="99900" pattern="^12435" />
-      <CldGt value="50373700003" pattern="^\d+" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-    </Replace>
-  </Rule>
-  <Rule name="IMSI, Calling GT, Called GT Regex" regex="true">
-    <Match ClgGt="^50\d+" CldGt="^50\d+" Imsi="^42501\d+" primitives="updateLocation_Request, updateGprsLocation_Request, insertSubscriberData_Request, sendAuthenticationInfo_Request" />
-    <Replace>
-      <Imsi value="5555" pattern="^42501" />
-      <CldGt value="4445" pattern="^50\d{2}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-      <ClgGt value="9678" pattern="^50\d{2}" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-    </Replace>
-  </Rule>
-
-  <Rule name="UL_SAI to CldGt_IMSI Prefix Replace">
-    <Match ClgGt="50373700000" CldGt="" Imsi="42501" primitives="updateLocation_Request, updateGprsLocation_Request, insertSubscriberData_Request" />
-    <Replace>
-      <Imsi value="5555" />
-      <CldGt value="9678" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-    </Replace>
-  </Rule>
-  <Rule name="UL_SAI to CldGt_IMSI Prefix Replace 01">
-    <Match ClgGt="50373700000" CldGt="" Imsi="842501" primitives="updateGprsLocation_Request" />
-    <Replace>
-      <Imsi value="99998" CldGt="4444444" />
-    </Replace>
-  </Rule>
-  <Rule name="ISD IMSI Prefix Replace">
-    <Match ClgGt="50373700000" CldGt="" Imsi="42501" primitives="insertSubscriberData_Request" />
-    <Replace>
-      <CldGt value="87652345677" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-      <Imsi value="989898" />
-    </Replace>
-  </Rule>
-  <Rule name="SendAuthenticationInfo request">
-    <Match CldGt="50373700000" Imsi="42501" primitives="sendAuthenticationInfo_Request" />
-    <Replace>
-      <Imsi value="7777" />
-    </Replace>
-  </Rule>
-  <Rule name="SendAuthenticationInfo">
-    <Match Imsi="7160652952503786" primitives="updateLocation_Request,sendAuthenticationInfo_Request" />
-    <Replace>
-      <Imsi value="5150656952503777" />
-    </Replace>
-  </Rule>
-  <Rule name="1-SendAuthenticationInfo request">
-    <Match CldGT="9725404" Imsi="4251004" primitives="sendAuthenticationInfo_Request" />
-    <Replace>
-      <CldGt value="9725407" translationType="0" encodingScheme="1" numberingPlan="7" natureOfAddress="INTERNATIONAL" />
-      <Imsi value="4251004" />
-    </Replace>
-  </Rule>
-
-  <Rule name="2-SendAuthenticationInfo Response">
-    <Match CldGT="383" Imsi="4251004" primitives="sendAuthenticationInfo_Response" />
-    <Replace>
-      <CldGt value="972" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-      <Imsi value="4251004" />
-    </Replace>
-  </Rule>
-
-  <Rule name="3-moForwardSM_Request">
-    <Match CldGT="97254160048" Imsi="4251007" primitives="moForwardSM_Request" />
-    <Replace>
-      <CldGt value="97254160149" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-      <Imsi value="4251004" />
-    </Replace>
-  </Rule>
-
-  <Rule name="4-moForwardSM_Response">
-    <Match ClgGT="97254160149" Imsi="4251007" primitives="moForwardSM_Response" />
-    <Replace>
-      <ClgGt value="97254160048" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-      <Imsi value="4251007" />
-    </Replace>
-  </Rule>
-
-  <Rule name="5-updateLocation request">
-    <Match CldGT="9725404" Imsi="4251004" primitives="updateLocation_Request" />
-    <Replace>
-      <CldGt value="9725407" translationType="0" encodingScheme="1" numberingPlan="7" natureOfAddress="INTERNATIONAL" />
-      <Imsi value="4251004" />
-    </Replace>
-  </Rule>
-
-  <Rule name="6-updateLocation Response">
-    <Match CldGT="383" Imsi="4251004" primitives="updateLocation_Response" />
-    <Replace>
-      <CldGt value="972" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-      <Imsi value="4251004" />
-    </Replace>
-  </Rule>
-
-
-  <Rule name="7-InsertSubscriberDataRequest">
-    <Match CldGT="383" Imsi="4251004" primitives="insertSubscriberData_Request" />
-    <Replace>
-      <ClgGt value="97254160047" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-      <Imsi value="4251004" />
-    </Replace>
-  </Rule>
-
-
-  <Rule name="8-mtForwardSM_Request">
-    <!-- match all cldgt-->
-    <Match CldGT="383" Imsi="4251007" primitives="mtForwardSM_Request" />
-    <Replace>
-      <Imsi value="4251007" />
-      <ClgGT value="97254160048" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-    </Replace>
-  </Rule>
-
-  <Rule name="9-mtForwardSM_Response">
-    <!-- match all cldgt-->
-    <Match CldGT="97254160048" Imsi="4251007" primitives="mtForwardSM_Response" />
-    <Replace>
-      <Imsi value="4251007" />
-    </Replace>
-  </Rule>
-
-  <Rule name="10-provideRoamingNumber_Request">
-    <Match CldGT="383" Imsi="4251007" primitives="provideRoamingNumber_Request" />
-    <Replace>
-      <ClgGT value="97254160048" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-      <Imsi value="4251007" />
-    </Replace>
-  </Rule>
-
-  <Rule name="11-mtForwardSM_Response">
-    <!-- match all cldgt-->
-    <Match CldGT="97254160048" Imsi="4251007" primitives="mtForwardSM_Response" />
-    <Replace>
-      <Imsi value="4251007" />
-    </Replace>
-  </Rule>
-
-
-  <Rule name="updateGprsLocation Request">
-    <Match Imsi="7160652952503786" primitives="updateGprsLocation_Request" />
-    <Replace>
-      <Imsi value="5150656952503777" />
-    </Replace>
-  </Rule>
-
-  <Rule name="IMSI, Calling GT, Called GT">
-    <Match ClgGt="50373700000" CldGt="34343" Imsi="42501" primitives="updateLocation_Request, updateGprsLocation_Request, insertSubscriberData_Request" />
-    <Replace>
-      <Imsi value="5555" />
-      <CldGt value="4445" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-      <ClgGt value="9678" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" />
-    </Replace>
-  </Rule>
-
-
 </Rules>

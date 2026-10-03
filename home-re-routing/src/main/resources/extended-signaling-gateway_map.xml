@@ -78,18 +78,18 @@
       <!-- Enable the longMessage if it is applicable -->
       <longMessageRule name="longMessageRule" id="5" firstSpc="1" lastSpc="16385" ruleType="XUDT_ENABLED" />
       <!-- sap === Service Access Point-->
-      <sap name="SAPServer" id="1" mtp3Id="1" opc="1000" ni="2" networkId="0" localGtDigits="50373700000">
+      <sap name="SAPServer" id="1" mtp3Id="1" opc="1000" ni="2" networkId="0" localGtDigits="97254160047">
         <destination name="SAPServer" destid="1" firstDpc="1001" lastDpc="1001" firstSls="0" lastSls="255" slsMask="255" />
       </sap>
-      <routingAddress name="localRoutingServer" id="1" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="50373700000">
+      <routingAddress name="localRoutingServer" id="1" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="97254160047">
         <sccpAddress dpc="1000" ssn="6">
           <!-- encodingScheme = 2 => BCDEvenEncodingScheme-->
-          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="50373700000" />
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254160047" />
         </sccpAddress>
       </routingAddress>
-      <routingAddress name="remoteRoutingServer" id="2" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="50373700001">
+      <routingAddress name="remoteRoutingServer" id="2" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="38354121022">
         <sccpAddress dpc="1001" ssn="8">
-          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="50373700001" />
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="38354121022" />
         </sccpAddress>
       </routingAddress>
       <rule name="remoteRuleServer" id="1" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="REMOTE" pattern="*" mask="K" pAddressId="1" sAddressId="-1" networkId="0">

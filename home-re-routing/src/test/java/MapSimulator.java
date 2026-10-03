@@ -25,7 +25,8 @@ public class MapSimulator {
 
   private static final Logger logger = LogManager.getLogger(MapSimulator.class);
   String imsiString = "425100402000108";
-  String imsi3String = "011220200198227";
+  // the home network's IMSI for the subscriber the visited network knows as imsiString
+  String hplmnImsiString = "425100702000108";
   String sgsn_address = "112233445500";
   String sgsn_number = "112233445501";
   int testNumber = 5;
@@ -61,10 +62,10 @@ public class MapSimulator {
             mapSimulatorSendPrimitive.sendMoForwardSm(imsiString);
             Thread.sleep(1000);
             // test MT SMS
-            mapSimulatorSendPrimitive.sendMtForwardSM(imsiString);
+            mapSimulatorSendPrimitive.sendMtForwardSM(hplmnImsiString);
             Thread.sleep(1000);
             // Test MAP Provide Roaming Number
-            mapSimulatorSendPrimitive.initiateProvideRoamingNumber(imsi3String);
+            mapSimulatorSendPrimitive.initiateProvideRoamingNumber(hplmnImsiString);
 
           } catch (Exception e) {
             logger.error("MAP simulation step failed", e);
@@ -94,8 +95,6 @@ public class MapSimulator {
       SccpSettings sccpClientSettings = (SccpSettings) configuration.getLayerSettings("sccpclient");
       SccpLayer sccp = new SccpLayer(sccpClientSettings, m3ua);
 
-      SccpSettings sccpServerSettings = (SccpSettings) configuration.getLayerSettings("sccpserver");
-
       logger.info("Initializing TCAP layer...");
       TcapSettings tcapSettings = (TcapSettings) configuration.getLayerSettings("tcapclient");
       TcapLayer tcap = new TcapLayer(tcapSettings, sccp);
@@ -115,7 +114,7 @@ public class MapSimulator {
       map.getMapProvider().getMAPServiceCallHandling().activate();
       map.getMapProvider().getMAPServiceSms().activate();
 
-      mapSimulatorSendPrimitive = new MapSimulatorSendPrimitive(mapClient, sccpClientSettings, sccpServerSettings);
+      mapSimulatorSendPrimitive = new MapSimulatorSendPrimitive(mapClient, sccpClientSettings);
       this.simulate();
     } catch (Exception e) {
       logger.error("Caught exception", e);

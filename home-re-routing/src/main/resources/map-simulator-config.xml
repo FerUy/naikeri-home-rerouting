@@ -21,18 +21,51 @@
       <!-- Enable the longMessage if it is applicable -->
       <longMessageRule name="longMessageRule" id="5" firstSpc="1" lastSpc="16384" ruleType="XUDT_ENABLED" />
       <!-- sap === Service Access Point-->
-      <sap name="SAPClient" id="1" mtp3Id="1" opc="1001" ni="2" networkId="0" localGtDigits="50373700001">
+      <sap name="SAPClient" id="1" mtp3Id="1" opc="1001" ni="2" networkId="0" localGtDigits="38354121022">
         <destination name="SAPClient" destid="1" firstDpc="1000" lastDpc="1000" firstSls="0" lastSls="255" slsMask="255" />
       </sap>
-      <routingAddress name="localRoutingClient" id="1" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="50373700001">
+      <routingAddress name="localRoutingClient" id="1" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="38354121022">
         <sccpAddress dpc="1001" ssn="8">
           <!-- encodingScheme = 2 => BCDEvenEncodingScheme-->
-          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="50373700000" />
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="38354121022" />
         </sccpAddress>
       </routingAddress>
-      <routingAddress name="remoteRoutingClient" id="2" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="50373700000">
+      <routingAddress name="remoteRoutingClient" id="2" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="97254160047">
         <sccpAddress dpc="1000" ssn="6">
-          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="50373700001" />
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254160047" />
+        </sccpAddress>
+      </routingAddress>
+      <!-- The simulator plays both networks, in the deployment's numbering: the visited one under 383, the
+           home one under 9725416, its HLR reached as 9725404 (E.214 9725407 once the proxy rewrites it).
+           Each operation originates from one of these and is addressed to a "to..." one, through the proxy. -->
+      <routingAddress name="vplmn" id="3" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="38354121022">
+        <sccpAddress dpc="1001" ssn="8">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="38354121022" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress name="hplmnHlr" id="4" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="97254160046">
+        <sccpAddress dpc="1001" ssn="8">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254160046" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress name="hplmnSmsc" id="5" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="97254160149">
+        <sccpAddress dpc="1001" ssn="8">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254160149" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress name="toHplmnHlr" id="6" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="97254040200">
+        <sccpAddress dpc="1000" ssn="6">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254040200" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress name="toHplmnSmsc" id="7" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="97254160048">
+        <sccpAddress dpc="1000" ssn="8">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="97254160048" />
+        </sccpAddress>
+      </routingAddress>
+      <routingAddress name="toVplmn" id="8" routingIndicator="ROUTING_BASED_ON_GLOBAL_TITLE" digits="38354121022">
+        <sccpAddress dpc="1000" ssn="8">
+          <gt type="GT0100" translationType="0" encodingScheme="1" numberingPlan="1" natureOfAddress="INTERNATIONAL" digits="38354121022" />
         </sccpAddress>
       </routingAddress>
       <rule name="remoteRulClient" id="1" ruleType="Solitary" loadSharingAlgo="Undefined" originationType="REMOTE" pattern="*" mask="K" pAddressId="1" sAddressId="-1" networkId="0">

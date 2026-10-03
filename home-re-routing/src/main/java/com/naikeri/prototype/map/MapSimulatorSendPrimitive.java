@@ -1,5 +1,6 @@
 package com.naikeri.prototype.map;
 
+import org.restcomm.protocols.ss7.sccp.parameter.SccpAddress;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -328,17 +329,23 @@ public class MapSimulatorSendPrimitive {
   private static final Logger logger = LogManager.getLogger(MapSimulatorSendPrimitive.class.getName());
 
   private final SccpSettings sccpClientSettings;
-  private final SccpSettings sccpServerSettings;
   private final MAPStackImpl mapClient;
   private MAPParameterFactory mapParameterFactory;
 
-  public MapSimulatorSendPrimitive(MAPStackImpl map, SccpSettings sccpClientSettings,
-      SccpSettings sccpServerSettings) {
+  public MapSimulatorSendPrimitive(MAPStackImpl map, SccpSettings sccpClientSettings) {
     this.mapClient = map;
     this.sccpClientSettings = sccpClientSettings;
-    this.sccpServerSettings = sccpServerSettings;
     this.mapParameterFactory = map.getMAPProvider().getMAPParameterFactory();
     this.rateLimiterObj = RateLimiter.create(5000);
+  }
+
+  // The simulator's addresses by role, as named in map-simulator-config.xml's sccpclient
+  private SccpAddress address(String name) {
+    return this.sccpClientSettings.getRoutingAddresses().stream()
+        .filter(a -> name.equals(a.getName()))
+        .findFirst()
+        .orElseThrow(() -> new IllegalStateException("No routing address '" + name + "' in sccpclient"))
+        .getSccpAddress();
   }
 
   public void sendMtForwardSM(String imsiString) {
@@ -362,8 +369,8 @@ public class MapSimulatorSendPrimitive {
 
       MAPDialogSms clientDialogSms =
           this.mapClient.getMAPProvider().getMAPServiceSms().createNewDialog(appCnt,
-              this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), originReference,
-              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), destReference);
+              address("hplmnSmsc"), originReference,
+              address("toVplmn"), destReference);
       SM_RP_DA smRPDA = this.mapParameterFactory.createSM_RP_DA(this.mapParameterFactory.createIMSI(imsiString));
       AddressString msisdn1 = this.mapParameterFactory
           .createAddressString(AddressNature.international_number, NumberingPlan.ISDN, "111222333");
@@ -443,8 +450,8 @@ public class MapSimulatorSendPrimitive {
       AddressString destReference = this.mapParameterFactory.createAddressString(AddressNature.international_number, NumberingPlan.land_mobile, "204208300008002");
 
       MAPDialogSms clientDialogSms = this.mapClient.getMAPProvider().getMAPServiceSms().createNewDialog(appCnt,
-              this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), originReference,
-              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), destReference);
+              address("vplmn"), originReference,
+              address("toHplmnSmsc"), destReference);
       // clientDialogSms.setExtentionContainer(MAPExtensionContainerTest.GetTestExtensionContainer())
 
       // MO-ForwardSM names the service centre in sm-RP-DA; the subscriber's IMSI travels in the imsi field.
@@ -512,8 +519,8 @@ public class MapSimulatorSendPrimitive {
           clientMapProvider.getMAPServiceMobility().createNewDialog(
               MAPApplicationContext.getInstance(MAPApplicationContextName.gprsLocationUpdateContext,
                   MAPApplicationContextVersion.version3),
-              this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), origRef,
-              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), destRef);
+              address("vplmn"), origRef,
+              address("toHplmnHlr"), destRef);
 
       ISDNAddressString sgsnNumber = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, sgsnNumberString);
       IMSI imsi = new IMSIImpl(imsiString);
@@ -631,8 +638,8 @@ public class MapSimulatorSendPrimitive {
 
       MAPDialogMobility clientDialogMobility =
           clientMapProvider.getMAPServiceMobility().createNewDialog(appCnt,
-              this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), null,
-              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), null);
+              address("vplmn"), null,
+              address("toHplmnHlr"), null);
 
       IMSI imsi = this.mapParameterFactory.createIMSI(imsiString);
       ISDNAddressString mscNumber = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "491710460000");
@@ -684,8 +691,8 @@ public class MapSimulatorSendPrimitive {
 
       MAPDialogMobility clientDialogMobility =
           clientMapProvider.getMAPServiceMobility().createNewDialog(appCnt,
-              this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), null,
-              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), null);
+              address("vplmn"), null,
+              address("toHplmnHlr"), null);
 
       IMSI imsi = this.mapParameterFactory.createIMSI(imsiString);
 
@@ -733,8 +740,8 @@ public class MapSimulatorSendPrimitive {
           MAPApplicationContextVersion.version3);
 
       MAPDialogCallHandling mapDialogMobility = clientMapProvider.getMAPServiceCallHandling().createNewDialog(appCnt,
-              this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), origRef,
-              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), destRef);
+              address("hplmnHlr"), origRef,
+              address("toVplmn"), destRef);
       IMSI imsi = new IMSIImpl(imsiString);
       ISDNAddressString mscNumber = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "22228");
       ISDNAddressString msisdn = new ISDNAddressStringImpl(AddressNature.international_number, NumberingPlan.ISDN, "22227");
@@ -793,8 +800,8 @@ public class MapSimulatorSendPrimitive {
       MAPApplicationContext appCnt = MAPApplicationContext.getInstance(MAPApplicationContextName.subscriberDataMngtContext, MAPApplicationContextVersion.version3);
 
       MAPDialogMobility clientDialogMobility = clientMapProvider.getMAPServiceMobility().createNewDialog(appCnt,
-              this.sccpClientSettings.getRoutingAddresses().get(0).getSccpAddress(), null,
-              this.sccpClientSettings.getRoutingAddresses().get(1).getSccpAddress(), null);
+              address("hplmnHlr"), null,
+              address("toVplmn"), null);
 
       IMSI imsi = this.mapParameterFactory.createIMSI(imsiString);
       // msisdn
