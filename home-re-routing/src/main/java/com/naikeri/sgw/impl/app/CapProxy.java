@@ -86,8 +86,15 @@ public class CapProxy extends Application {
       } else {
         logger.debug("Unhandled message type: {}", messageType);
       }
-      // send reply
-      getChannelHandler().sendMessageResponse(channelMessage);
+      // A Continue's components go out with the next operation of the same incoming TCAP message,
+      // such as the ETC the HPLMN SCP sends with it: both work on the same outgoing dialogue, and
+      // sending the Continue's on their own would split that message in two, which the VPLMN SSF
+      // does not accept. Until the proxy sends once per incoming message, on the dialogue delimiter,
+      // the Continue does not send its own. (A NullPointerException in the CDR writer used to skip
+      // this send for every Continue, by accident.)
+      if (!"continue_Request".equals(messageType)) {
+        getChannelHandler().sendMessageResponse(channelMessage);
+      }
     } catch (Exception ex) {
       logger.error("Unhandled exception when processing message. Error: ", ex);
     }
