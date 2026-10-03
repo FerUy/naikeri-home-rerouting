@@ -18,7 +18,7 @@ public class CapProxyCDRWriter {
 
   private static final String RULENAME = "RULE_NAME";
   // the old format "MM-dd-yyyy HH:mm:ss.SSSZ"
-  private static final String FORMAT_DATE = "yyyyddMMHHmmssSSSZ";
+  private static final String FORMAT_DATE = "yyyyMMddHHmmssSSSZ";
   private static long incrId = 0;
 
   private static void writeCDRNoError(long dialogId) {

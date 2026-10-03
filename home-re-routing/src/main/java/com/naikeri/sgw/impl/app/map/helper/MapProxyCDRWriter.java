@@ -17,7 +17,7 @@ public class MapProxyCDRWriter {
   private MapProxyCDRWriter() {
   }
 
-  private static final String FORMAT_DATE = "yyyyddMMHHmmssSSSZ";
+  private static final String FORMAT_DATE = "yyyyMMddHHmmssSSSZ";
   private static long incrId = 0;
 
   public static void addFields(MapDialogOut dialogOut, String messageType, String sessionId) {
