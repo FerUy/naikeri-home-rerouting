@@ -82,7 +82,11 @@ public class CapSimulator {
       logger.info("HPLMN started{}", hplmnScpPrototype);
       Thread.sleep(5000);
 
-      for (int i = 0; i < 120; i++) {
+      // -Dcapsim.calls=<n> lengthens or shortens a run without editing the code
+
+      int calls = Integer.getInteger("capsim.calls", 120);
+
+      for (int i = 0; i < calls; i++) {
         try {
           Thread.sleep(8000);
           vplmnStpPrototype.sendInitialDPRequest();

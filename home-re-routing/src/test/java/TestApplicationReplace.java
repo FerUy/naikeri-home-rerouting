@@ -1,5 +1,4 @@
 import static org.junit.Assert.assertNull;
-import org.restcomm.protocols.ss7.map.api.MAPMessageType;
 import com.naikeri.sgw.network.layers.listeners.ProxyConstants;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -31,12 +30,9 @@ public class TestApplicationReplace {
     ChannelMessage channelMessage = new ChannelMessage(UUID.randomUUID().toString(), "Map");
     channelMessage.setParameter(ProxyConstants.MESSAGE_TYPE, "provideRoamingNumber_Request");
 
-    MapProcessingNode mapNode =
-        new MapProxyBuilder.Builder().setChannelMessage(channelMessage).buildMapProcessingNode();
-    mapNode.setMessageType(MAPMessageType.valueOf("provideRoamingNumber_Request"));
+    MapProcessingNode mapNode = new MapProxyBuilder.Builder().setChannelMessage(channelMessage).buildMapProcessingNode();
 
-    ReplacedValues result =
-        mapNode.getReplacedRule("972540402000108", "38354121022", "425100402000108");
+    ReplacedValues result = mapNode.getReplacedRule("972540402000108", "38354121022", "425100402000108");
     assertNull(result);
   }
 
@@ -45,11 +41,8 @@ public class TestApplicationReplace {
 
     ChannelMessage channelMessage = new ChannelMessage(UUID.randomUUID().toString(), "Map");
     channelMessage.setParameter(ProxyConstants.MESSAGE_TYPE, "provideRoamingNumber_Request");
-    MapProcessingNode mapNode =
-        new MapProxyBuilder.Builder().setChannelMessage(channelMessage).buildMapProcessingNode();
-    mapNode.setMessageType(MAPMessageType.valueOf("provideRoamingNumber_Request"));
-    ReplacedValues result =
-        mapNode.getReplacedRule("972540402000108", "38354121022", "425100402000108");
+    MapProcessingNode mapNode = new MapProxyBuilder.Builder().setChannelMessage(channelMessage).buildMapProcessingNode();
+    ReplacedValues result = mapNode.getReplacedRule("972540402000108", "38354121022", "425100402000108");
     assertNull(result);
   }
 
@@ -57,11 +50,8 @@ public class TestApplicationReplace {
   public void MatchNullPrimitiveEmpty() {
     ChannelMessage channelMessage = new ChannelMessage(UUID.randomUUID().toString(), "Map");
     channelMessage.setParameter(ProxyConstants.MESSAGE_TYPE, "provideRoamingNumber_Request");
-    MapProcessingNode mapNode =
-        new MapProxyBuilder.Builder().setChannelMessage(channelMessage).buildMapProcessingNode();
-    mapNode.setMessageType(MAPMessageType.valueOf("provideRoamingNumber_Request"));
-    ReplacedValues result =
-        mapNode.getReplacedRule("972540402000108", "38354121022", "425100402000108");
+    MapProcessingNode mapNode = new MapProxyBuilder.Builder().setChannelMessage(channelMessage).buildMapProcessingNode();
+    ReplacedValues result = mapNode.getReplacedRule("972540402000108", "38354121022", "425100402000108");
     assertNull(result);
   }
 
@@ -75,9 +65,7 @@ public class TestApplicationReplace {
   private static ReplacedValues match(String messageType, String calledGt, String callingGt, String imsi) {
     ChannelMessage channelMessage = new ChannelMessage(UUID.randomUUID().toString(), "Map");
     channelMessage.setParameter(ProxyConstants.MESSAGE_TYPE, messageType);
-    MapProcessingNode mapNode =
-        new MapProxyBuilder.Builder().setChannelMessage(channelMessage).buildMapProcessingNode();
-    mapNode.setMessageType(MAPMessageType.valueOf(messageType));
+    MapProcessingNode mapNode = new MapProxyBuilder.Builder().setChannelMessage(channelMessage).buildMapProcessingNode();
     return mapNode.getReplacedRule(calledGt, callingGt, imsi);
   }
 

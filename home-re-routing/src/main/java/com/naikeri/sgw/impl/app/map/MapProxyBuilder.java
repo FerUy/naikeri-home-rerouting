@@ -27,7 +27,16 @@ public class MapProxyBuilder {
         Object requestMessage = channelMessage.getParameter("message");
         if (requestMessage != null) {
           this.message = requestMessage;
-          this.messageType = MAPMessageType.valueOf(messagetype);
+        }
+        // The type stands on its own. It used to be set only alongside the MAP message, so a node
+        // built from a channel message carrying the type alone had none, and every rule lookup
+        // stopped at "Unknown Message Type". Dialogue signals carry names that aren't MAP types.
+        if (messagetype != null) {
+          try {
+            this.messageType = MAPMessageType.valueOf(messagetype);
+          } catch (IllegalArgumentException notAMapMessageType) {
+            logger.debug("'{}' is not a MAP message type; the node has none", messagetype);
+          }
         }
         this.transactionId = channelMessage.toString();
 

@@ -29,7 +29,8 @@ public class MapSimulator {
   String hplmnImsiString = "425100702000108";
   String sgsn_address = "112233445500";
   String sgsn_number = "112233445501";
-  int testNumber = 5;
+  // -Dmapsim.cycles=<n> lengthens or shortens a run without editing the code
+  int testNumber = Integer.getInteger("mapsim.cycles", 5);
   private MapSimulatorSendPrimitive mapSimulatorSendPrimitive;
 
   private void simulate() {
