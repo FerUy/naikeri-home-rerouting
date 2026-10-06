@@ -156,7 +156,7 @@ public class MapPrototypeMobility implements MAPServiceMobilityListener {
       ArrayList<VoiceBroadcastData> vbsSubscriptionData = null;
       ArrayList<VoiceGroupCallData> vgcsSubscriptionData = null;
       VlrCamelSubscriptionInfo vlrCamelSubscriptionInfo = null;
-      ISDNAddressString msisdn = this.mapParameterFactory.createISDNAddressString(AddressNature.international_number, NumberingPlan.ISDN, "22234");
+      ISDNAddressString msisdn = this.mapParameterFactory.createISDNAddressString(AddressNature.international_number, NumberingPlan.ISDN, "972547000108");
       mapDialogMobility.addInsertSubscriberDataRequest(imsi, msisdn, category, subscriberStatus,
           bearerServiceList, teleserviceList, provisionedSS, odbData,
           roamingRestrictionDueToUnsupportedFeature, regionalSubscriptionData,

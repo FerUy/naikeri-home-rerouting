@@ -1,5 +1,9 @@
 package com.naikeri.sgw.impl.app.map.helper;
 
+import org.restcomm.protocols.ss7.sccp.impl.parameter.SccpAddressImpl;
+
+import com.naikeri.sgw.impl.rules.MapProxyApplicationRules;
+
 import com.naikeri.sgw.impl.app.map.MapDialogOut;
 import com.naikeri.sgw.impl.app.map.MapProxyDialog;
 import com.naikeri.sgw.info.DataElement;
@@ -168,6 +172,11 @@ public class MapProxyInsertSubscriberData {
         return MapProxyUtilsHelper.discardReason(logmsg, messageType, transactionId);
       }
 
+      // The proxy answers the VLR's Update-Location dialogue as responder, so its messages there would leave
+      // from the HLR address the VLR dialled. The ISD is its first message back, which TCAP lets carry a new
+      // calling address: the one the ISD rule gives standalone ISDs, so both reach the VPLMN alike.
+      presentAsProxy(mapDialogMobility, request, transactionId);
+
       Long newInvokeId = mapDialogMobility.addInsertSubscriberDataRequest(request.getImsi(),
           request.getMsisdn(), request.getCategory(), request.getSubscriberStatus(),
           request.getBearerServiceList(), request.getTeleserviceList(), request.getProvisionedSS(),
@@ -203,5 +212,34 @@ public class MapProxyInsertSubscriberData {
       logmsg = ex.getMessage();
     }
     return MapProxyUtilsHelper.discardReason(logmsg, messageType, transactionId);
+  }
+
+  /**
+   * Gives an Update-Location dialogue the calling address the ISD rule assigns, when one matches: the
+   * dialogue's local address keeps its routing indicator, point code and SSN, and takes the rule's GT.
+   */
+  private static void presentAsProxy(MAPDialogMobility dialog, InsertSubscriberDataRequest request,
+                                     String transactionId) {
+    var local = dialog.getLocalAddress();
+    var remote = dialog.getRemoteAddress();
+    if (local == null || remote == null || local.getGlobalTitle() == null || remote.getGlobalTitle() == null) {
+      return;
+    }
+    String callingGt = local.getGlobalTitle().getDigits();
+    String calledGt = remote.getGlobalTitle().getDigits();
+    String imsi = request.getImsi() != null ? request.getImsi().getData() : "";
+    var rule = MapProxyApplicationRules.getInstance()
+        .findMAPApplicationRule(callingGt, calledGt, imsi, request.getMessageType().toString());
+    if (rule == null) {
+      return;
+    }
+    var replaced = rule.getReplaceRule().applyReplaceRule(imsi, callingGt, calledGt);
+    if (replaced == null || replaced.getCallingGlobalTitle() == null) {
+      return;
+    }
+    dialog.setLocalAddress(new SccpAddressImpl(local.getAddressIndicator().getRoutingIndicator(),
+        replaced.getCallingGlobalTitle(), local.getSignalingPointCode(), local.getSubsystemNumber()));
+    logger.debug("<insertSubscriberData_Request, {}>: in-dialogue ISD leaves as '{}' (rule '{}'), not '{}'",
+        transactionId, replaced.getCallingGlobalTitle().getDigits(), rule.getName(), callingGt);
   }
 }
