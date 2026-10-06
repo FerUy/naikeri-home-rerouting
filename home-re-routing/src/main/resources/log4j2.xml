@@ -29,8 +29,8 @@
         </RollingFile>
 
         <!-- CDRs: the message only, no timestamp or level -->
-        <RollingFile name="cdrlogger" fileName="${logDir}/cdrlogger.log"
-                     filePattern="${logDir}/cdrlogger.log.%i">
+        <RollingFile name="cdrlogger" fileName="${logDir}/map_cdrlogger.log"
+                     filePattern="${logDir}/map_cdrlogger.log.%i">
             <PatternLayout charset="UTF-8" pattern="%msg%n"/>
             <LevelRangeFilter minLevel="INFO" maxLevel="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
             <Policies>

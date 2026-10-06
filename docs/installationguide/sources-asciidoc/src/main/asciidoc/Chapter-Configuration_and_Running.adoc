@@ -40,7 +40,7 @@ alone. {this-application} writes to `logs/`:
 | `console.out` | The console output, also shown in the terminal
 | `debugfile.log` | The log, at the level `log4j2.xml` sets
 | `errorfile.log` | Errors only
-| `cdrlogger.log` | MAP proxy CDRs
+| `map_cdrlogger.log` | MAP proxy CDRs
 | `cap_cdrlogger.log` | CAP proxy CDRs, one per call leg
 |===
 
