@@ -17,6 +17,9 @@ if [ ! -f "../conf/$CONFIG" ]; then
   exit 1
 fi
 
+# jSS7's stacks persist their state; emptying it before every start makes conf/ the only authority
+rm -rf ../state && mkdir -p ../state
+
 trap 'kill -TERM $PID' TERM INT
 mkdir -p ../logs
 # Console output goes to the terminal and to a file. Anything logged before log4j2.xml is read, and any
@@ -25,7 +28,7 @@ mkdir -p ../logs
 CONSOLE_LOG=../logs/console.out
 
 java ${JAVA_OPTS:--Xms1g -Xmx1g} -cp home-re-routing-VERSION.jar:lib/* \
-  -Dlog4j2.configurationFile=../conf/log4j2.xml -Dorg.restcomm.sctp.bufferSize=50000000 -DmainConfig.path=../conf -Dhrr.log.dir=../logs \
+  -Dlog4j2.configurationFile=../conf/log4j2.xml -Dorg.restcomm.sctp.bufferSize=50000000 -DmainConfig.path=../conf -Dhrr.log.dir=../logs -Dsgw.state.dir=../state \
   com.naikeri.hrr.impl.HomeReRouting "$CONFIG" > >(tee -a "$CONSOLE_LOG") 2>&1 &
 PID=$!
 wait $PID

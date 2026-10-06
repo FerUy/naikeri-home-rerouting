@@ -59,7 +59,8 @@ bin/start.sh map-proxy.xml    # the MAP proxy
 With no argument, or one that isn't in `conf/`, `start.sh` lists the configurations available. It reads
 the configuration from `conf/`, logs to `logs/` (`debugfile.log`, `errorfile.log`, the CDR files, and the
 console output in `console.out`), and stops cleanly on Ctrl-C or SIGTERM. `JAVA_OPTS`, if set, replaces
-the default heap settings of `-Xms1g -Xmx1g`.
+the default heap settings of `-Xms1g -Xmx1g`. The stacks' persisted state lives in `state/`, which `start.sh`
+empties before every start, so each start follows `conf/` alone.
 
 ## Docker
 
@@ -95,5 +96,6 @@ the IDE with `-DmainConfig.path` pointing at `home-re-routing/src/main/resources
 | MAP | `map-proxy.xml` | `MapSimulator` (`map-simulator-config.xml`) |
 | CAP | `cap-proxy.xml` | `CapSimulator` (`cap-simulator-config.xml`) |
 
-jSS7 keeps M3UA, SCCP, SCTP and TCAP state in XML files in the working directory; remove them between runs
-that change the configuration.
+jSS7's stacks persist their state in XML files, in the directory `-Dsgw.state.dir` names, or the working
+directory without it. Remove them between runs that change the configuration, or add
+`-Dsgw.state.dir=<directory>` to the run configurations and empty that directory instead.

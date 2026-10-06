@@ -29,7 +29,7 @@
         <slf4j.version>2.0.17</slf4j.version>
         <junit.version>4.13.2</junit.version>
         <commons-cli.version>1.11.0</commons-cli.version>
-        <naikeri-signaling-gateway-core.version>2.2.0-112</naikeri-signaling-gateway-core.version>
+        <naikeri-signaling-gateway-core.version>2.2.0-115</naikeri-signaling-gateway-core.version>
     </properties>
 
     <developers>
