@@ -2,7 +2,7 @@
 <SignalingGateway>
 
   <Applications>
-    <Application name="MapProxy" enabled="true" workers="3" channel="Map" cdr="map-cdr">
+    <Application name="MapProxy" enabled="false" workers="3" channel="Map" cdr="map-cdr">
       <Rules filename="map-application-rules.xml" />
     </Application>
     <Application name="CapProxy" enabled="true" workers="6" channel="Cap" cdr="cap-cdr">
@@ -15,7 +15,7 @@
   </Applications>
 
   <Channels>
-    <Channel name="Map" enabled="true" handler="MapChannel" queue="map" layer="mapLayer">
+    <Channel name="Map" enabled="false" handler="MapChannel" queue="map" layer="mapLayer">
       <Primitives>
         <Primitive name="updateLocation" />
         <Primitive name="sendAuthenticationInfo" />
