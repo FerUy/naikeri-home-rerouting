@@ -5,6 +5,7 @@
     <property name="checkout.dir" location="${base.dir}/.." />
     <property name="hrr.module.dir" location="${checkout.dir}/home-re-routing" />
     <property name="hrr.docs.dir" location="${checkout.dir}/docs/adminguide/sources-asciidoc/target/generated-docs" />
+    <property name="hrr.installdocs.dir" location="${checkout.dir}/docs/installationguide/sources-asciidoc/target/generated-docs" />
 
     <!-- Jenkins passes -Dnaikeri.hrr.release.version; for a local build this must match the project version in pom.xml,
          because start.sh gets it substituted into the jar name. -->
@@ -69,6 +70,12 @@
         <copy failonerror="true" todir="${release.dir}/docs/adminguide/pdf">
             <!-- the whole guide in one file; the per-chapter PDFs and copied resources stay behind -->
             <fileset dir="${hrr.docs.dir}/pdf" includes="HRR_Admin_Guide.pdf" />
+        </copy>
+        <copy failonerror="true" todir="${release.dir}/docs/installationguide/html-book">
+            <fileset dir="${hrr.installdocs.dir}/html-book" />
+        </copy>
+        <copy failonerror="true" todir="${release.dir}/docs/installationguide/pdf">
+            <fileset dir="${hrr.installdocs.dir}/pdf" includes="HRR_Installation_Guide.pdf" />
         </copy>
 
         <copy failonerror="true" todir="${release.dir}/bin">

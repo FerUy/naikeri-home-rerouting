@@ -25,5 +25,6 @@
 
 	<modules>
 		<module>adminguide</module>
+		<module>installationguide</module>
 	</modules>
 </project>

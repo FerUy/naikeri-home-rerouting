@@ -42,7 +42,7 @@ builds HRR and the admin guide and packages them as `release/Naikeri-HRR-<versio
 |---|---|
 | `bin/` | the HRR jar, its dependencies in `lib/`, and `start.sh` |
 | `conf/` | the CAP and MAP proxy configurations, their rules, and `log4j2.xml` |
-| `docs/adminguide/` | the admin guide, as `html-book/` and `pdf/` |
+| `docs/` | the admin and installation guides, each as `html-book/` and `pdf/` |
 | `logs/` | where HRR writes its logs and CDRs |
 
 Jenkins builds the same zip for every commit on master, as `Naikeri-HRR-<version>-<build>.zip`.

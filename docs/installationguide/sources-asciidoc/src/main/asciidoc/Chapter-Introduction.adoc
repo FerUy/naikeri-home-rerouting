@@ -1,0 +1,10 @@
+[[_introduction]]
+= Introduction
+
+{this-platform} {this-application} (Home Re-Routing) is a MAP and CAP proxy for roaming, built on the {this-platform} Signaling
+Gateway. As a MAP proxy it relays the attach procedure, short messages and roaming number requests between a visited and a
+home network, rewriting IMSIs and SCCP Global Titles by configurable rules; as a CAP proxy it steers a roaming subscriber's
+calls through the home network's SCP.
+
+This guide covers installing {this-platform} {this-application}, configuring the essentials, running it on a host or in a
+container, and removing it. The call flows and the rules are described in the {this-platform} {this-application} Admin Guide.

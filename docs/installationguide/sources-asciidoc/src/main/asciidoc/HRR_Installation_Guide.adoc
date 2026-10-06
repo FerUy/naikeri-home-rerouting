@@ -1,0 +1,68 @@
+= Installation Guide to {this-platform} {this-application}
+:doctype: book
+:sectnums:
+:toc: left
+:icons: font
+:experimental:
+:sourcedir: .
+:sectnumlevels: 7
+
+:leveloffset: 1
+
+include::Book_Info.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Common_Content/Preface.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Chapter-Introduction.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Chapter-Pre-Requisites.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Chapter-Installation.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Chapter-Configuration_and_Running.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Chapter-Docker.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Chapter-Setup_Uninstalling.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Common_Content/Java_Development_Kit-Installing_Configuring_and_Running.adoc[]
+
+:leveloffset: 0
+
+:leveloffset: 1
+
+include::Revision_History.adoc[]
+
+:leveloffset: 0

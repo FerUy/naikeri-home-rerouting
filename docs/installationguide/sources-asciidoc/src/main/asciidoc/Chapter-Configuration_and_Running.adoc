@@ -1,0 +1,51 @@
+[[_configuration_and_running]]
+= Configuration and Running
+
+[[_configuration]]
+== Configuration
+
+Everything {this-application} reads at start-up is in `conf/`:
+
+`map-proxy.xml` and `cap-proxy.xml`::
+  The two configurations, one per proxy: the SCTP associations and M3UA links towards both networks, the SCCP addresses and
+  routing, and the TCAP and MAP or CAP layers. The point codes, addresses and Global Titles shipped are those of the test
+  rig, and must be adapted to the deployment.
+`map-application-rules.xml` and `cap-application-rules.xml`::
+  The rules each proxy applies: the messages to match, by operation, Global Titles and IMSI, and what to rewrite in them.
+`log4j2.xml`::
+  The logging configuration: INFO by default, written to files in `logs/`.
+
+The {this-platform} {this-application} Admin Guide describes the call flows and the rules.
+
+[[_running]]
+== Running
+
+`start.sh` takes the configuration to run, from `conf/`:
+
+[source,bash]
+----
+bin/start.sh map-proxy.xml    # the MAP proxy
+bin/start.sh cap-proxy.xml    # the CAP proxy
+----
+
+With no argument, or one that isn't in `conf/`, it lists the configurations available. It runs from its own directory, so
+it can be started from anywhere. `JAVA_OPTS`, if set, replaces the default heap settings of `-Xms1g -Xmx1g`.
+
+The SS7 stacks persist their state in `state/`, which `start.sh` empties before every start, so each start follows `conf/`
+alone. {this-application} writes to `logs/`:
+
+[cols="1,3", frame="all", options="header"]
+|===
+| File | Contents
+| `console.out` | The console output, also shown in the terminal
+| `debugfile.log` | The log, at the level `log4j2.xml` sets
+| `errorfile.log` | Errors only
+| `cdrlogger.log` | MAP proxy CDRs
+| `cap_cdrlogger.log` | CAP proxy CDRs, one per call leg
+|===
+
+[[_stopping]]
+== Stopping
+
+Ctrl-C in the terminal, or a SIGTERM to the `start.sh` process, stops {this-application} cleanly: the script passes the
+signal on to the JVM and waits for it to end.

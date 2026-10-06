@@ -1,0 +1,5 @@
+[[_setup_uninstalling]]
+= Uninstalling
+
+Stop {this-platform} {this-application}, then delete its installation directory: it writes nothing outside it.
+For a container, remove it and its image with `docker rm hrr` and `docker rmi naikeri-hrr:<version>`.

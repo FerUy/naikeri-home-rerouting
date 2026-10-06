@@ -1,0 +1,23 @@
+[[_docker]]
+= Running in a Container
+
+The source repository provides `release/docker/Dockerfile`, which builds an image from a release: Java 11 on Alpine, with
+the SCTP library, and `start.sh` as the entry point. Unpack the release zip beside the Dockerfile and build:
+
+[source,bash]
+----
+unzip Naikeri-HRR-<version>.zip
+docker build --build-arg HRR_VERSION=<version> -t naikeri-hrr:<version> .
+----
+
+Run it on the host's network, which suits SCTP, with the configuration as the container's argument (the CAP proxy if none
+is given):
+
+[source,bash]
+----
+docker run -d --network host --name hrr -v /var/log/naikeri-hrr:/opt/naikeri/hrr/logs naikeri-hrr:<version> map-proxy.xml
+----
+
+The host needs SCTP support, as for an installation without a container. The logs mount keeps them beyond the container's
+life; a deployment's own configuration is mounted over `/opt/naikeri/hrr/conf` the same way. `docker stop hrr` stops
+{this-application} cleanly.
