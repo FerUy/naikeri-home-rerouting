@@ -60,7 +60,9 @@ public class MapProxyUpdateLocation {
         long invokeId = originalRequest.getInvokeId();
 
         origDialogMobility.setUserObject(invokeId);
-        origDialogMobility.addUpdateLocationResponse(invokeId, clone.getHlrNumber(),
+        // the VLR keeps the HLR number to address the HLR later: it must be the proxy
+        ProxyAddress.present(origDialogMobility, null, transactionId);
+        origDialogMobility.addUpdateLocationResponse(invokeId, ProxyAddress.hlrNumber(origDialogMobility, clone.getHlrNumber()),
             clone.getExtensionContainer(), clone.getAddCapability(),
             clone.getPagingAreaCapability());
 
@@ -158,7 +160,9 @@ public class MapProxyUpdateLocation {
       Long invokeId = origEvent.getInvokeId();
       mapDialogMobility.setUserObject(invokeId);
 
-      mapDialogMobility.addUpdateGprsLocationResponse(invokeId, clone.getHlrNumber(),
+      // the VLR keeps the HLR number to address the HLR later: it must be the proxy
+      ProxyAddress.present(mapDialogMobility, null, transactionId);
+      mapDialogMobility.addUpdateGprsLocationResponse(invokeId, ProxyAddress.hlrNumber(mapDialogMobility, clone.getHlrNumber()),
           clone.getExtensionContainer(), clone.isCapability(),
           clone.isSgsnMmeSeparationSupported(), clone.isMmeRegisteredForSM());
 
