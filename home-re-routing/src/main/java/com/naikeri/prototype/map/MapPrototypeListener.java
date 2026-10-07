@@ -47,15 +47,14 @@ public class MapPrototypeListener implements MAPDialogListener {
   }
 
   @Override
-  public void onDialogUserAbort(MAPDialog mapDialog, MAPUserAbortChoice userReason,
-                                MAPExtensionContainer extensionContainer) {
+  public void onDialogUserAbort(MAPDialog mapDialog, MAPUserAbortChoice userReason, MAPExtensionContainer extensionContainer) {
     //  Auto-generated method stub
 
   }
 
   @Override
-  public void onDialogProviderAbort(MAPDialog mapDialog, MAPAbortProviderReason abortProviderReason,
-      MAPAbortSource abortSource, MAPExtensionContainer extensionContainer) {
+  public void onDialogProviderAbort(MAPDialog mapDialog, MAPAbortProviderReason abortProviderReason, MAPAbortSource abortSource,
+      MAPExtensionContainer extensionContainer) {
     //  Auto-generated method stub
 
   }
@@ -67,8 +66,7 @@ public class MapPrototypeListener implements MAPDialogListener {
   }
 
   @Override
-  public void onDialogNotice(MAPDialog mapDialog,
-                             MAPNoticeProblemDiagnostic noticeProblemDiagnostic) {
+  public void onDialogNotice(MAPDialog mapDialog, MAPNoticeProblemDiagnostic noticeProblemDiagnostic) {
     //  Auto-generated method stub
 
   }

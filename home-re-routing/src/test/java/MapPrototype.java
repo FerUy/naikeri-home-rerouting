@@ -1,4 +1,3 @@
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 
@@ -116,8 +115,7 @@ import org.restcomm.protocols.ss7.tcap.asn.comp.Problem;
  * MAP Prototype
  *
  */
-public class MapPrototype extends ChannelHandler
-    implements MAPDialogListener, MAPServiceMobilityListener, MAPServiceLsmListener {
+public class MapPrototype extends ChannelHandler implements MAPDialogListener, MAPServiceMobilityListener, MAPServiceLsmListener {
 
   private SctpLayer sctpClient;
   private SctpLayer sctpServer;
@@ -752,20 +750,18 @@ public class MapPrototype extends ChannelHandler
   }
 
   @Override
-  public void onDialogReject(MAPDialog mapDialog, MAPRefuseReason mapRefuseReason,
-                             ApplicationContextName applicationContextName, MAPExtensionContainer mapExtensionContainer) {
+  public void onDialogReject(MAPDialog mapDialog, MAPRefuseReason mapRefuseReason, ApplicationContextName applicationContextName,
+                             MAPExtensionContainer mapExtensionContainer) {
 
   }
 
   @Override
-  public void onDialogUserAbort(MAPDialog mapDialog, MAPUserAbortChoice mapUserAbortChoice,
-                                MAPExtensionContainer mapExtensionContainer) {
+  public void onDialogUserAbort(MAPDialog mapDialog, MAPUserAbortChoice mapUserAbortChoice, MAPExtensionContainer mapExtensionContainer) {
 
   }
 
   @Override
-  public void onDialogProviderAbort(MAPDialog mapDialog,
-                                    MAPAbortProviderReason mapAbortProviderReason, MAPAbortSource mapAbortSource,
+  public void onDialogProviderAbort(MAPDialog mapDialog, MAPAbortProviderReason mapAbortProviderReason, MAPAbortSource mapAbortSource,
                                     MAPExtensionContainer mapExtensionContainer) {
 
   }

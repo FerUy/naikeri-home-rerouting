@@ -36,8 +36,7 @@ public class CapSimulator {
       M3uaLayer m3ua = new M3uaLayer(m3uaSettings, sctp);
 
       logger.info("Initializing SCCP layer...");
-      SccpSettings sccpClientSettings =
-          (SccpSettings) configuration.getLayerSettings("sccp" + index);
+      SccpSettings sccpClientSettings = (SccpSettings) configuration.getLayerSettings("sccp" + index);
       SccpLayer sccp = new SccpLayer(sccpClientSettings, m3ua);
 
       logger.info("Initializing TCAP layer...");
@@ -59,9 +58,6 @@ public class CapSimulator {
       this.configuration = new XmlConfiguration(is);
 
       logger.info("Initializing the channel layers.");
-      // CapLayer[] caplayers = IntStream.range(0, 3).mapToObj(index -> {
-      // return getCapLayer(index);
-      // }).filter(cap -> cap != null).toArray(size -> new CapLayer[size]);
       CapLayer[] caplayers = new CapLayer[4];
       for (int i = 0; i < 4; i++) {
         caplayers[i] = getCapLayer(i);
@@ -95,19 +91,6 @@ public class CapSimulator {
         }
       }
       logger.info("DONE");
-      // Scanner scanner = new Scanner(System.in);
-      // do {
-      // try {
-      // vplmn.sendInitialDPRequest();
-      // } catch (Exception err) {
-      // err.printStackTrace();
-      // }
-      // reply = scanner.nextLine();
-
-      // } while (!reply.equalsIgnoreCase("quit"));
-
-      // scanner.close();
-      // this.simulate();
     } catch (Exception ex) {
       logger.error("Simulation Error: ", ex);
     }

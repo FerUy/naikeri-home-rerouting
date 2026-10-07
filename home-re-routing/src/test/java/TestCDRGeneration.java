@@ -4,21 +4,22 @@ import org.junit.Test;
 public class TestCDRGeneration {
 
  @BeforeClass
- public static void loadConfiguration(){
+ public static void loadConfiguration() {
 
  }
+
  @Test
- public void TestLoadingCDRConfigurations(){
+ public void TestLoadingCDRConfigurations() {
    
  }
 
  @Test
- public void TestGeneratingCDRWithoutNullValues(){
+ public void TestGeneratingCDRWithoutNullValues() {
 
  }
  
  @Test
- public void TestGeneratingCDRWithNullValues(){
+ public void TestGeneratingCDRWithNullValues() {
    
  }
 }
